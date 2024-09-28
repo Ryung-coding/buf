@@ -1,0 +1,21 @@
+[1.854s] Invoking command in '/home/ionia/Desktop/dubal_ws/src/dubal_eye_AND_web': PYTHONPATH=/home/ionia/Desktop/dubal_ws/build/dubal_eye_AND_web/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/ionia/Desktop/dubal_ws/install/dubal_eye_AND_web/lib/python3.8/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../../build/dubal_eye_AND_web build --build-base /home/ionia/Desktop/dubal_ws/build/dubal_eye_AND_web/build install --record /home/ionia/Desktop/dubal_ws/build/dubal_eye_AND_web/install.log --install-scripts $base/lib/dubal_eye_AND_web --single-version-externally-managed install_data
+[2.271s] running egg_info
+[2.271s] writing ../../build/dubal_eye_AND_web/dubal_eye_AND_web.egg-info/PKG-INFO
+[2.272s] writing dependency_links to ../../build/dubal_eye_AND_web/dubal_eye_AND_web.egg-info/dependency_links.txt
+[2.272s] writing entry points to ../../build/dubal_eye_AND_web/dubal_eye_AND_web.egg-info/entry_points.txt
+[2.272s] writing requirements to ../../build/dubal_eye_AND_web/dubal_eye_AND_web.egg-info/requires.txt
+[2.273s] writing top-level names to ../../build/dubal_eye_AND_web/dubal_eye_AND_web.egg-info/top_level.txt
+[2.319s] reading manifest file '../../build/dubal_eye_AND_web/dubal_eye_AND_web.egg-info/SOURCES.txt'
+[2.320s] writing manifest file '../../build/dubal_eye_AND_web/dubal_eye_AND_web.egg-info/SOURCES.txt'
+[2.320s] running build
+[2.320s] running build_py
+[2.321s] running install
+[2.322s] running install_lib
+[2.324s] running install_data
+[2.324s] running install_egg_info
+[2.326s] removing '/home/ionia/Desktop/dubal_ws/install/dubal_eye_AND_web/lib/python3.8/site-packages/dubal_eye_AND_web-0.0.0-py3.8.egg-info' (and everything under it)
+[2.327s] Copying ../../build/dubal_eye_AND_web/dubal_eye_AND_web.egg-info to /home/ionia/Desktop/dubal_ws/install/dubal_eye_AND_web/lib/python3.8/site-packages/dubal_eye_AND_web-0.0.0-py3.8.egg-info
+[2.328s] running install_scripts
+[2.347s] Installing sensor_subscriber script to /home/ionia/Desktop/dubal_ws/install/dubal_eye_AND_web/lib/dubal_eye_AND_web
+[2.348s] writing list of installed files to '/home/ionia/Desktop/dubal_ws/build/dubal_eye_AND_web/install.log'
+[2.375s] Invoked command in '/home/ionia/Desktop/dubal_ws/src/dubal_eye_AND_web' returned '0': PYTHONPATH=/home/ionia/Desktop/dubal_ws/build/dubal_eye_AND_web/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/ionia/Desktop/dubal_ws/install/dubal_eye_AND_web/lib/python3.8/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../../build/dubal_eye_AND_web build --build-base /home/ionia/Desktop/dubal_ws/build/dubal_eye_AND_web/build install --record /home/ionia/Desktop/dubal_ws/build/dubal_eye_AND_web/install.log --install-scripts $base/lib/dubal_eye_AND_web --single-version-externally-managed install_data

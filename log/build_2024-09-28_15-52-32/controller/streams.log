@@ -1,0 +1,30 @@
+[0.064s] Invoking command in '/home/ionia/Desktop/dubal_ws/build/controller': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/ionia/Desktop/dubal_ws/install/serial_reciver:/home/ionia/Desktop/dubal_ws/install/odrive_controller:/home/ionia/Desktop/dubal_ws/install/dubal_eye_AND_web:/opt/ros/foxy /usr/bin/cmake --build /home/ionia/Desktop/dubal_ws/build/controller -- -j4 -l4
+[1.693s] [35m[1mScanning dependencies of target controller_main[0m
+[1.694s] [ 50%] [32mBuilding CXX object CMakeFiles/controller_main.dir/src/controller_main.cpp.o[0m
+[3.079s] In file included from [01m[K/home/ionia/Desktop/dubal_ws/src/controller/src/controller_main.cpp:2[m[K:
+[3.080s] [01m[K/home/ionia/Desktop/dubal_ws/src/controller/include/controller_main_function.h:[m[K In function ‘[01m[Kfloat computeLQR(float*, float*)[m[K’:
+[3.080s] [01m[K/home/ionia/Desktop/dubal_ws/src/controller/include/controller_main_function.h:103:19:[m[K [01;31m[Kerror: [m[Kexpected ‘[01m[K;[m[K’ before ‘[01m[K<[m[K’ token
+[3.080s]   103 |     for(int i=0, i[01;31m[K<[m[Kstate_size, i++)
+[3.080s]       |                   [01;31m[K^[m[K
+[3.080s]       |                   [32m[K;[m[K
+[3.080s] [01m[K/home/ionia/Desktop/dubal_ws/src/controller/include/controller_main_function.h:103:19:[m[K [01;31m[Kerror: [m[Kexpected primary-expression before ‘[01m[K<[m[K’ token
+[3.081s] [01m[K/home/ionia/Desktop/dubal_ws/src/controller/include/controller_main_function.h:103:35:[m[K [01;31m[Kerror: [m[Kexpected ‘[01m[K;[m[K’ before ‘[01m[K)[m[K’ token
+[3.081s]   103 |     for(int i=0, i<state_size, i++[01;31m[K)[m[K
+[3.081s]       |                                   [01;31m[K^[m[K
+[3.081s]       |                                   [32m[K;[m[K
+[3.082s] [01m[K/home/ionia/Desktop/dubal_ws/src/controller/src/controller_main.cpp:[m[K In function ‘[01m[Kvoid balancing_controller()[m[K’:
+[3.082s] [01m[K/home/ionia/Desktop/dubal_ws/src/controller/src/controller_main.cpp:11:5:[m[K [01;31m[Kerror: [m[Kexpected ‘[01m[K,[m[K’ or ‘[01m[K;[m[K’ before ‘[01m[Kfloat[m[K’
+[3.082s]    11 |     [01;31m[Kfloat[m[K desired_state[state_size] = {ref_theta, 0, 0, 0}
+[3.082s]       |     [01;31m[K^~~~~[m[K
+[3.085s] [01m[K/home/ionia/Desktop/dubal_ws/src/controller/src/controller_main.cpp:12:39:[m[K [01;31m[Kerror: [m[K‘[01m[Kdesired_state[m[K’ was not declared in this scope
+[3.085s]    12 |     balancing_CMD = computeLQR(state, [01;31m[Kdesired_state[m[K)
+[3.085s]       |                                       [01;31m[K^~~~~~~~~~~~~[m[K
+[3.120s] [01m[K/home/ionia/Desktop/dubal_ws/src/controller/src/controller_main.cpp:[m[K In function ‘[01m[Kint main(int, char**)[m[K’:
+[3.121s] [01m[K/home/ionia/Desktop/dubal_ws/src/controller/src/controller_main.cpp:30:105:[m[K [01;31m[Kerror: [m[K‘[01m[Kdubal_vel_callback[m[K’ was not declared in this scope; did you mean ‘[01m[Kdubal_data_callback[m[K’?
+[3.121s]    30 |     auto dubal_subscription = node->create_subscription<sensor_msgs::msg::JointState>("dubal_data", 10, [01;31m[Kdubal_vel_callback[m[K);
+[3.121s]       |                                                                                                         [01;31m[K^~~~~~~~~~~~~~~~~~[m[K
+[3.121s]       |                                                                                                         [32m[Kdubal_data_callback[m[K
+[5.828s] make[2]: *** [CMakeFiles/controller_main.dir/build.make:63: CMakeFiles/controller_main.dir/src/controller_main.cpp.o] Error 1
+[5.828s] make[1]: *** [CMakeFiles/Makefile2:78: CMakeFiles/controller_main.dir/all] Error 2
+[5.828s] make: *** [Makefile:141: all] Error 2
+[5.831s] Invoked command in '/home/ionia/Desktop/dubal_ws/build/controller' returned '2': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/ionia/Desktop/dubal_ws/install/serial_reciver:/home/ionia/Desktop/dubal_ws/install/odrive_controller:/home/ionia/Desktop/dubal_ws/install/dubal_eye_AND_web:/opt/ros/foxy /usr/bin/cmake --build /home/ionia/Desktop/dubal_ws/build/controller -- -j4 -l4

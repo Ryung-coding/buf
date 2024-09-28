@@ -49,10 +49,11 @@ void sbus_callback(const sensor_msgs::msg::JointState::SharedPtr msg)
 void imu_callback(const sensor_msgs::msg::JointState::SharedPtr msg)
 {   
     imu_theta = lowpassfilter(imu_theta, msg->position[1], 0.001);                             
-    imu_psi = lowpassfilter(imu_psi, -msg->position[2], 0.001);     
+    imu_psi = lowpassfilter(imu_psi, msg->position[2], 0.001);     
 
     imu_theta_dot=lowpassfilter(imu_theta_dot, msg->velocity[1], 0.001);         
-    imu_psi_dot=lowpassfilter(imu_psi_dot, -msg->velocity[2], 0.001);    
+    imu_psi_dot=lowpassfilter(imu_psi_dot, msg->velocity[2], 0.001);    
+
 }
 
 void gps_callback(const sensor_msgs::msg::JointState::SharedPtr msg)
@@ -70,12 +71,10 @@ void gps_callback(const sensor_msgs::msg::JointState::SharedPtr msg)
     second=msg->position[10];
 }
 
-void dubal_vel_callback(const sensor_msgs::msg::JointState::SharedPtr msg)
-{       
-        odrive_L_pos = msg->position[0];
-        odrive_L_vel = lowpassfilter(odrive_L_vel, msg->velocity[0], 0.99); 
-        // odrive_R_pos = msg->position[1];
-        // odrive_R_vel = lowpassfilter(odrive_R_vel, msg->velocity[1], 0.99); 
+void dubal_data_callback(const sensor_msgs::msg::JointState::SharedPtr msg)
+{
+    pos_x = (msg->position[0]+msg->position[1])/2;
+    vel_x = (msg->velocity[0]+msg->velocity[1])/2;
 }
 
 
@@ -96,5 +95,17 @@ float computePID(float r, float y,float y_dot, float dt, int PID_case)
     float u = P + I[PID_case] + D;
     return u;
 }
+
+float computeLQR(float state[], float desired_state[])
+{
+    float u=0;
+
+    for(int i=0 ; i<state_size; i++)
+    {
+        u-=LQR_K[i]*(desired_state[i]-state[i]);
+    }
+    return u;
+}
+
 
 #endif

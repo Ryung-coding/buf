@@ -1,0 +1,47 @@
+In file included from [01m[K/home/ionia/Desktop/dubal_ws/src/controller/src/controller_main.cpp:1[m[K:
+[01m[K/home/ionia/Desktop/dubal_ws/src/controller/include/controller_main.h:63:1:[m[K [01;31m[Kerror: [m[K‘[01m[Kflaot[m[K’ does not name a type; did you mean ‘[01m[Kfloat[m[K’?
+   63 | [01;31m[Kflaot[m[K pos_x=0.0;
+      | [01;31m[K^~~~~[m[K
+      | [32m[Kfloat[m[K
+[01m[K/home/ionia/Desktop/dubal_ws/src/controller/include/controller_main.h:64:1:[m[K [01;31m[Kerror: [m[K‘[01m[Kflaot[m[K’ does not name a type; did you mean ‘[01m[Kfloat[m[K’?
+   64 | [01;31m[Kflaot[m[K vel_x=0.0;
+      | [01;31m[K^~~~~[m[K
+      | [32m[Kfloat[m[K
+In file included from [01m[K/home/ionia/Desktop/dubal_ws/src/controller/src/controller_main.cpp:2[m[K:
+[01m[K/home/ionia/Desktop/dubal_ws/src/controller/include/controller_main_function.h:[m[K In function ‘[01m[Kvoid dubal_data_callback(sensor_msgs::msg::JointState_<std::allocator<void> >::SharedPtr)[m[K’:
+[01m[K/home/ionia/Desktop/dubal_ws/src/controller/include/controller_main_function.h:76:5:[m[K [01;31m[Kerror: [m[K‘[01m[Kpos_x[m[K’ was not declared in this scope; did you mean ‘[01m[Kfpos_t[m[K’?
+   76 |     [01;31m[Kpos_x[m[K = (msg->position[0]+msg->position[1])/2;
+      |     [01;31m[K^~~~~[m[K
+      |     [32m[Kfpos_t[m[K
+[01m[K/home/ionia/Desktop/dubal_ws/src/controller/include/controller_main_function.h:77:5:[m[K [01;31m[Kerror: [m[K‘[01m[Kvel_x[m[K’ was not declared in this scope
+   77 |     [01;31m[Kvel_x[m[K = (msg->velocity[0]+msg->velocity[1])/2;
+      |     [01;31m[K^~~~~[m[K
+[01m[K/home/ionia/Desktop/dubal_ws/src/controller/include/controller_main_function.h:[m[K In function ‘[01m[Kfloat computeLQR(float*, float*)[m[K’:
+[01m[K/home/ionia/Desktop/dubal_ws/src/controller/include/controller_main_function.h:103:19:[m[K [01;31m[Kerror: [m[Kexpected ‘[01m[K;[m[K’ before ‘[01m[K<[m[K’ token
+  103 |     for(int i=0, i[01;31m[K<[m[Kstate_size, i++)
+      |                   [01;31m[K^[m[K
+      |                   [32m[K;[m[K
+[01m[K/home/ionia/Desktop/dubal_ws/src/controller/include/controller_main_function.h:103:19:[m[K [01;31m[Kerror: [m[Kexpected primary-expression before ‘[01m[K<[m[K’ token
+[01m[K/home/ionia/Desktop/dubal_ws/src/controller/include/controller_main_function.h:103:35:[m[K [01;31m[Kerror: [m[Kexpected ‘[01m[K;[m[K’ before ‘[01m[K)[m[K’ token
+  103 |     for(int i=0, i<state_size, i++[01;31m[K)[m[K
+      |                                   [01;31m[K^[m[K
+      |                                   [32m[K;[m[K
+[01m[K/home/ionia/Desktop/dubal_ws/src/controller/src/controller_main.cpp:[m[K In function ‘[01m[Kvoid balancing_controller()[m[K’:
+[01m[K/home/ionia/Desktop/dubal_ws/src/controller/src/controller_main.cpp:10:58:[m[K [01;31m[Kerror: [m[K‘[01m[Kpos_x[m[K’ was not declared in this scope; did you mean ‘[01m[Kfpos_t[m[K’?
+   10 |     float state[state_size] = {imu_theta, imu_theta_dot, [01;31m[Kpos_x[m[K, vel_x}
+      |                                                          [01;31m[K^~~~~[m[K
+      |                                                          [32m[Kfpos_t[m[K
+[01m[K/home/ionia/Desktop/dubal_ws/src/controller/src/controller_main.cpp:10:65:[m[K [01;31m[Kerror: [m[K‘[01m[Kvel_x[m[K’ was not declared in this scope
+   10 |     float state[state_size] = {imu_theta, imu_theta_dot, pos_x, [01;31m[Kvel_x[m[K}
+      |                                                                 [01;31m[K^~~~~[m[K
+[01m[K/home/ionia/Desktop/dubal_ws/src/controller/src/controller_main.cpp:12:39:[m[K [01;31m[Kerror: [m[K‘[01m[Kdesired_state[m[K’ was not declared in this scope
+   12 |     balancing_CMD = computeLQR(state, [01;31m[Kdesired_state[m[K)
+      |                                       [01;31m[K^~~~~~~~~~~~~[m[K
+[01m[K/home/ionia/Desktop/dubal_ws/src/controller/src/controller_main.cpp:[m[K In function ‘[01m[Kint main(int, char**)[m[K’:
+[01m[K/home/ionia/Desktop/dubal_ws/src/controller/src/controller_main.cpp:30:105:[m[K [01;31m[Kerror: [m[K‘[01m[Kdubal_vel_callback[m[K’ was not declared in this scope; did you mean ‘[01m[Kdubal_data_callback[m[K’?
+   30 |     auto dubal_subscription = node->create_subscription<sensor_msgs::msg::JointState>("dubal_data", 10, [01;31m[Kdubal_vel_callback[m[K);
+      |                                                                                                         [01;31m[K^~~~~~~~~~~~~~~~~~[m[K
+      |                                                                                                         [32m[Kdubal_data_callback[m[K
+make[2]: *** [CMakeFiles/controller_main.dir/build.make:63: CMakeFiles/controller_main.dir/src/controller_main.cpp.o] Error 1
+make[1]: *** [CMakeFiles/Makefile2:78: CMakeFiles/controller_main.dir/all] Error 2
+make: *** [Makefile:141: all] Error 2

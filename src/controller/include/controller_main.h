@@ -7,10 +7,13 @@
 #include <std_msgs/msg/float64_multi_array.hpp>
 
 // PID Controller Gains
-float Kp[4] = {-0.002, 16.50, 4.380, 0.0000};
-float Kd[4] = {0.0000, 0.330, 0.100, 0.0000};
-float Ki[4] = {-0.000005, 0.0080, 0.0000, 0.0000};
+float Kp[2] = {10.000, 0.000};
+float Kd[2] = {0.000, 0.000};
+float Ki[2] = {0.000, 0.000};
 
+// LQR Gains -> using MATLAB (Note* LQR solver code)
+#define state_size 4
+float LQR_K[4] = {0.000, 0.000, 0.000, 0.000};
 
 // Control Constants
 #define loop_hz 100
@@ -35,18 +38,14 @@ float Ki[4] = {-0.000005, 0.0080, 0.0000, 0.0000};
 // Controller Values
 float sbus_data[5] = {0.0, 0.0, 0.0, 0.0, 0.0}; // Raw signal data
 float ref[5] = {0.0, 0.0, 0.0, 0.0, 0.0};       // Filtered & transferred signal data { Heading Angle Velocity | Thrust Velocity | Leg Case | Web Connect  | Kill }
-float I[4] = {0.0, 0.0, 0.0, 0.0};              // Integral term
+float I[2] = {0.0, 0.0};              // Integral term
 
 // IMU Data
 float imu_theta = 0.0; 
 float imu_theta_dot = 0.0; 
-float imu_theta_dot_past = 0.0; 
-float imu_theta_ddot = 0.0;
-
 float imu_psi = 0.0; 
 float imu_psi_dot = 0.0; 
-float imu_psi_dot_past = 0.0; 
-float imu_psi_ddot = 0.0; 
+
 
 // Motor Commands
 float Motor_L_cmd = 0.0; 
@@ -56,11 +55,9 @@ float heading_CMD = 0.0;
 float ref_theta = 0.0;
 float ref_theta_dot = 0.0;
 
-// Motor Commands
-float odrive_L_pos = 0.0f;
-float odrive_R_pos = 0.0f;
-float odrive_L_vel = 0.0f;
-float odrive_R_vel = 0.0f;
+// Motor Sensing data
+float pos_x=0.0;
+float vel_x=0.0;
 
 // State Flags
 bool isKilled = true;

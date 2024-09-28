@@ -1,0 +1,8 @@
+[01m[K/home/ionia/Desktop/dubal_ws/src/controller/src/controller_main.cpp:[m[K In function ‘[01m[Kint main(int, char**)[m[K’:
+[01m[K/home/ionia/Desktop/dubal_ws/src/controller/src/controller_main.cpp:30:105:[m[K [01;31m[Kerror: [m[K‘[01m[Kdubal_vel_callback[m[K’ was not declared in this scope; did you mean ‘[01m[Kdubal_data_callback[m[K’?
+   30 |     auto dubal_subscription = node->create_subscription<sensor_msgs::msg::JointState>("dubal_data", 10, [01;31m[Kdubal_vel_callback[m[K);
+      |                                                                                                         [01;31m[K^~~~~~~~~~~~~~~~~~[m[K
+      |                                                                                                         [32m[Kdubal_data_callback[m[K
+make[2]: *** [CMakeFiles/controller_main.dir/build.make:63: CMakeFiles/controller_main.dir/src/controller_main.cpp.o] Error 1
+make[1]: *** [CMakeFiles/Makefile2:78: CMakeFiles/controller_main.dir/all] Error 2
+make: *** [Makefile:141: all] Error 2
