@@ -48,11 +48,11 @@ void sbus_callback(const sensor_msgs::msg::JointState::SharedPtr msg)
 
 void imu_callback(const sensor_msgs::msg::JointState::SharedPtr msg)
 {   
-    imu_theta = lowpassfilter(imu_theta, msg->position[1], 0.001);                             
-    imu_psi = lowpassfilter(imu_psi, msg->position[2], 0.001);     
+    imu_theta = lowpassfilter(imu_theta, msg->position[1], 0.00);                             
+    imu_psi = lowpassfilter(imu_psi, msg->position[2], 0.00);     
 
-    imu_theta_dot=lowpassfilter(imu_theta_dot, msg->velocity[1], 0.001);         
-    imu_psi_dot=lowpassfilter(imu_psi_dot, msg->velocity[2], 0.001);    
+    imu_theta_dot=lowpassfilter(imu_theta_dot, msg->velocity[1], 0.00);         
+    imu_psi_dot=lowpassfilter(imu_psi_dot, msg->velocity[2], 0.00);    
 
 }
 
@@ -73,8 +73,8 @@ void gps_callback(const sensor_msgs::msg::JointState::SharedPtr msg)
 
 void dubal_data_callback(const sensor_msgs::msg::JointState::SharedPtr msg)
 {
-    pos_x = (msg->position[0]+msg->position[1])/2;
-    vel_x = (msg->velocity[0]+msg->velocity[1])/2;
+    pos_x = 2*3.141592653589*wheel_radius*(msg->position[0]-msg->position[1])/2;
+    vel_x = 2*3.141592653589*wheel_radius*(msg->velocity[0]-msg->velocity[1])/2;
 }
 
 

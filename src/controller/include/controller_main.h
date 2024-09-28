@@ -7,16 +7,16 @@
 #include <std_msgs/msg/float64_multi_array.hpp>
 
 // PID Controller Gains
-float Kp[2] = {10.000, 0.000};
-float Kd[2] = {0.000, 0.000};
-float Ki[2] = {0.000, 0.000};
+float Kp[3] = {0.0205, 14.30, 0.0015};
+float Kd[3] = {0.0088, 1.800, 0.001};
+float Ki[3] = {0.008, 0.00, 0.0001};
 
 // LQR Gains -> using MATLAB (Note* LQR solver code)
 #define state_size 4
 float LQR_K[4] = {0.000, 0.000, 0.000, 0.000};
 
 // Control Constants
-#define loop_hz 100
+#define loop_hz 1000
 #define sbus_center 1024
 #define sbus_Range 676 
 #define kill_bound 700
@@ -25,7 +25,7 @@ float LQR_K[4] = {0.000, 0.000, 0.000, 0.000};
 #define leg_down_bound 1400
 #define DEADZONE_SBUS 2
 #define DEADZONE_INPUT 0
-#define Lim_INPUT 20
+#define Lim_INPUT 4
 #define anti_windup_gain 2
 
 // Math Constants
@@ -38,7 +38,7 @@ float LQR_K[4] = {0.000, 0.000, 0.000, 0.000};
 // Controller Values
 float sbus_data[5] = {0.0, 0.0, 0.0, 0.0, 0.0}; // Raw signal data
 float ref[5] = {0.0, 0.0, 0.0, 0.0, 0.0};       // Filtered & transferred signal data { Heading Angle Velocity | Thrust Velocity | Leg Case | Web Connect  | Kill }
-float I[2] = {0.0, 0.0};              // Integral term
+float I[3] = {0.0, 0.0, 0.0};              // Integral term
 
 // IMU Data
 float imu_theta = 0.0; 

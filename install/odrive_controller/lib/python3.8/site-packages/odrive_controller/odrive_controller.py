@@ -9,6 +9,9 @@ from odrive.enums import *
 import time
 
 ODRIVE_SERIAL_NUMBER = "3682387E3333"
+LOOP_FREQUENCY = 1000  # Loop frequency in Hz
+LOOP_PERIOD = 1.0 / LOOP_FREQUENCY  # Loop period in seconds
+FILTER_WEIGHT = 0.95  # Weight for the low-pass filter (0 < FILTER_WEIGHT < 1)
 
 class ODriveController(Node):
     def __init__(self):
@@ -22,12 +25,28 @@ class ODriveController(Node):
         self.odrv0 = odrive.find_any(serial_number=ODRIVE_SERIAL_NUMBER)
         self.check_and_clear_errors()
 
+        # Set control mode and disable watchdog
         self.odrv0.axis0.controller.config.control_mode = ControlMode.TORQUE_CONTROL
         self.odrv0.axis0.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
         self.odrv0.axis0.config.enable_watchdog = False
         self.odrv0.axis1.controller.config.control_mode = ControlMode.TORQUE_CONTROL
         self.odrv0.axis1.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
         self.odrv0.axis1.config.enable_watchdog = False
+
+        # Reset encoder position to 0
+        self.odrv0.axis0.encoder.set_linear_count(0)
+        self.odrv0.axis1.encoder.set_linear_count(0)
+
+        # Initialize previous position values for velocity calculation
+        self.previous_position_axis0 = 0.0
+        self.previous_position_axis1 = 0.0
+
+        # Initialize filtered velocity values
+        self.filtered_velocity_axis0 = 0.0
+        self.filtered_velocity_axis1 = 0.0
+
+        # Set a timer to publish data at LOOP_FREQUENCY Hz
+        self.timer = self.create_timer(LOOP_PERIOD, self.publish_joint_states)
 
     def check_and_clear_errors(self):
         for axis in [self.odrv0.axis0, self.odrv0.axis1]:
@@ -41,50 +60,45 @@ class ODriveController(Node):
                 axis.clear_errors()
 
     def listener_callback_joint0(self, msg):
-        hall_state = self.odrv0.axis0.encoder.hall_state
-
-        if hall_state == 0:
-            pass
-
         self.check_and_clear_errors()
-
         torque = msg.data[0]
         self.odrv0.axis0.controller.input_torque = torque
 
-        current_velocity = self.odrv0.axis0.encoder.vel_estimate
-        current_torque = self.odrv0.axis0.controller.input_torque
-        current_position = self.odrv0.axis0.encoder.pos_estimate
-
-        joint_state_msg = JointState()
-        joint_state_msg.header.stamp = self.get_clock().now().to_msg()
-        joint_state_msg.name = ["axis0"]
-        joint_state_msg.effort = [current_torque]
-        joint_state_msg.velocity = [current_velocity]
-        joint_state_msg.position = [current_position]
-
-        self.publisher_dubal_data.publish(joint_state_msg)
-
     def listener_callback_joint1(self, msg):
-        hall_state = self.odrv0.axis1.encoder.hall_state
-
-        if hall_state == 0:
-            pass
-
         self.check_and_clear_errors()
-
         torque = msg.data[0]
         self.odrv0.axis1.controller.input_torque = torque
 
-        current_velocity = self.odrv0.axis1.encoder.vel_estimate
-        current_torque = self.odrv0.axis1.controller.input_torque
-        current_position = self.odrv0.axis1.encoder.pos_estimate
+    def lowpassfilter(self, filter_value, data, past_weight):
+        return data * (1 - past_weight) + filter_value * past_weight
 
+    def publish_joint_states(self):
+        # Calculate current position for both axes
+        current_position_axis0 = self.odrv0.axis0.encoder.pos_estimate
+        current_position_axis1 = self.odrv0.axis1.encoder.pos_estimate
+
+        # Calculate velocity using numerical differentiation
+        velocity_axis0 = (current_position_axis0 - self.previous_position_axis0) / LOOP_PERIOD
+        velocity_axis1 = (current_position_axis1 - self.previous_position_axis1) / LOOP_PERIOD
+
+        # Apply low-pass filter to the calculated velocities
+        self.filtered_velocity_axis0 = self.lowpassfilter(self.filtered_velocity_axis0, velocity_axis0, FILTER_WEIGHT)
+        self.filtered_velocity_axis1 = self.lowpassfilter(self.filtered_velocity_axis1, velocity_axis1, FILTER_WEIGHT)
+
+        # Update previous position
+        self.previous_position_axis0 = current_position_axis0
+        self.previous_position_axis1 = current_position_axis1
+
+        # Gather data and publish
         joint_state_msg = JointState()
         joint_state_msg.header.stamp = self.get_clock().now().to_msg()
-        joint_state_msg.name = ["axis1"]
-        joint_state_msg.effort = [current_torque]
-        joint_state_msg.velocity = [current_velocity]
-        joint_state_msg.position = [current_position]
+        joint_state_msg.name = ["axis0", "axis1"]
+        joint_state_msg.effort = [
+            self.odrv0.axis0.controller.input_torque,
+            self.odrv0.axis1.controller.input_torque
+        ]
+        joint_state_msg.velocity = [self.filtered_velocity_axis0, self.filtered_velocity_axis1]
+        joint_state_msg.position = [current_position_axis0, current_position_axis1]
 
         self.publisher_dubal_data.publish(joint_state_msg)
 

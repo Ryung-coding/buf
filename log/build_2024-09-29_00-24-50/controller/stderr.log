@@ -1,0 +1,7 @@
+[01m[K/home/ionia/Desktop/dubal_ws/src/controller/src/controller_main.cpp:[m[K In function ‘[01m[Kint main(int, char**)[m[K’:
+[01m[K/home/ionia/Desktop/dubal_ws/src/controller/src/controller_main.cpp:61:32:[m[K [01;31m[Kerror: [m[K‘[01m[K_[m[K’ was not declared in this scope
+   61 |         balancing_controller();[01;31m[K_[m[K
+      |                                [01;31m[K^[m[K
+make[2]: *** [CMakeFiles/controller_main.dir/build.make:63: CMakeFiles/controller_main.dir/src/controller_main.cpp.o] Error 1
+make[1]: *** [CMakeFiles/Makefile2:78: CMakeFiles/controller_main.dir/all] Error 2
+make: *** [Makefile:141: all] Error 2

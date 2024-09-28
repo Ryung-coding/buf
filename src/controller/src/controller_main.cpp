@@ -1,23 +1,30 @@
 #include <controller_main.h>
 #include <controller_main_function.h>
 
+float ref_1_in=0;
+float ref_0_in=0;
+
 void balancing_controller()
 {
         // velocity PID | Err_velocity -> desired theta
-    ref_theta = computePID(0, ref[1], 0, dt, 0);
+    ref_1_in+=ref[1]*dt*0.01;   
+    ref_theta = computePID(ref_1_in, pos_x+0.19*imu_theta, vel_x+0.19*imu_theta_dot, dt, 0);
     
 	    // LQR | u=-K*state
-    // float state[state_size] = {imu_theta, imu_theta_dot, pos_x, vel_x};
+    // float state[state_size] = {imu_theta, imu_theta  _dot, pos_x, vel_x};
     // float desired_state[state_size] = {ref_theta, 0, 0, 0};
     // balancing_CMD = computeLQR(state, desired_state);
-    balancing_CMD = computePID(0, imu_theta, imu_theta_dot, dt, 0);
+    balancing_CMD = computePID(ref_theta+0.09, imu_theta, imu_theta_dot, dt, 1);
+	//balancing_CMD = 0;
 }
 
 void heading_controller()
 {
         // Heading PID | Err_psi -> Err_psi_dot
-    heading_CMD = computePID(ref[0], imu_psi, imu_psi_dot, dt, 1);
-    heading_CMD = computePID(0, imu_psi, imu_psi_dot, dt, 1);
+    ref_0_in = ref[0]*0.01570796*dt;
+    heading_CMD = computePID(-ref[0], imu_psi, imu_psi_dot, dt, 2);
+    //heading_CMD = computePID(0, imu_psi, imu_psi_dot, dt, 2);
+	//heading_CMD=0;
 }
 
 
@@ -57,16 +64,16 @@ int main(int argc, char *argv[])
 
         Motor_L_cmd = balancing_CMD - heading_CMD;
         Motor_R_cmd = balancing_CMD + heading_CMD;
-		
+	
 			// rotation Setting
 		Motor_L_cmd=-Motor_L_cmd;
 		Motor_R_cmd=Motor_R_cmd;
 
         	// constrain
-        // if (abs(Motor_L_cmd) < DEADZONE_INPUT)  Motor_L_cmd = 0;
-        // if (abs(Motor_L_cmd) > Lim_INPUT)       Motor_L_cmd = Motor_L_cmd > 0 ? Lim_INPUT : -Lim_INPUT;
-        // if (abs(Motor_R_cmd) < DEADZONE_INPUT)  Motor_R_cmd = 0;
-        // if (abs(Motor_R_cmd) > Lim_INPUT)       Motor_R_cmd = Motor_R_cmd > 0 ? Lim_INPUT : -Lim_INPUT;
+        if (abs(Motor_L_cmd) < DEADZONE_INPUT)  Motor_L_cmd = 0;
+        if (abs(Motor_L_cmd) > Lim_INPUT)       Motor_L_cmd = Motor_L_cmd > 0 ? Lim_INPUT : -Lim_INPUT;
+        if (abs(Motor_R_cmd) < DEADZONE_INPUT)  Motor_R_cmd = 0;
+        if (abs(Motor_R_cmd) > Lim_INPUT)       Motor_R_cmd = Motor_R_cmd > 0 ? Lim_INPUT : -Lim_INPUT;
 
         if(isKilled==true)  odrive_msg_0.data[0] = 0;
         else                odrive_msg_0.data[0] = Motor_L_cmd;
@@ -74,7 +81,7 @@ int main(int argc, char *argv[])
         else                odrive_msg_1.data[0] = Motor_R_cmd;        
 
 
-        RCLCPP_INFO(rclcpp::get_logger("controller"), "b=%f | h=%f", balancing_CMD, heading_CMD); 
+        RCLCPP_INFO(rclcpp::get_logger("controller"), "pos:%f,%f | Theta:%f,%f", pos_x+0.19*imu_theta, ref_1_in, imu_theta, ref_theta+0.09); 
 
             // publisher
         odrive_publisher_0->publish(odrive_msg_0);
