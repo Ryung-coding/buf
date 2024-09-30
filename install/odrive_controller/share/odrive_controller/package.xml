@@ -3,9 +3,14 @@
 <package format="3">
   <name>odrive_controller</name>
   <version>0.0.0</version>
-  <description>TODO: Package description</description>
+  <description>Package to control ODrive motor controllers through ROS2.</description>
   <maintainer email="ionia@todo.todo">ionia</maintainer>
   <license>Apache-2.0</license>
+
+  <depend>rclpy</depend>
+  <depend>odrive</depend>
+  <depend>std_msgs</depend>
+  <depend>sensor_msgs</depend>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>

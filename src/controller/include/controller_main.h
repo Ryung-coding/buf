@@ -7,6 +7,10 @@
 #include <std_msgs/msg/float64_multi_array.hpp>
 
 // PID Controller Gains
+// float Kp[3] = {0.0205, 14.30, 0.0015};
+// float Kd[3] = {0.0088, 1.800, 0.001};
+// float Ki[3] = {0.008, 0.00, 0.0001};
+
 float Kp[3] = {0.0205, 14.30, 0.0015};
 float Kd[3] = {0.0088, 1.800, 0.001};
 float Ki[3] = {0.008, 0.00, 0.0001};

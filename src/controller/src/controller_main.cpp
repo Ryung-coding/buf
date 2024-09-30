@@ -8,13 +8,13 @@ void balancing_controller()
 {
         // velocity PID | Err_velocity -> desired theta
     ref_1_in+=ref[1]*dt*0.01;   
-    ref_theta = computePID(ref_1_in, pos_x+0.19*imu_theta, vel_x+0.19*imu_theta_dot, dt, 0);
+    ref_theta = computePID(ref_1_in, pos_x+0.22*imu_theta, vel_x+0.22*imu_theta_dot, dt, 0);
     
 	    // LQR | u=-K*state
     // float state[state_size] = {imu_theta, imu_theta  _dot, pos_x, vel_x};
     // float desired_state[state_size] = {ref_theta, 0, 0, 0};
     // balancing_CMD = computeLQR(state, desired_state);
-    balancing_CMD = computePID(ref_theta+0.09, imu_theta, imu_theta_dot, dt, 1);
+    balancing_CMD = computePID(ref_theta+0.04, imu_theta, imu_theta_dot, dt, 1);
 	//balancing_CMD = 0;
 }
 
@@ -81,7 +81,7 @@ int main(int argc, char *argv[])
         else                odrive_msg_1.data[0] = Motor_R_cmd;        
 
 
-        RCLCPP_INFO(rclcpp::get_logger("controller"), "pos:%f,%f | Theta:%f,%f", pos_x+0.19*imu_theta, ref_1_in, imu_theta, ref_theta+0.09); 
+        RCLCPP_INFO(rclcpp::get_logger("controller"), "pos:%f,%f | Theta:%f,%f input:%f,%f", pos_x+0.19*imu_theta, ref_1_in, imu_theta, ref_theta+0.09,Motor_L_cmd, Motor_R_cmd); 
 
             // publisher
         odrive_publisher_0->publish(odrive_msg_0);

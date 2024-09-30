@@ -21,6 +21,7 @@ setup(
     entry_points={
         'console_scripts': [
             'odrive_controller = odrive_controller.odrive_controller:main',
+            'odrive_leg_controller = odrive_controller.odrive_leg_controller:main',
         ],
     },
 )
