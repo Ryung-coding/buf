@@ -73,8 +73,11 @@ void gps_callback(const sensor_msgs::msg::JointState::SharedPtr msg)
 
 void dubal_data_callback(const sensor_msgs::msg::JointState::SharedPtr msg)
 {
+	//double now_pos_x=0;
+
     pos_x = 2*3.141592653589*wheel_radius*(msg->position[0]-msg->position[1])/2;
-    vel_x = 2*3.141592653589*wheel_radius*(msg->velocity[0]-msg->velocity[1])/2;
+    //pos_x = lowpassfilter(pos_x, now_pos_x, 0.5);
+	vel_x = 2*3.141592653589*wheel_radius*(msg->velocity[0]-msg->velocity[1])/2;
 }
 
 

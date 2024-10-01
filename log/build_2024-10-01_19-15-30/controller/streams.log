@@ -1,0 +1,30 @@
+[0.044s] Invoking command in '/home/ionia/Desktop/dubal_ws/build/controller': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/ionia/Desktop/dubal_ws/install/serial_reciver:/home/ionia/Desktop/dubal_ws/install/odrive_controller:/home/ionia/Desktop/dubal_ws/install/dubal_eye_AND_web:/opt/ros/foxy /usr/bin/cmake --build /home/ionia/Desktop/dubal_ws/build/controller -- -j4 -l4
+[1.072s] [ 50%] [32mBuilding CXX object CMakeFiles/controller_main.dir/src/controller_main.cpp.o[0m
+[2.331s] [01m[K/home/ionia/Desktop/dubal_ws/src/controller/src/controller_main.cpp:[m[K In function ‘[01m[Kint main(int, char**)[m[K’:
+[2.331s] [01m[K/home/ionia/Desktop/dubal_ws/src/controller/src/controller_main.cpp:48:5:[m[K [01;31m[Kerror: [m[Kexpected ‘[01m[K,[m[K’ or ‘[01m[K;[m[K’ before ‘[01m[Kstd_msgs[m[K’
+[2.331s]    48 |     [01;31m[Kstd_msgs[m[K::msg::Float64MultiArray odrive_msg_1;
+[2.331s]       |     [01;31m[K^~~~~~~~[m[K
+[2.333s] [01m[K/home/ionia/Desktop/dubal_ws/src/controller/src/controller_main.cpp:49:5:[m[K [01;31m[Kerror: [m[K‘[01m[Kodrive_msg_1[m[K’ was not declared in this scope; did you mean ‘[01m[Kodrive_msg_0[m[K’?
+[2.333s]    49 |     [01;31m[Kodrive_msg_1[m[K.data.resize(1);
+[2.333s]       |     [01;31m[K^~~~~~~~~~~~[m[K
+[2.334s]       |     [32m[Kodrive_msg_0[m[K
+[2.338s] In file included from [01m[K/opt/ros/foxy/include/rclcpp/client.hpp:40[m[K,
+[2.338s]                  from [01m[K/opt/ros/foxy/include/rclcpp/callback_group.hpp:23[m[K,
+[2.338s]                  from [01m[K/opt/ros/foxy/include/rclcpp/any_executable.hpp:20[m[K,
+[2.339s]                  from [01m[K/opt/ros/foxy/include/rclcpp/memory_strategy.hpp:24[m[K,
+[2.339s]                  from [01m[K/opt/ros/foxy/include/rclcpp/memory_strategies.hpp:18[m[K,
+[2.339s]                  from [01m[K/opt/ros/foxy/include/rclcpp/executor_options.hpp:20[m[K,
+[2.339s]                  from [01m[K/opt/ros/foxy/include/rclcpp/executor.hpp:33[m[K,
+[2.339s]                  from [01m[K/opt/ros/foxy/include/rclcpp/executors/multi_threaded_executor.hpp:26[m[K,
+[2.339s]                  from [01m[K/opt/ros/foxy/include/rclcpp/executors.hpp:21[m[K,
+[2.339s]                  from [01m[K/opt/ros/foxy/include/rclcpp/rclcpp.hpp:146[m[K,
+[2.340s]                  from [01m[K/home/ionia/Desktop/dubal_ws/src/controller/include/controller_main.h:5[m[K,
+[2.340s]                  from [01m[K/home/ionia/Desktop/dubal_ws/src/controller/src/controller_main.cpp:1[m[K:
+[2.340s] [01m[K/home/ionia/Desktop/dubal_ws/src/controller/src/controller_main.cpp:84:153:[m[K [01;31m[Kerror: [m[K‘[01m[Kimu_phi[m[K’ was not declared in this scope; did you mean ‘[01m[Kimu_psi[m[K’?
+[2.340s]    84 | lcpp::get_logger("controller"), "pos:%f,%f | pitch:%f,%f | yaw:%f,%f", pos_x+0.22*imu_theta, ref_1_in, imu_theta, ref_theta+0.006, [01;31m[Kimu_phi[m[K, ref_0_in);
+[2.340s]       |                                                                                                                                    [01;31m[K^~~~~~~[m[K
+[2.340s] 
+[4.273s] make[2]: *** [CMakeFiles/controller_main.dir/build.make:63: CMakeFiles/controller_main.dir/src/controller_main.cpp.o] Error 1
+[4.273s] make[1]: *** [CMakeFiles/Makefile2:78: CMakeFiles/controller_main.dir/all] Error 2
+[4.273s] make: *** [Makefile:141: all] Error 2
+[4.276s] Invoked command in '/home/ionia/Desktop/dubal_ws/build/controller' returned '2': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/ionia/Desktop/dubal_ws/install/serial_reciver:/home/ionia/Desktop/dubal_ws/install/odrive_controller:/home/ionia/Desktop/dubal_ws/install/dubal_eye_AND_web:/opt/ros/foxy /usr/bin/cmake --build /home/ionia/Desktop/dubal_ws/build/controller -- -j4 -l4

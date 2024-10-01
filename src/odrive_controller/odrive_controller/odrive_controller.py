@@ -13,8 +13,8 @@ LEG_ODRIVE_SERIAL_NUMBER = "305D36533037"
 WHEEL_ODRIVE_SERIAL_NUMBER = "3682387E3333"
 
 # PID 파라미터 설정 (다리)
-Kp = [0.06, 0.06]
-Ki = [1, 1]
+Kp = [0.1, 0.1]
+Ki = [1.5, 1.5]
 Kd = [0.005, 0.005]
 I = [0.0, 0.0]
 
@@ -43,7 +43,7 @@ class ODriveController(Node):
         self.initialize_odrive()
 
         # 초기 목표 위치 및 속도 설정 (다리)
-        self.target_position_axis0 = 5.0
+        self.target_position_axis0 = 1.3
         self.target_position_axis1 = -self.target_position_axis0
 
         # 휠 속도 관련 초기화
@@ -59,6 +59,9 @@ class ODriveController(Node):
         self.subscription_sbus = self.create_subscription(JointState, '/sbus_data', self.sbus_callback, 10)
         self.subscription_wheel_joint0 = self.create_subscription(Float64MultiArray, '/joint0_torque_controller/commands', self.wheel_callback_joint0, 10)
         self.subscription_wheel_joint1 = self.create_subscription(Float64MultiArray, '/joint1_torque_controller/commands', self.wheel_callback_joint1, 10)
+
+        # JointState 데이터 퍼블리셔 설정
+        self.publisher_dubal_data = self.create_publisher(JointState, 'dubal_data', 10)
 
     def initialize_odrive(self):
         # 다리 ODrive 캘리브레이션 및 closed loop 제어 설정
@@ -124,7 +127,7 @@ class ODriveController(Node):
             torque = self.compute_pid(target_position, current_position, current_velocity, LOOP_PERIOD, axis_index)
             axis.controller.input_torque = torque
 
-        # 휠 속도 계산 및 퍼블리싱
+        # 휠 속도 계산
         current_position_axis0 = self.odrv_wheel.axis0.encoder.pos_estimate
         current_position_axis1 = self.odrv_wheel.axis1.encoder.pos_estimate
         velocity_axis0 = (current_position_axis0 - self.previous_position_axis0) / LOOP_PERIOD
@@ -133,6 +136,19 @@ class ODriveController(Node):
         self.filtered_velocity_axis1 = self.lowpassfilter(self.filtered_velocity_axis1, velocity_axis1, FILTER_WEIGHT)
         self.previous_position_axis0 = current_position_axis0
         self.previous_position_axis1 = current_position_axis1
+
+        # JointState 메시지 퍼블리싱
+        joint_state_msg = JointState()
+        joint_state_msg.header.stamp = self.get_clock().now().to_msg()
+        joint_state_msg.name = ["axis0", "axis1"]
+        joint_state_msg.effort = [
+            self.odrv_leg.axis0.controller.input_torque,
+            self.odrv_leg.axis1.controller.input_torque
+        ]
+        joint_state_msg.velocity = [self.filtered_velocity_axis0, self.filtered_velocity_axis1]
+        joint_state_msg.position = [current_position_axis0, current_position_axis1]
+
+        self.publisher_dubal_data.publish(joint_state_msg)
 
 def main(args=None):
     rclpy.init(args=args)

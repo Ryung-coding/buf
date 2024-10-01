@@ -1,0 +1,10 @@
+[0.052s] Invoking command in '/home/ionia/Desktop/dubal_ws/build/controller': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/ionia/Desktop/dubal_ws/install/serial_reciver:/home/ionia/Desktop/dubal_ws/install/odrive_controller:/home/ionia/Desktop/dubal_ws/install/dubal_eye_AND_web:/opt/ros/foxy /usr/bin/cmake --build /home/ionia/Desktop/dubal_ws/build/controller -- -j4 -l4
+[0.941s] [ 50%] [32mBuilding CXX object CMakeFiles/controller_main.dir/src/controller_main.cpp.o[0m
+[0.943s] [01m[K/home/ionia/Desktop/dubal_ws/src/controller/src/controller_main.cpp:3:10:[m[K [01;31m[Kfatal error: [m[Kros/ros.h: No such file or directory
+[0.943s]     3 | #include [01;31m[K"ros/ros.h"[m[K
+[0.944s]       |          [01;31m[K^~~~~~~~~~~[m[K
+[0.946s] compilation terminated.
+[0.947s] make[2]: *** [CMakeFiles/controller_main.dir/build.make:63: CMakeFiles/controller_main.dir/src/controller_main.cpp.o] Error 1
+[0.947s] make[1]: *** [CMakeFiles/Makefile2:78: CMakeFiles/controller_main.dir/all] Error 2
+[0.949s] make: *** [Makefile:141: all] Error 2
+[0.950s] Invoked command in '/home/ionia/Desktop/dubal_ws/build/controller' returned '2': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/ionia/Desktop/dubal_ws/install/serial_reciver:/home/ionia/Desktop/dubal_ws/install/odrive_controller:/home/ionia/Desktop/dubal_ws/install/dubal_eye_AND_web:/opt/ros/foxy /usr/bin/cmake --build /home/ionia/Desktop/dubal_ws/build/controller -- -j4 -l4

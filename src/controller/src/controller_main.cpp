@@ -1,6 +1,10 @@
 #include <controller_main.h>
 #include <controller_main_function.h>
+#include <rclcpp/rclcpp.hpp>
+#include <chrono>
 
+using namespace
+std::chrono_literals;
 float ref_1_in=0;
 float ref_0_in=0;
 
@@ -14,15 +18,15 @@ void balancing_controller()
     // float state[state_size] = {imu_theta, imu_theta  _dot, pos_x, vel_x};
     // float desired_state[state_size] = {ref_theta, 0, 0, 0};
     // balancing_CMD = computeLQR(state, desired_state);
-    balancing_CMD = computePID(ref_theta+0.04, imu_theta, imu_theta_dot, dt, 1);
+    balancing_CMD = computePID(ref_theta+0.066, imu_theta, imu_theta_dot, dt, 1);
 	//balancing_CMD = 0;
 }
 
 void heading_controller()
 {
         // Heading PID | Err_psi -> Err_psi_dot
-    ref_0_in = ref[0]*0.01570796*dt;
-    heading_CMD = computePID(-ref[0], imu_psi, imu_psi_dot, dt, 2);
+    ref_0_in += -ref[0]*0.01570796*dt;
+    heading_CMD = computePID(-ref_0_in, imu_psi, imu_psi_dot, dt, 2);
     //heading_CMD = computePID(0, imu_psi, imu_psi_dot, dt, 2);
 	//heading_CMD=0;
 }
@@ -50,6 +54,12 @@ int main(int argc, char *argv[])
 
     last_time = node->now();
     rclcpp::WallRate loop_rate(loop_hz);
+	
+	//rclcpp::sleep_for(10s);
+	//RCLCPP_INFO(rclcpp::get_logger("controller"), "GO!");
+	//rclcpp::sleep_for(5s);
+	//pos_x=0;
+	//vel_x=0;
 
     while (rclcpp::ok())
     {
@@ -81,7 +91,7 @@ int main(int argc, char *argv[])
         else                odrive_msg_1.data[0] = Motor_R_cmd;        
 
 
-        RCLCPP_INFO(rclcpp::get_logger("controller"), "pos:%f,%f | Theta:%f,%f input:%f,%f", pos_x+0.19*imu_theta, ref_1_in, imu_theta, ref_theta+0.09,Motor_L_cmd, Motor_R_cmd); 
+       RCLCPP_INFO(rclcpp::get_logger("controller"), "pos:%f,%f | pitch:%f,%f | yaw:%f,%f", pos_x+0.22*imu_theta, ref_1_in, imu_theta, ref_theta+0.0066, imu_psi, ref_0_in); 
 
             // publisher
         odrive_publisher_0->publish(odrive_msg_0);

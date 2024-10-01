@@ -1,0 +1,28 @@
+[ 50%] [32mBuilding CXX object CMakeFiles/controller_main.dir/src/controller_main.cpp.o[0m
+[01m[K/home/ionia/Desktop/dubal_ws/src/controller/src/controller_main.cpp:[m[K In function ‘[01m[Kint main(int, char**)[m[K’:
+[01m[K/home/ionia/Desktop/dubal_ws/src/controller/src/controller_main.cpp:48:5:[m[K [01;31m[Kerror: [m[Kexpected ‘[01m[K,[m[K’ or ‘[01m[K;[m[K’ before ‘[01m[Kstd_msgs[m[K’
+   48 |     [01;31m[Kstd_msgs[m[K::msg::Float64MultiArray odrive_msg_1;
+      |     [01;31m[K^~~~~~~~[m[K
+[01m[K/home/ionia/Desktop/dubal_ws/src/controller/src/controller_main.cpp:49:5:[m[K [01;31m[Kerror: [m[K‘[01m[Kodrive_msg_1[m[K’ was not declared in this scope; did you mean ‘[01m[Kodrive_msg_0[m[K’?
+   49 |     [01;31m[Kodrive_msg_1[m[K.data.resize(1);
+      |     [01;31m[K^~~~~~~~~~~~[m[K
+      |     [32m[Kodrive_msg_0[m[K
+In file included from [01m[K/opt/ros/foxy/include/rclcpp/client.hpp:40[m[K,
+                 from [01m[K/opt/ros/foxy/include/rclcpp/callback_group.hpp:23[m[K,
+                 from [01m[K/opt/ros/foxy/include/rclcpp/any_executable.hpp:20[m[K,
+                 from [01m[K/opt/ros/foxy/include/rclcpp/memory_strategy.hpp:24[m[K,
+                 from [01m[K/opt/ros/foxy/include/rclcpp/memory_strategies.hpp:18[m[K,
+                 from [01m[K/opt/ros/foxy/include/rclcpp/executor_options.hpp:20[m[K,
+                 from [01m[K/opt/ros/foxy/include/rclcpp/executor.hpp:33[m[K,
+                 from [01m[K/opt/ros/foxy/include/rclcpp/executors/multi_threaded_executor.hpp:26[m[K,
+                 from [01m[K/opt/ros/foxy/include/rclcpp/executors.hpp:21[m[K,
+                 from [01m[K/opt/ros/foxy/include/rclcpp/rclcpp.hpp:146[m[K,
+                 from [01m[K/home/ionia/Desktop/dubal_ws/src/controller/include/controller_main.h:5[m[K,
+                 from [01m[K/home/ionia/Desktop/dubal_ws/src/controller/src/controller_main.cpp:1[m[K:
+[01m[K/home/ionia/Desktop/dubal_ws/src/controller/src/controller_main.cpp:84:153:[m[K [01;31m[Kerror: [m[K‘[01m[Kimu_phi[m[K’ was not declared in this scope; did you mean ‘[01m[Kimu_psi[m[K’?
+   84 | lcpp::get_logger("controller"), "pos:%f,%f | pitch:%f,%f | yaw:%f,%f", pos_x+0.22*imu_theta, ref_1_in, imu_theta, ref_theta+0.006, [01;31m[Kimu_phi[m[K, ref_0_in);
+      |                                                                                                                                    [01;31m[K^~~~~~~[m[K
+
+make[2]: *** [CMakeFiles/controller_main.dir/build.make:63: CMakeFiles/controller_main.dir/src/controller_main.cpp.o] Error 1
+make[1]: *** [CMakeFiles/Makefile2:78: CMakeFiles/controller_main.dir/all] Error 2
+make: *** [Makefile:141: all] Error 2

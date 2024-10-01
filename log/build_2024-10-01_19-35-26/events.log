@@ -1,0 +1,67 @@
+[0.000000] (-) TimerEvent: {}
+[0.001142] (controller) JobQueued: {'identifier': 'controller', 'dependencies': OrderedDict()}
+[0.001207] (dubal_eye_AND_web) JobQueued: {'identifier': 'dubal_eye_AND_web', 'dependencies': OrderedDict()}
+[0.001271] (odrive_controller) JobQueued: {'identifier': 'odrive_controller', 'dependencies': OrderedDict()}
+[0.001301] (serial_reciver) JobQueued: {'identifier': 'serial_reciver', 'dependencies': OrderedDict()}
+[0.001330] (controller) JobStarted: {'identifier': 'controller'}
+[0.009807] (dubal_eye_AND_web) JobStarted: {'identifier': 'dubal_eye_AND_web'}
+[0.019802] (odrive_controller) JobStarted: {'identifier': 'odrive_controller'}
+[0.028977] (serial_reciver) JobStarted: {'identifier': 'serial_reciver'}
+[0.042462] (controller) JobProgress: {'identifier': 'controller', 'progress': 'cmake'}
+[0.043312] (controller) JobProgress: {'identifier': 'controller', 'progress': 'build'}
+[0.044061] (controller) Command: {'cmd': ['/usr/bin/cmake', '--build', '/home/ionia/Desktop/dubal_ws/build/controller', '--', '-j4', '-l4'], 'cwd': '/home/ionia/Desktop/dubal_ws/build/controller', 'env': OrderedDict([('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'ionia'), ('SSH_CLIENT', '192.168.0.2 54447 22'), ('LC_TIME', 'ko_KR.UTF-8'), ('XDG_SESSION_TYPE', 'tty'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/opt/ros/foxy/opt/yaml_cpp_vendor/lib:/opt/ros/foxy/opt/rviz_ogre_vendor/lib:/opt/ros/foxy/lib/x86_64-linux-gnu:/opt/ros/foxy/lib'), ('MOTD_SHOWN', 'pam'), ('HOME', '/home/ionia'), ('OLDPWD', '/home/ionia/Desktop/dubal_ws/src/controller'), ('SSH_TTY', '/dev/pts/1'), ('ROS_PYTHON_VERSION', '3'), ('LC_MONETARY', 'ko_KR.UTF-8'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLCON_PREFIX_PATH', '/home/ionia/Desktop/dubal_ws/install'), ('ROS_DISTRO', 'foxy'), ('LOGNAME', 'ionia'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('TERM', 'xterm-256color'), ('XDG_SESSION_ID', '5'), ('ROS_LOCALHOST_ONLY', '0'), ('PATH', '/home/ionia/.local/bin:/opt/ros/foxy/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'), ('LC_ADDRESS', 'ko_KR.UTF-8'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('LANG', 'en_US.UTF-8'), ('LC_TELEPHONE', 'ko_KR.UTF-8'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('ROS_DOMAIN_ID', '13'), ('AMENT_PREFIX_PATH', '/home/ionia/Desktop/dubal_ws/install/serial_reciver:/home/ionia/Desktop/dubal_ws/install/odrive_controller:/home/ionia/Desktop/dubal_ws/install/dubal_eye_AND_web:/home/ionia/Desktop/dubal_ws/install/controller:/opt/ros/foxy'), ('SHELL', '/bin/bash'), ('LC_NAME', 'ko_KR.UTF-8'), ('ROS_MASTER_URI', 'http://localhost:11311'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('LC_MEASUREMENT', 'ko_KR.UTF-8'), ('LC_IDENTIFICATION', 'ko_KR.UTF-8'), ('PWD', '/home/ionia/Desktop/dubal_ws/build/controller'), ('LC_ALL', 'en_US.UTF-8'), ('SSH_CONNECTION', '192.168.0.2 54447 192.168.0.83 22'), ('XDG_DATA_DIRS', '/usr/local/share:/usr/share:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/ionia/Desktop/dubal_ws/install/serial_reciver/lib/python3.8/site-packages:/home/ionia/Desktop/dubal_ws/install/odrive_controller/lib/python3.8/site-packages:/home/ionia/Desktop/dubal_ws/install/dubal_eye_AND_web/lib/python3.8/site-packages:/opt/ros/foxy/lib/python3.8/site-packages'), ('ROS_HOSTNAME', 'localhost'), ('LC_NUMERIC', 'ko_KR.UTF-8'), ('LC_PAPER', 'ko_KR.UTF-8'), ('COLCON', '1'), ('CMAKE_PREFIX_PATH', '/home/ionia/Desktop/dubal_ws/install/controller:/home/ionia/Desktop/dubal_ws/install/serial_reciver:/home/ionia/Desktop/dubal_ws/install/odrive_controller:/home/ionia/Desktop/dubal_ws/install/dubal_eye_AND_web:/opt/ros/foxy')]), 'shell': False}
+[0.099800] (-) TimerEvent: {}
+[0.200542] (-) TimerEvent: {}
+[0.300930] (-) TimerEvent: {}
+[0.401484] (-) TimerEvent: {}
+[0.502191] (-) TimerEvent: {}
+[0.602592] (-) TimerEvent: {}
+[0.703021] (-) TimerEvent: {}
+[0.803548] (-) TimerEvent: {}
+[0.904167] (-) TimerEvent: {}
+[1.004562] (-) TimerEvent: {}
+[1.046117] (controller) StdoutLine: {'line': b'-- Found ament_cmake: 0.9.12 (/opt/ros/foxy/share/ament_cmake/cmake)\n'}
+[1.047572] (controller) StdoutLine: {'line': b'-- Using PYTHON_EXECUTABLE: /usr/bin/python3\n'}
+[1.048081] (controller) StdoutLine: {'line': b'-- Found rclcpp: 2.4.3 (/opt/ros/foxy/share/rclcpp/cmake)\n'}
+[1.048463] (controller) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c\n'}
+[1.048883] (controller) StdoutLine: {'line': b'-- Found rosidl_adapter: 1.3.1 (/opt/ros/foxy/share/rosidl_adapter/cmake)\n'}
+[1.049256] (controller) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp\n'}
+[1.051421] (controller) StdoutLine: {'line': b'-- Found rmw_implementation_cmake: 1.0.4 (/opt/ros/foxy/share/rmw_implementation_cmake/cmake)\n'}
+[1.051644] (controller) StdoutLine: {'line': b"-- Using RMW implementation 'rmw_fastrtps_cpp' as default\n"}
+[1.052212] (controller) StdoutLine: {'line': b'-- Found sensor_msgs: 2.0.5 (/opt/ros/foxy/share/sensor_msgs/cmake)\n'}
+[1.053895] (controller) StdoutLine: {'line': b'-- Configuring incomplete, errors occurred!\n'}
+[1.054572] (controller) StdoutLine: {'line': b'See also "/home/ionia/Desktop/dubal_ws/build/controller/CMakeFiles/CMakeOutput.log".\n'}
+[1.055237] (controller) StdoutLine: {'line': b'See also "/home/ionia/Desktop/dubal_ws/build/controller/CMakeFiles/CMakeError.log".\n'}
+[1.056069] (controller) StderrLine: {'line': b'CMake Error at CMakeLists.txt:9 (find_package):\n'}
+[1.058489] (controller) StderrLine: {'line': b'  By not providing "Findcatkin.cmake" in CMAKE_MODULE_PATH this project has\n'}
+[1.060385] (controller) StderrLine: {'line': b'  asked CMake to find a package configuration file provided by "catkin", but\n'}
+[1.060744] (controller) StderrLine: {'line': b'  CMake did not find one.\n'}
+[1.060909] (controller) StderrLine: {'line': b'\n'}
+[1.061071] (controller) StderrLine: {'line': b'  Could not find a package configuration file provided by "catkin" with any\n'}
+[1.061230] (controller) StderrLine: {'line': b'  of the following names:\n'}
+[1.061381] (controller) StderrLine: {'line': b'\n'}
+[1.061545] (controller) StderrLine: {'line': b'    catkinConfig.cmake\n'}
+[1.061689] (controller) StderrLine: {'line': b'    catkin-config.cmake\n'}
+[1.061837] (controller) StderrLine: {'line': b'\n'}
+[1.061984] (controller) StderrLine: {'line': b'  Add the installation prefix of "catkin" to CMAKE_PREFIX_PATH or set\n'}
+[1.062134] (controller) StderrLine: {'line': b'  "catkin_DIR" to a directory containing one of the above files.  If "catkin"\n'}
+[1.062812] (controller) StderrLine: {'line': b'  provides a separate development package or SDK, be sure it has been\n'}
+[1.063533] (controller) StderrLine: {'line': b'  installed.\n'}
+[1.063789] (controller) StderrLine: {'line': b'\n'}
+[1.063943] (controller) StderrLine: {'line': b'\n'}
+[1.064095] (controller) StderrLine: {'line': b'make: *** [Makefile:266: cmake_check_build_system] Error 1\n'}
+[1.064248] (controller) CommandEnded: {'returncode': 2}
+[1.104788] (-) TimerEvent: {}
+[1.125493] (controller) JobEnded: {'identifier': 'controller', 'rc': 2}
+[1.204911] (-) TimerEvent: {}
+[1.305443] (-) TimerEvent: {}
+[1.405831] (-) TimerEvent: {}
+[1.506236] (-) TimerEvent: {}
+[1.606755] (-) TimerEvent: {}
+[1.630530] (odrive_controller) JobEnded: {'identifier': 'odrive_controller', 'rc': 'SIGINT'}
+[1.706906] (-) TimerEvent: {}
+[1.807321] (-) TimerEvent: {}
+[1.889414] (dubal_eye_AND_web) JobEnded: {'identifier': 'dubal_eye_AND_web', 'rc': 'SIGINT'}
+[1.897688] (serial_reciver) JobEnded: {'identifier': 'serial_reciver', 'rc': 'SIGINT'}
+[1.907514] (-) TimerEvent: {}
+[1.908768] (-) EventReactorShutdown: {}
