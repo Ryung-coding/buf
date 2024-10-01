@@ -45,7 +45,7 @@ float ref[5] = {0.0, 0.0, 0.0, 0.0, 0.0};       // Filtered & transferred signal
 float I[3] = {0.0, 0.0, 0.0};              // Integral term
 
 // IMU Data
-float imu_theta = 0.0; 
+float imu_theta = 0.000444; 
 float imu_theta_dot = 0.0; 
 float imu_psi = 0.0; 
 float imu_psi_dot = 0.0; 

@@ -19,11 +19,6 @@ def generate_launch_description():
                 executable='odrive_controller',
                 name='odrive_controller'
             ),
-			# Node(
-			#	package='odrive_controller',
-			#   executable='odrive_leg_controller',
-			#    name='odrive_leg_controller'
-			#),
             Node(
                 package='controller',
                 executable='controller_main',
