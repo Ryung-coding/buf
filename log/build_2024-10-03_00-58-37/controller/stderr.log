@@ -1,0 +1,13 @@
+In file included from [01m[K/home/ionia/Desktop/dubal_ws/src/controller/src/controller_main.cpp:2[m[K:
+[01m[K/home/ionia/Desktop/dubal_ws/src/controller/include/controller_main_function.h:[m[K In function ‘[01m[Kfloat computePID(float, float, float, float, int)[m[K’:
+[01m[K/home/ionia/Desktop/dubal_ws/src/controller/include/controller_main_function.h:94:30:[m[K [01;31m[Kerror: [m[K‘[01m[Kerror[m[K’ was not declared in this scope; did you mean ‘[01m[Kperror[m[K’?
+   94 |     float P = Kp[PID_case] * [01;31m[Kerror[m[K;
+      |                              [01;31m[K^~~~~[m[K
+      |                              [32m[Kperror[m[K
+[01m[K/home/ionia/Desktop/dubal_ws/src/controller/src/controller_main.cpp:[m[K In function ‘[01m[Kint main(int, char**)[m[K’:
+[01m[K/home/ionia/Desktop/dubal_ws/src/controller/src/controller_main.cpp:106:9:[m[K [01;31m[Kerror: [m[K‘[01m[Kloop_rate[m[K’ was not declared in this scope
+  106 |         [01;31m[Kloop_rate[m[K.sleep();
+      |         [01;31m[K^~~~~~~~~[m[K
+make[2]: *** [CMakeFiles/controller_main.dir/build.make:63: CMakeFiles/controller_main.dir/src/controller_main.cpp.o] Error 1
+make[1]: *** [CMakeFiles/Makefile2:78: CMakeFiles/controller_main.dir/all] Error 2
+make: *** [Makefile:141: all] Error 2

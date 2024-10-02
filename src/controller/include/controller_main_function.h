@@ -1,7 +1,6 @@
 #ifndef CONTROLLER_MAIN_FUNCTION
 #define CONTROLLER_MAIN_FUNCTION
 
-#include <cmath>
 
 float lowpassfilter(float filter, float data, float past_weight)
 {
@@ -30,20 +29,18 @@ void sbus_callback(const sensor_msgs::msg::JointState::SharedPtr msg)
     else ref[1] = ref[1]>=0 ? (ref[1] - DEADZONE_SBUS) : (ref[1] + DEADZONE_SBUS);
 
     sbus_data[2] = msg->position[2];                                        // SBUS ch5 : leg stick
-    ref[2] = lowpassfilter(ref[2], sbus_data[2] > leg_down_bound ? -1 : (sbus_data[2] > leg_up_bound ? 0 : 1), 0.2);
+    ref[2] = lowpassfilter(ref[2], sbus_data[2] > leg_down_bound ? but_leg_pos : (sbus_data[2] > leg_up_bound ? mid_leg_pos : top_leg_pos), 0.2);
 
     sbus_data[3] = msg->position[3];                                        // SBUS ch6 : Connect switch
     ref[3] = lowpassfilter(ref[3], sbus_data[3] > connect_bound ? 0 : 1, 0.0);
     if(ref[3]>0.4) isConnected=false;
     else isConnected=true;
+    if(isConnected==true) web_ref_update(); //cmd changing
 
     sbus_data[4] = msg->position[4];                                        // SBUS ch8 : Kill switch
     ref[4] = lowpassfilter(ref[4], sbus_data[4] > kill_bound ? 1 : 0, 0.0);
     if(ref[4]>0.4) isKilled=false;
     else isKilled=true;
-
-        //cmd changing
-    if(isConnected==true) web_ref_update();
 }
 
 
@@ -54,7 +51,6 @@ void imu_callback(const sensor_msgs::msg::JointState::SharedPtr msg)
 
     imu_theta_dot=lowpassfilter(imu_theta_dot, msg->velocity[1], 0.00);         
     imu_psi_dot=lowpassfilter(imu_psi_dot, msg->velocity[2], 0.00);    
-
 }
 
 void gps_callback(const sensor_msgs::msg::JointState::SharedPtr msg)
@@ -73,45 +69,23 @@ void gps_callback(const sensor_msgs::msg::JointState::SharedPtr msg)
 }
 
 void dubal_data_callback(const sensor_msgs::msg::JointState::SharedPtr msg)
-{
-    pos_x = 3.141592653589*wheel_radius*(msg->position[0]-msg->position[1]);
-	vel_x = 3.141592653589*wheel_radius*(msg->velocity[0]-msg->velocity[1]);
+{	
+	controller_start=true;
+    pos_x = M_PI*wheel_radius*(msg->position[0]-msg->position[1]);
+	vel_x = lowpassfilter(vel_x, M_PI*wheel_radius*(msg->velocity[0]-msg->velocity[1]), 0.95);
+
+    leg_pos_0=msg->position[2];
+    leg_pos_1=msg->position[3];
+
+    leg_vel_0=lowpassfilter(leg_vel_0, msg->velocity[2], 0.1);
+    leg_vel_1=lowpassfilter(leg_vel_1, msg->velocity[3], 0.1);
 }
 
 
 float computePID(float r, float y, float y_dot, float dt, int PID_case)
 {
-    float error = r - y;
-
-    //P gain
-    float P = Kp[PID_case] * error;
-
-    //I gain
-    I[PID_case] += Ki[PID_case] * error * dt;
-    if(abs(I[PID_case])>anti_windup_gain) I[PID_case]=I[PID_case]>0 ? anti_windup_gain : -anti_windup_gain; 
-    
-    //D gain
-    float D = Kd[PID_case]*(0-y_dot);
-
-    float u = P + I[PID_case] + D;
-    return u;
-}
-
-float computeHeadingPID(float r, float y, float y_dot, float dt, int PID_case)
-{
-    // ref 정규화
-    // while(r > 3.141592){
-    //     r -= 2 * 3.141592;
-    // }
-    // while( r < -3.141592){
-    //     r += 2*3.141592;
-    // }
-    r = fmod(r + M_PI, 2.0 * M_PI);
-    if (r < 0) {r += 2.0 * M_PI;}
-    r -= M_PI;
-    
-    // angle error 계산
-    float error = atan2(sin(r - y), cos(r - y));
+    float error = r - y; //nomal case
+    if(PID_case==2) error = atan2(sin(r - y), cos(r - y)); //yaw case
 
     //P gain
     float P = Kp[PID_case] * error;

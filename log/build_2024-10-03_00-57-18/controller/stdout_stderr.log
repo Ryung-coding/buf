@@ -1,0 +1,35 @@
+[ 50%] [32mBuilding CXX object CMakeFiles/controller_main.dir/src/controller_main.cpp.o[0m
+In file included from [01m[K/home/ionia/Desktop/dubal_ws/src/controller/src/controller_main.cpp:2[m[K:
+[01m[K/home/ionia/Desktop/dubal_ws/src/controller/include/controller_main_function.h:[m[K In function ‘[01m[Kfloat computePID(float, float, float, float, int)[m[K’:
+[01m[K/home/ionia/Desktop/dubal_ws/src/controller/include/controller_main_function.h:94:30:[m[K [01;31m[Kerror: [m[K‘[01m[Kerror[m[K’ was not declared in this scope; did you mean ‘[01m[Kperror[m[K’?
+   94 |     float P = Kp[PID_case] * [01;31m[Kerror[m[K;
+      |                              [01;31m[K^~~~~[m[K
+      |                              [32m[Kperror[m[K
+[01m[K/home/ionia/Desktop/dubal_ws/src/controller/src/controller_main.cpp:[m[K In function ‘[01m[Kvoid balancing_controller()[m[K’:
+[01m[K/home/ionia/Desktop/dubal_ws/src/controller/src/controller_main.cpp:7:5:[m[K [01;31m[Kerror: [m[K‘[01m[Kref_1_in[m[K’ was not declared in this scope; did you mean ‘[01m[Kref_0_in[m[K’?
+    7 |     [01;31m[Kref_1_in[m[K+=0.01*ref[1]*dt;
+      |     [01;31m[K^~~~~~~~[m[K
+      |     [32m[Kref_0_in[m[K
+In file included from [01m[K/opt/ros/foxy/include/rclcpp/client.hpp:40[m[K,
+                 from [01m[K/opt/ros/foxy/include/rclcpp/callback_group.hpp:23[m[K,
+                 from [01m[K/opt/ros/foxy/include/rclcpp/any_executable.hpp:20[m[K,
+                 from [01m[K/opt/ros/foxy/include/rclcpp/memory_strategy.hpp:24[m[K,
+                 from [01m[K/opt/ros/foxy/include/rclcpp/memory_strategies.hpp:18[m[K,
+                 from [01m[K/opt/ros/foxy/include/rclcpp/executor_options.hpp:20[m[K,
+                 from [01m[K/opt/ros/foxy/include/rclcpp/executor.hpp:33[m[K,
+                 from [01m[K/opt/ros/foxy/include/rclcpp/executors/multi_threaded_executor.hpp:26[m[K,
+                 from [01m[K/opt/ros/foxy/include/rclcpp/executors.hpp:21[m[K,
+                 from [01m[K/opt/ros/foxy/include/rclcpp/rclcpp.hpp:146[m[K,
+                 from [01m[K/home/ionia/Desktop/dubal_ws/src/controller/include/controller_main.h:5[m[K,
+                 from [01m[K/home/ionia/Desktop/dubal_ws/src/controller/src/controller_main.cpp:1[m[K:
+[01m[K/home/ionia/Desktop/dubal_ws/src/controller/src/controller_main.cpp:[m[K In function ‘[01m[Kint main(int, char**)[m[K’:
+[01m[K/home/ionia/Desktop/dubal_ws/src/controller/src/controller_main.cpp:99:116:[m[K [01;31m[Kerror: [m[K‘[01m[Kref_1_in[m[K’ was not declared in this scope; did you mean ‘[01m[Kref_0_in[m[K’?
+   99 | "pos:%f,%f | pitch:%f,%f | yaw:%f,%f", pos_x+0.22*imu_theta, [01;31m[Kref_1_in[m[K, imu_theta, ref_theta+0.0066, imu_psi, ref_0_in);
+      |                                                              [01;31m[K^~~~~~~~[m[K
+
+[01m[K/home/ionia/Desktop/dubal_ws/src/controller/src/controller_main.cpp:106:9:[m[K [01;31m[Kerror: [m[K‘[01m[Kloop_rate[m[K’ was not declared in this scope
+  106 |         [01;31m[Kloop_rate[m[K.sleep();
+      |         [01;31m[K^~~~~~~~~[m[K
+make[2]: *** [CMakeFiles/controller_main.dir/build.make:63: CMakeFiles/controller_main.dir/src/controller_main.cpp.o] Error 1
+make[1]: *** [CMakeFiles/Makefile2:78: CMakeFiles/controller_main.dir/all] Error 2
+make: *** [Makefile:141: all] Error 2
