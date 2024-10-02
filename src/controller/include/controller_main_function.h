@@ -1,6 +1,7 @@
 #ifndef CONTROLLER_MAIN_FUNCTION
 #define CONTROLLER_MAIN_FUNCTION
 
+#include <cmath>
 
 float lowpassfilter(float filter, float data, float past_weight)
 {
@@ -18,7 +19,7 @@ void web_ref_update()
 
 void sbus_callback(const sensor_msgs::msg::JointState::SharedPtr msg) 
 {
-    sbus_data[0] = 100.*(msg->position[0] - sbus_center)/sbus_Range;        // SBUS ch1 : Heading angle stick
+    sbus_data[0] = -100.*(msg->position[0] - sbus_center)/sbus_Range;        // SBUS ch1 : Heading angle stick
     ref[0] = lowpassfilter(ref[0], sbus_data[0], 0.1);
     if(abs(ref[0]) <= DEADZONE_SBUS) ref[0]= 0.0f;
     else ref[0] = ref[0]>=0 ? (ref[0] - DEADZONE_SBUS) : (ref[0] + DEADZONE_SBUS);
@@ -73,17 +74,44 @@ void gps_callback(const sensor_msgs::msg::JointState::SharedPtr msg)
 
 void dubal_data_callback(const sensor_msgs::msg::JointState::SharedPtr msg)
 {
-	//double now_pos_x=0;
-
-    pos_x = 2*3.141592653589*wheel_radius*(msg->position[0]-msg->position[1])/2;
-    //pos_x = lowpassfilter(pos_x, now_pos_x, 0.5);
-	vel_x = 2*3.141592653589*wheel_radius*(msg->velocity[0]-msg->velocity[1])/2;
+    pos_x = 3.141592653589*wheel_radius*(msg->position[0]-msg->position[1]);
+	vel_x = 3.141592653589*wheel_radius*(msg->velocity[0]-msg->velocity[1]);
 }
 
 
-float computePID(float r, float y,float y_dot, float dt, int PID_case)
+float computePID(float r, float y, float y_dot, float dt, int PID_case)
 {
     float error = r - y;
+
+    //P gain
+    float P = Kp[PID_case] * error;
+
+    //I gain
+    I[PID_case] += Ki[PID_case] * error * dt;
+    if(abs(I[PID_case])>anti_windup_gain) I[PID_case]=I[PID_case]>0 ? anti_windup_gain : -anti_windup_gain; 
+    
+    //D gain
+    float D = Kd[PID_case]*(0-y_dot);
+
+    float u = P + I[PID_case] + D;
+    return u;
+}
+
+float computeHeadingPID(float r, float y, float y_dot, float dt, int PID_case)
+{
+    // ref 정규화
+    // while(r > 3.141592){
+    //     r -= 2 * 3.141592;
+    // }
+    // while( r < -3.141592){
+    //     r += 2*3.141592;
+    // }
+    r = fmod(r + M_PI, 2.0 * M_PI);
+    if (r < 0) {r += 2.0 * M_PI;}
+    r -= M_PI;
+    
+    // angle error 계산
+    float error = atan2(sin(r - y), cos(r - y));
 
     //P gain
     float P = Kp[PID_case] * error;

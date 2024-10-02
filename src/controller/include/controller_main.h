@@ -11,9 +11,9 @@
 // float Kd[3] = {0.0088, 1.800, 0.001};
 // float Ki[3] = {0.008, 0.00, 0.0001};
 
-float Kp[3] = {0.0205, 14.10, 1.5};
-float Kd[3] = {0.0088, 1.800, 0.001};
-float Ki[3] = {0.008, 0.00, 0.0001};
+float Kp[3] = {0.0425, 14.10, 1.22};
+float Kd[3] = {0.0108, 1.800, 0.006};
+float Ki[3] = {0.001, 0.00, 0.001};
 
 // LQR Gains -> using MATLAB (Note* LQR solver code)
 #define state_size 4

@@ -40,10 +40,14 @@ class ODriveController(Node):
         #self.odrv_leg = odrive.find_any(path='/dev/odrive_leg')
         #self.odrv_wheel = odrive.find_any(path='/dev/odrive_wheel')
 
+
+        self.initial_pos_axis0 = 0.0
+        self.initial_pos_axis1 = 0.0
+
         self.initialize_odrive()
 
         # 초기 목표 위치 및 속도 설정 (다리)
-        self.target_position_axis0 = 5.0
+        self.target_position_axis0 = 1.3
         self.target_position_axis1 = -self.target_position_axis0
 
         # 휠 속도 관련 초기화
@@ -51,6 +55,7 @@ class ODriveController(Node):
         self.previous_position_axis1 = 0.0
         self.filtered_velocity_axis0 = 0.0
         self.filtered_velocity_axis1 = 0.0
+
 
         # 제어 주기 설정
         self.timer = self.create_timer(LOOP_PERIOD, self.control_loop)
@@ -71,18 +76,18 @@ class ODriveController(Node):
         while self.odrv_leg.axis0.current_state != AXIS_STATE_IDLE or self.odrv_leg.axis1.current_state != AXIS_STATE_IDLE:
             time.sleep(0.1)
 
-        self.odrv_leg.axis0.controller.config.control_mode = ControlMode.TORQUE_CONTROL
+        #초기값 설정용 ㅋㅋ ㄹㅇㅋㅋ 이새끼 때문이네
+        self.initial_pos_axis0 = self.odrv_wheel.axis0.encoder.pos_estimate        
+        self.initial_pos_axis1 = self.odrv_wheel.axis1.encoder.pos_estimate
+
         self.odrv_leg.axis0.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
         self.odrv_leg.axis0.config.enable_watchdog = False
-        self.odrv_leg.axis1.controller.config.control_mode = ControlMode.TORQUE_CONTROL
         self.odrv_leg.axis1.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
         self.odrv_leg.axis1.config.enable_watchdog = False
 
         # 휠 ODrive 설정
-        self.odrv_wheel.axis0.controller.config.control_mode = ControlMode.TORQUE_CONTROL
         self.odrv_wheel.axis0.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
         self.odrv_wheel.axis0.config.enable_watchdog = False
-        self.odrv_wheel.axis1.controller.config.control_mode = ControlMode.TORQUE_CONTROL
         self.odrv_wheel.axis1.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
         self.odrv_wheel.axis1.config.enable_watchdog = False
 
@@ -128,23 +133,22 @@ class ODriveController(Node):
             axis.controller.input_torque = torque
 
         # 휠 속도 계산
-        current_position_axis0 = self.odrv_wheel.axis0.encoder.pos_estimate
-        current_position_axis1 = self.odrv_wheel.axis1.encoder.pos_estimate
+        current_position_axis0 = self.odrv_wheel.axis0.encoder.pos_estimate - self.initial_pos_axis0
+        current_position_axis1 = self.odrv_wheel.axis1.encoder.pos_estimate - self.initial_pos_axis1
+        
         velocity_axis0 = (current_position_axis0 - self.previous_position_axis0) / LOOP_PERIOD
         velocity_axis1 = (current_position_axis1 - self.previous_position_axis1) / LOOP_PERIOD
         self.filtered_velocity_axis0 = self.lowpassfilter(self.filtered_velocity_axis0, velocity_axis0, FILTER_WEIGHT)
         self.filtered_velocity_axis1 = self.lowpassfilter(self.filtered_velocity_axis1, velocity_axis1, FILTER_WEIGHT)
+        
+        #update 
         self.previous_position_axis0 = current_position_axis0
         self.previous_position_axis1 = current_position_axis1
 
-        # JointState 메시지 퍼블리싱
+        # wheel 데이터 전송 To controller(cpp)
         joint_state_msg = JointState()
         joint_state_msg.header.stamp = self.get_clock().now().to_msg()
         joint_state_msg.name = ["axis0", "axis1"]
-        joint_state_msg.effort = [
-            self.odrv_leg.axis0.controller.input_torque,
-            self.odrv_leg.axis1.controller.input_torque
-        ]
         joint_state_msg.velocity = [self.filtered_velocity_axis0, self.filtered_velocity_axis1]
         joint_state_msg.position = [current_position_axis0, current_position_axis1]
 

@@ -1,0 +1,11 @@
+[ 50%] [32mBuilding CXX object CMakeFiles/controller_main.dir/src/controller_main.cpp.o[0m
+In file included from [01m[K/home/ionia/Desktop/dubal_ws/src/controller/src/controller_main.cpp:2[m[K:
+[01m[K/home/ionia/Desktop/dubal_ws/src/controller/include/controller_main_function.h:[m[K In function ‘[01m[Kfloat computeHeadingPID(float, float, float, float, int)[m[K’:
+[01m[K/home/ionia/Desktop/dubal_ws/src/controller/include/controller_main_function.h:103:24:[m[K [01;31m[Kerror: [m[Kinvalid operands of types ‘[01m[Kdouble[m[K’ and ‘[01m[Kdouble[m[K’ to binary ‘[01m[Koperator%[m[K’
+  103 |     r = [32m[K(r + 3.141592)[m[K [01;31m[K%[m[K [34m[K(2.0 * 3.141592)[m[K - 3.141592;
+      |         [32m[K~~~~~~~~~~~~~~[m[K [01;31m[K^[m[K [34m[K~~~~~~~~~~~~~~~~[m[K
+      |            [32m[K|[m[K                  [34m[K|[m[K
+      |            [32m[Kdouble[m[K             [34m[Kdouble[m[K
+make[2]: *** [CMakeFiles/controller_main.dir/build.make:63: CMakeFiles/controller_main.dir/src/controller_main.cpp.o] Error 1
+make[1]: *** [CMakeFiles/Makefile2:78: CMakeFiles/controller_main.dir/all] Error 2
+make: *** [Makefile:141: all] Error 2
