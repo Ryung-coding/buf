@@ -26,7 +26,7 @@ class CameraClient:
     def __init__(self, server_url, room_id):
         self.server_url = server_url
         self.room_id = room_id
-        self.cap = cv2.VideoCapture(0)  # 0 is default camera
+        #self.cap = cv2.VideoCapture(0)  # 0 is default camera
         self.sio = socketio.Client()
         self.isConnected = False
 
@@ -347,28 +347,45 @@ def imu_callback(msg):
     global data
     data['r'] = msg.position[0]
     data['p'] = msg.position[1]
-    data['y'] = msg.position[1]*180/3.1415926535
+    data['y'] = msg.position[2]
     print(f"Updated IMU Data: {data}")
 
 # Controller Input 데이터 콜백 함수
-def controller_callback(msg):
+def controller_callback0(msg):
     global data
     data['u1'] = msg.position[0]  # pos0 값을 u1에 저장
-    data['u2'] = msg.position[1]  # pos1 값을 u2에 저장
-    data['u3'] = msg.velocity[0]  # vel0 값을 u3에 저장
+    data['u3'] = 0  # vel0 값을 u3에 저장
     print(f"Updated Controller Input Data: {data}")
+
+# Controller Input 데이터 콜백 함수
+def controller_callback1(msg):
+    global data
+    data['u2'] = msg.position[0]  # pos1 값을 u2에 저장
+    data['u3'] = 0  # vel0 값을 u3에 저장
+    print(f"Updated Controller Input Data: {data}")
+
+# Controller Input 데이터 콜백 함수
+def dubal_callback(msg):
+    global data
+    data['v1'] = msg.position[0]  # pos1 값을 u2에 저장
+    data['v2'] = msg.position[1]  # vel0 값을 u3에 저장
+    print(f"Updated dubal Input Data: {data}")
+
+
 
 def main():
     rclpy.init()
     node = Node('sensor_data_subscriber')
     node.create_subscription(JointState, 'gps_data', gps_callback, 10)
     node.create_subscription(JointState, 'imu_data', imu_callback, 10)
-    node.create_subscription(JointState, 'controller_input_data', controller_callback, 10)
-    
-    pytesseract.pytesseract.tesseract_cmd = '/usr/bin/tesseract'
+    node.create_subscription(JointState, '/joint0_torque_controller/commands', controller_callback0, 10)
+    node.create_subscription(JointState, '/joint1_torque_controller/commands', controller_callback1, 10)
+    node.create_subscription(JointState, 'dubal_data', dubal_callback, 10)
+
+    # pytesseract.pytesseract.tesseract_cmd = '/usr/bin/tesseract'
 
 
-    image_processor = ImageProcessor()
+    # image_processor = ImageProcessor()
     client = CameraClient('http://13.125.65.10:5024', 'AA:11:BB:22:CC:33')
 
     client.begin()
@@ -377,10 +394,10 @@ def main():
         time.sleep(0.05)
 
     client.start_sending_SensorData(data)
-    client.start_sending_ImageData()
+    #client.start_sending_ImageData()
 
-    ImageThread = threading.Thread(target=image_processor.loop, args=(client,))
-    ImageThread.start()
+    # ImageThread = threading.Thread(target=image_processor.loop, args=(client,))
+    # ImageThread.start()
 
     try:
         rclpy.spin(node)

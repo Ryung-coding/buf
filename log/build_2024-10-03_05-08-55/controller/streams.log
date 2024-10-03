@@ -1,0 +1,16 @@
+[0.053s] Invoking command in '/home/ionia/Desktop/dubal_ws/build/controller': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/ionia/Desktop/dubal_ws/install/serial_reciver:/home/ionia/Desktop/dubal_ws/install/odrive_controller:/home/ionia/Desktop/dubal_ws/install/dubal_eye_AND_web:/opt/ros/foxy /usr/bin/cmake --build /home/ionia/Desktop/dubal_ws/build/controller -- -j4 -l4
+[1.119s] [ 50%] [32mBuilding CXX object CMakeFiles/controller_main.dir/src/controller_main.cpp.o[0m
+[2.361s] In file included from [01m[K/home/ionia/Desktop/dubal_ws/src/controller/src/controller_main.cpp:2[m[K:
+[2.361s] [01m[K/home/ionia/Desktop/dubal_ws/src/controller/include/controller_main_function.h:[m[K In function ‘[01m[Kfloat computePID(float, float, float, float, int)[m[K’:
+[2.361s] [01m[K/home/ionia/Desktop/dubal_ws/src/controller/include/controller_main_function.h:86:56:[m[K [01;31m[Kerror: [m[K‘[01m[Kcsos[m[K’ was not declared in this scope; did you mean ‘[01m[Kcos[m[K’?
+[2.361s]    86 |     if (PID_case == 2) float error = atan2(sin(r - y), [01;31m[Kcsos[m[K(r - y));
+[2.361s]       |                                                        [01;31m[K^~~~[m[K
+[2.362s]       |                                                        [32m[Kcos[m[K
+[2.363s] [01m[K/home/ionia/Desktop/dubal_ws/src/controller/include/controller_main_function.h:91:30:[m[K [01;31m[Kerror: [m[K‘[01m[Kerror[m[K’ was not declared in this scope; did you mean ‘[01m[Kperror[m[K’?
+[2.363s]    91 |     float P = Kp[PID_case] * [01;31m[Kerror[m[K;
+[2.363s]       |                              [01;31m[K^~~~~[m[K
+[2.363s]       |                              [32m[Kperror[m[K
+[4.565s] make[2]: *** [CMakeFiles/controller_main.dir/build.make:63: CMakeFiles/controller_main.dir/src/controller_main.cpp.o] Error 1
+[4.566s] make[1]: *** [CMakeFiles/Makefile2:78: CMakeFiles/controller_main.dir/all] Error 2
+[4.566s] make: *** [Makefile:141: all] Error 2
+[4.569s] Invoked command in '/home/ionia/Desktop/dubal_ws/build/controller' returned '2': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/ionia/Desktop/dubal_ws/install/serial_reciver:/home/ionia/Desktop/dubal_ws/install/odrive_controller:/home/ionia/Desktop/dubal_ws/install/dubal_eye_AND_web:/opt/ros/foxy /usr/bin/cmake --build /home/ionia/Desktop/dubal_ws/build/controller -- -j4 -l4
