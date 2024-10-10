@@ -39,6 +39,8 @@ class ODriveController(Node):
         # 수정된 코드
         #self.odrv_leg = odrive.find_any(path='/dev/odrive_leg')
         #self.odrv_wheel = odrive.find_any(path='/dev/odrive_wheel')
+        self.pos0_i=0.0
+        self.pos1_i=0.0
 
         self.initialize_odrive()
 
@@ -72,6 +74,8 @@ class ODriveController(Node):
             time.sleep(0.1)
 
         self.odrv_leg.axis0.controller.config.control_mode = ControlMode.TORQUE_CONTROL
+        self.pos0_i=self.odrv_wheel.axis0.encoder.pos_estimate 
+        self.pos1_i=self.odrv_wheel.axis1.encoder.pos_estimate 
         self.odrv_leg.axis0.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
         self.odrv_leg.axis0.config.enable_watchdog = False
         self.odrv_leg.axis1.controller.config.control_mode = ControlMode.TORQUE_CONTROL
@@ -128,8 +132,8 @@ class ODriveController(Node):
             axis.controller.input_torque = torque
 
         # 휠 속도 계산
-        current_position_axis0 = self.odrv_wheel.axis0.encoder.pos_estimate
-        current_position_axis1 = self.odrv_wheel.axis1.encoder.pos_estimate
+        current_position_axis0 = self.odrv_wheel.axis0.encoder.pos_estimate - self.pos0_i
+        current_position_axis1 = self.odrv_wheel.axis1.encoder.pos_estimate - self.pos1_i
         velocity_axis0 = (current_position_axis0 - self.previous_position_axis0) / LOOP_PERIOD
         velocity_axis1 = (current_position_axis1 - self.previous_position_axis1) / LOOP_PERIOD
         self.filtered_velocity_axis0 = self.lowpassfilter(self.filtered_velocity_axis0, velocity_axis0, FILTER_WEIGHT)

@@ -1,0 +1,24 @@
+[ 50%] [32mBuilding CXX object CMakeFiles/controller_main.dir/src/controller_main.cpp.o[0m
+[100%] [32m[1mLinking CXX executable controller_main[0m
+[100%] Built target controller_main
+-- Install configuration: ""
+-- Installing: /home/ionia/Desktop/dubal_ws/install/controller/lib/controller/controller_main
+-- Set runtime path of "/home/ionia/Desktop/dubal_ws/install/controller/lib/controller/controller_main" to ""
+-- Up-to-date: /home/ionia/Desktop/dubal_ws/install/controller/share/controller/
+-- Up-to-date: /home/ionia/Desktop/dubal_ws/install/controller/share/controller//dubal_jjas_eye.py
+-- Installing: /home/ionia/Desktop/dubal_ws/install/controller/share/controller//dubal_no_eye.py
+-- Installing: /home/ionia/Desktop/dubal_ws/install/controller/share/ament_index/resource_index/package_run_dependencies/controller
+-- Installing: /home/ionia/Desktop/dubal_ws/install/controller/share/ament_index/resource_index/parent_prefix_path/controller
+-- Installing: /home/ionia/Desktop/dubal_ws/install/controller/share/controller/environment/ament_prefix_path.sh
+-- Installing: /home/ionia/Desktop/dubal_ws/install/controller/share/controller/environment/ament_prefix_path.dsv
+-- Installing: /home/ionia/Desktop/dubal_ws/install/controller/share/controller/environment/path.sh
+-- Installing: /home/ionia/Desktop/dubal_ws/install/controller/share/controller/environment/path.dsv
+-- Installing: /home/ionia/Desktop/dubal_ws/install/controller/share/controller/local_setup.bash
+-- Installing: /home/ionia/Desktop/dubal_ws/install/controller/share/controller/local_setup.sh
+-- Installing: /home/ionia/Desktop/dubal_ws/install/controller/share/controller/local_setup.zsh
+-- Installing: /home/ionia/Desktop/dubal_ws/install/controller/share/controller/local_setup.dsv
+-- Installing: /home/ionia/Desktop/dubal_ws/install/controller/share/controller/package.dsv
+-- Installing: /home/ionia/Desktop/dubal_ws/install/controller/share/ament_index/resource_index/packages/controller
+-- Installing: /home/ionia/Desktop/dubal_ws/install/controller/share/controller/cmake/controllerConfig.cmake
+-- Installing: /home/ionia/Desktop/dubal_ws/install/controller/share/controller/cmake/controllerConfig-version.cmake
+-- Installing: /home/ionia/Desktop/dubal_ws/install/controller/share/controller/package.xml
