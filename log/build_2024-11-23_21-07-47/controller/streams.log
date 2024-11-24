@@ -1,0 +1,26 @@
+[0.045s] Invoking command in '/home/ionia/Desktop/dubal_ws/build/controller': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/ionia/Desktop/dubal_ws/install/serial_reciver:/home/ionia/Desktop/dubal_ws/install/odrive_controller:/home/ionia/Desktop/dubal_ws/install/localizer:/home/ionia/Desktop/dubal_ws/install/dubal_eye_AND_web:/opt/ros/foxy /usr/bin/cmake --build /home/ionia/Desktop/dubal_ws/build/controller -- -j4 -l4
+[0.771s] [35m[1mScanning dependencies of target controller_main[0m
+[0.772s] [ 50%] [32mBuilding CXX object CMakeFiles/controller_main.dir/src/controller_main.cpp.o[0m
+[1.994s] In file included from [01m[K/home/ionia/Desktop/dubal_ws/src/controller/src/controller_main.cpp:2[m[K:
+[1.994s] [01m[K/home/ionia/Desktop/dubal_ws/src/controller/include/controller_main_function.h:[m[K In function ‘[01m[Kvoid sbus_callback(sensor_msgs::msg::JointState_<std::allocator<void> >::SharedPtr)[m[K’:
+[1.994s] [01m[K/home/ionia/Desktop/dubal_ws/src/controller/include/controller_main_function.h:37:68:[m[K [01;31m[Kerror: [m[K‘[01m[Kbut_leg_ref[m[K’ was not declared in this scope
+[1.994s]    37 |     ref[2] = lowpassfilter(ref[2], sbus_data[2] > leg_down_bound ? [01;31m[Kbut_leg_ref[m[K : (sbus_data[2] > leg_up_bound ? mid_leg_ref : top_leg_ref), 0.2);
+[1.995s]       |                                                                    [01;31m[K^~~~~~~~~~~[m[K
+[1.997s] [01m[K/home/ionia/Desktop/dubal_ws/src/controller/include/controller_main_function.h:37:113:[m[K [01;31m[Kerror: [m[K‘[01m[Kmid_leg_ref[m[K’ was not declared in this scope
+[1.997s]    37 |     ref[2] = lowpassfilter(ref[2], sbus_data[2] > leg_down_bound ? but_leg_ref : (sbus_data[2] > leg_up_bound ? [01;31m[Kmid_leg_ref[m[K : top_leg_ref), 0.2);
+[1.997s]       |                                                                                                                 [01;31m[K^~~~~~~~~~~[m[K
+[1.999s] [01m[K/home/ionia/Desktop/dubal_ws/src/controller/include/controller_main_function.h:37:127:[m[K [01;31m[Kerror: [m[K‘[01m[Ktop_leg_ref[m[K’ was not declared in this scope
+[2.000s]    37 |     ref[2] = lowpassfilter(ref[2], sbus_data[2] > leg_down_bound ? but_leg_ref : (sbus_data[2] > leg_up_bound ? mid_leg_ref : [01;31m[Ktop_leg_ref[m[K), 0.2);
+[2.000s]       |                                                                                                                               [01;31m[K^~~~~~~~~~~[m[K
+[2.023s] [01m[K/home/ionia/Desktop/dubal_ws/src/controller/src/controller_main.cpp:[m[K In function ‘[01m[Kint main(int, char**)[m[K’:
+[2.023s] [01m[K/home/ionia/Desktop/dubal_ws/src/controller/src/controller_main.cpp:82:29:[m[K [01;31m[Kerror: [m[Kexpected ‘[01m[K;[m[K’ before ‘[01m[KMotor_L_cmd[m[K’
+[2.023s]    82 |             leg_controller()
+[2.023s]       |                             [01;31m[K^[m[K
+[2.024s]       |                             [32m[K;[m[K
+[2.024s]    83 | 
+[2.024s]    84 |             [32m[KMotor_L_cmd[m[K = balancing_CMD - heading_CMD;
+[2.024s]       |             [32m[K~~~~~~~~~~~[m[K      
+[4.657s] make[2]: *** [CMakeFiles/controller_main.dir/build.make:63: CMakeFiles/controller_main.dir/src/controller_main.cpp.o] Error 1
+[4.657s] make[1]: *** [CMakeFiles/Makefile2:78: CMakeFiles/controller_main.dir/all] Error 2
+[4.657s] make: *** [Makefile:141: all] Error 2
+[4.658s] Invoked command in '/home/ionia/Desktop/dubal_ws/build/controller' returned '2': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/ionia/Desktop/dubal_ws/install/serial_reciver:/home/ionia/Desktop/dubal_ws/install/odrive_controller:/home/ionia/Desktop/dubal_ws/install/localizer:/home/ionia/Desktop/dubal_ws/install/dubal_eye_AND_web:/opt/ros/foxy /usr/bin/cmake --build /home/ionia/Desktop/dubal_ws/build/controller -- -j4 -l4

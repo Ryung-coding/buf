@@ -14,11 +14,6 @@ def generate_launch_description():
                 name='serial_reciver_node'
             ),
             Node(
-                package='odrive_controller',
-                executable='odrive_controller',
-                name='odrive_controller'
-            ),
-            Node(
                 package='controller',
                 executable='controller_main',
                 name='controller_main'
@@ -27,6 +22,11 @@ def generate_launch_description():
                 package='dubal_eye_AND_web',  
                 executable='sensor_subscriber', 
                 name='sensor_subscriber'
-            )
+            ),
+			#Node(
+			#package='localizer',  
+			#executable='odometry_node', 
+			#name='odometry_node'
+			#)
         ]
     )

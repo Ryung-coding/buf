@@ -1,0 +1,5 @@
+  File "/home/ionia/Desktop/dubal_ws/install/localizer/lib/python3.8/site-packages/localizer/odometry.py", line 205
+    data['y'] = np.float64(msg.position[2]) np.float64(0.0525)
+                                            ^
+SyntaxError: invalid syntax
+

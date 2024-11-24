@@ -322,9 +322,6 @@ ament_cmake_version_DIR:PATH=/opt/ros/foxy/share/ament_cmake_version/cmake
 //The directory containing a CMake configuration file for builtin_interfaces.
 builtin_interfaces_DIR:PATH=/opt/ros/foxy/share/builtin_interfaces/cmake
 
-//The directory containing a CMake configuration file for catkin.
-catkin_DIR:PATH=catkin_DIR-NOTFOUND
-
 //Value Computed by CMake
 controller_BINARY_DIR:STATIC=/home/ionia/Desktop/dubal_ws/build/controller
 
@@ -387,9 +384,6 @@ rmw_implementation_DIR:PATH=/opt/ros/foxy/share/rmw_implementation/cmake
 
 //The directory containing a CMake configuration file for rmw_implementation_cmake.
 rmw_implementation_cmake_DIR:PATH=/opt/ros/foxy/share/rmw_implementation_cmake/cmake
-
-//The directory containing a CMake configuration file for roscpp.
-roscpp_DIR:PATH=roscpp_DIR-NOTFOUND
 
 //The directory containing a CMake configuration file for rosgraph_msgs.
 rosgraph_msgs_DIR:PATH=/opt/ros/foxy/share/rosgraph_msgs/cmake

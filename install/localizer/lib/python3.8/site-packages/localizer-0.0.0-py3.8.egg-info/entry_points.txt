@@ -1,0 +1,3 @@
+[console_scripts]
+odometry_node = localizer.odometry:main
+

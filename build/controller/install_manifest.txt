@@ -1,5 +1,4 @@
 /home/ionia/Desktop/dubal_ws/install/controller/lib/controller/controller_main
-/home/ionia/Desktop/dubal_ws/install/controller/share/controller//dubal_jjas_eye.py
 /home/ionia/Desktop/dubal_ws/install/controller/share/controller//dubal_no_eye.py
 /home/ionia/Desktop/dubal_ws/install/controller/share/ament_index/resource_index/package_run_dependencies/controller
 /home/ionia/Desktop/dubal_ws/install/controller/share/ament_index/resource_index/parent_prefix_path/controller

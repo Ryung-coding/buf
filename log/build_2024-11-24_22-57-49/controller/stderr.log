@@ -1,0 +1,11 @@
+In file included from [01m[K/home/ionia/Desktop/dubal_ws/src/controller/src/controller_main.cpp:2[m[K:
+[01m[K/home/ionia/Desktop/dubal_ws/src/controller/include/controller_main_function.h:[m[K In function ‘[01m[Kvoid sbus_callback(sensor_msgs::msg::JointState_<std::allocator<void> >::SharedPtr)[m[K’:
+[01m[K/home/ionia/Desktop/dubal_ws/src/controller/include/controller_main_function.h:25:5:[m[K [01;31m[Kerror: [m[K‘[01m[Kref_0_in[m[K’ was not declared in this scope
+   25 |     [01;31m[Kref_0_in[m[K += ref[0]*dt;
+      |     [01;31m[K^~~~~~~~[m[K
+[01m[K/home/ionia/Desktop/dubal_ws/src/controller/include/controller_main_function.h:34:5:[m[K [01;31m[Kerror: [m[K‘[01m[Kref_1_in[m[K’ was not declared in this scope
+   34 |     [01;31m[Kref_1_in[m[K+=ref[1]*dt;
+      |     [01;31m[K^~~~~~~~[m[K
+make[2]: *** [CMakeFiles/controller_main.dir/build.make:63: CMakeFiles/controller_main.dir/src/controller_main.cpp.o] Error 1
+make[1]: *** [CMakeFiles/Makefile2:78: CMakeFiles/controller_main.dir/all] Error 2
+make: *** [Makefile:141: all] Error 2

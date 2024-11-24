@@ -1,0 +1,27 @@
+running egg_info
+writing ../../build/localizer/localizer.egg-info/PKG-INFO
+writing dependency_links to ../../build/localizer/localizer.egg-info/dependency_links.txt
+writing entry points to ../../build/localizer/localizer.egg-info/entry_points.txt
+writing requirements to ../../build/localizer/localizer.egg-info/requires.txt
+writing top-level names to ../../build/localizer/localizer.egg-info/top_level.txt
+reading manifest file '../../build/localizer/localizer.egg-info/SOURCES.txt'
+writing manifest file '../../build/localizer/localizer.egg-info/SOURCES.txt'
+running build
+running build_py
+copying localizer/odometry.py -> /home/ionia/Desktop/dubal_ws/build/localizer/build/lib/localizer
+running install
+running install_lib
+copying /home/ionia/Desktop/dubal_ws/build/localizer/build/lib/localizer/odometry.py -> /home/ionia/Desktop/dubal_ws/install/localizer/lib/python3.8/site-packages/localizer
+byte-compiling /home/ionia/Desktop/dubal_ws/install/localizer/lib/python3.8/site-packages/localizer/odometry.py to odometry.cpython-38.pyc
+  File "/home/ionia/Desktop/dubal_ws/install/localizer/lib/python3.8/site-packages/localizer/odometry.py", line 205
+    data['y'] = np.float64(msg.position[2]) np.float64(0.0525)
+                                            ^
+SyntaxError: invalid syntax
+
+running install_data
+running install_egg_info
+removing '/home/ionia/Desktop/dubal_ws/install/localizer/lib/python3.8/site-packages/localizer-0.0.0-py3.8.egg-info' (and everything under it)
+Copying ../../build/localizer/localizer.egg-info to /home/ionia/Desktop/dubal_ws/install/localizer/lib/python3.8/site-packages/localizer-0.0.0-py3.8.egg-info
+running install_scripts
+Installing odometry_node script to /home/ionia/Desktop/dubal_ws/install/localizer/lib/localizer
+writing list of installed files to '/home/ionia/Desktop/dubal_ws/build/localizer/install.log'

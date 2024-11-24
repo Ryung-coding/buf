@@ -1,0 +1,12 @@
+[ 50%] [32mBuilding CXX object CMakeFiles/controller_main.dir/src/controller_main.cpp.o[0m
+In file included from [01m[K/home/ionia/Desktop/dubal_ws/src/controller/src/controller_main.cpp:2[m[K:
+[01m[K/home/ionia/Desktop/dubal_ws/src/controller/include/controller_main_function.h:[m[K In function ‘[01m[Kvoid dubal_data_callback(sensor_msgs::msg::JointState_<std::allocator<void> >::SharedPtr)[m[K’:
+[01m[K/home/ionia/Desktop/dubal_ws/src/controller/include/controller_main_function.h:83:91:[m[K [01;31m[Kerror: [m[Kexpected ‘[01m[K;[m[K’ before ‘[01m[Kfiltered_velocity_axis1[m[K’
+   83 |     filtered_velocity_axis0 = lowpassfilter(filtered_velocity_axis0, velocity_axis0, 0.95)
+      |                                                                                           [01;31m[K^[m[K
+      |                                                                                           [32m[K;[m[K
+   84 |     [32m[Kfiltered_velocity_axis1[m[K = lowpassfilter(filtered_velocity_axis1, velocity_axis1, 0.95)
+      |     [32m[K~~~~~~~~~~~~~~~~~~~~~~~[m[K                                                                
+make[2]: *** [CMakeFiles/controller_main.dir/build.make:63: CMakeFiles/controller_main.dir/src/controller_main.cpp.o] Error 1
+make[1]: *** [CMakeFiles/Makefile2:78: CMakeFiles/controller_main.dir/all] Error 2
+make: *** [Makefile:141: all] Error 2

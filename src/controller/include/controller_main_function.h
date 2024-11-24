@@ -18,18 +18,24 @@ void web_ref_update()
 
 void sbus_callback(const sensor_msgs::msg::JointState::SharedPtr msg) 
 {
-    sbus_data[0] = -100.*(msg->position[0] - sbus_center)/sbus_Range;        // SBUS ch1 : Heading angle stick
+    sbus_data[0] = -(M_PI/2)*(msg->position[0] - sbus_center)/sbus_Range;    // SBUS ch1 : Heading angle stick
     ref[0] = lowpassfilter(ref[0], sbus_data[0], 0.1);
     if(abs(ref[0]) <= DEADZONE_SBUS) ref[0]= 0.0f;
     else ref[0] = ref[0]>=0 ? (ref[0] - DEADZONE_SBUS) : (ref[0] + DEADZONE_SBUS);
+    ref_0_in += ref[0]*dt;
+    ref_0_in = fmod(ref_0_in + M_PI, 2.0 * M_PI);
+    if (ref_0_in < 0) ref_0_in += 2.0 * M_PI;
+    ref_0_in -= M_PI;
     
     sbus_data[1] = 100.*(sbus_center - msg->position[1])/sbus_Range;        // SBUS ch2 : Thrust stick
-    ref[1] = lowpassfilter(ref[1], sbus_data[1], 0.1);
+    ref[1] = 0.01*lowpassfilter(ref[1], sbus_data[1], 0.1);
     if(abs(ref[1]) <= DEADZONE_SBUS) ref[1]= 0.0f;
     else ref[1] = ref[1]>=0 ? (ref[1] - DEADZONE_SBUS) : (ref[1] + DEADZONE_SBUS);
+    ref_1_in+=ref[1]*dt;   
 
     sbus_data[2] = msg->position[2];                                        // SBUS ch5 : leg stick
-    ref[2] = lowpassfilter(ref[2], sbus_data[2] > leg_down_bound ? -1 : (sbus_data[2] > leg_up_bound ? 0 : 1), 0.2);
+    ref[2] = lowpassfilter(ref[2], sbus_data[2] > leg_down_bound ? but_leg_ref : (sbus_data[2] > leg_up_bound ? mid_leg_ref : top_leg_ref), 0.2);
+
 
     sbus_data[3] = msg->position[3];                                        // SBUS ch6 : Connect switch
     ref[3] = lowpassfilter(ref[3], sbus_data[3] > connect_bound ? 0 : 1, 0.0);
@@ -73,13 +79,14 @@ void gps_callback(const sensor_msgs::msg::JointState::SharedPtr msg)
 
 void dubal_data_callback(const sensor_msgs::msg::JointState::SharedPtr msg)
 {
-	//double now_pos_x=0;
+    pos_x = 2*M_PI*wheel_radius*(msg->position[0]-msg->position[1])/2;
+    vel_x = 2*M_PI*wheel_radius*(msg->velocity[0]-msg->velocity[1])/2;
 
-    pos_x = 2*3.141592653589*wheel_radius*(msg->position[0]-msg->position[1])/2;
-    //pos_x = lowpassfilter(pos_x, now_pos_x, 0.5);
-	vel_x = 2*3.141592653589*wheel_radius*(msg->velocity[0]-msg->velocity[1])/2;
+    odrive_leg_pos_0 = msg->position[2];
+    odrive_leg_pos_1 = msg->position[3];
+    odrive_leg_vel_0 = msg->velocity[2];
+    odrive_leg_vel_1 = msg->velocity[3];
 }
-
 
 float computePID(float r, float y,float y_dot, float dt, int PID_case)
 {
@@ -87,14 +94,14 @@ float computePID(float r, float y,float y_dot, float dt, int PID_case)
     
     if (PID_case == 2) error = atan2(sin(r - y), cos(r - y));
 
-    //P gain
+        //P gain
     float P = Kp[PID_case] * error;
 
-    //I gain
+        //I gain
     I[PID_case] += Ki[PID_case] * error * dt;
     if(abs(I[PID_case])>anti_windup_gain) I[PID_case]=I[PID_case]>0 ? anti_windup_gain : -anti_windup_gain; 
     
-    //D gain
+        //D gain
     float D = Kd[PID_case]*(0-y_dot);
 
     float u = P + I[PID_case] + D;

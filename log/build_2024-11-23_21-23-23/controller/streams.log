@@ -1,0 +1,25 @@
+[0.042s] Invoking command in '/home/ionia/Desktop/dubal_ws/build/controller': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/ionia/Desktop/dubal_ws/install/serial_reciver:/home/ionia/Desktop/dubal_ws/install/odrive_controller:/home/ionia/Desktop/dubal_ws/install/localizer:/home/ionia/Desktop/dubal_ws/install/dubal_eye_AND_web:/opt/ros/foxy /usr/bin/cmake --build /home/ionia/Desktop/dubal_ws/build/controller -- -j4 -l4
+[0.991s] [ 50%] [32mBuilding CXX object CMakeFiles/controller_main.dir/src/controller_main.cpp.o[0m
+[3.370s] In file included from [01m[K/opt/ros/foxy/include/rclcpp/client.hpp:40[m[K,
+[3.370s]                  from [01m[K/opt/ros/foxy/include/rclcpp/callback_group.hpp:23[m[K,
+[3.370s]                  from [01m[K/opt/ros/foxy/include/rclcpp/any_executable.hpp:20[m[K,
+[3.370s]                  from [01m[K/opt/ros/foxy/include/rclcpp/memory_strategy.hpp:24[m[K,
+[3.370s]                  from [01m[K/opt/ros/foxy/include/rclcpp/memory_strategies.hpp:18[m[K,
+[3.370s]                  from [01m[K/opt/ros/foxy/include/rclcpp/executor_options.hpp:20[m[K,
+[3.370s]                  from [01m[K/opt/ros/foxy/include/rclcpp/executor.hpp:33[m[K,
+[3.370s]                  from [01m[K/opt/ros/foxy/include/rclcpp/executors/multi_threaded_executor.hpp:26[m[K,
+[3.370s]                  from [01m[K/opt/ros/foxy/include/rclcpp/executors.hpp:21[m[K,
+[3.370s]                  from [01m[K/opt/ros/foxy/include/rclcpp/rclcpp.hpp:146[m[K,
+[3.371s]                  from [01m[K/home/ionia/Desktop/dubal_ws/src/controller/include/controller_main.h:5[m[K,
+[3.371s]                  from [01m[K/home/ionia/Desktop/dubal_ws/src/controller/src/controller_main.cpp:1[m[K:
+[3.371s] [01m[K/home/ionia/Desktop/dubal_ws/src/controller/src/controller_main.cpp:[m[K In function ‘[01m[Kint main(int, char**)[m[K’:
+[3.371s] [01m[K/home/ionia/Desktop/dubal_ws/src/controller/src/controller_main.cpp:102:141:[m[K [01;31m[Kerror: [m[Kexpected ‘[01m[K)[m[K’ before ‘[01m[KLeg_L_cmd[m[K’
+[3.371s]   102 |         RCLCPP_INFO(rclcpp::get_logger("controller"), "cmd : %f |sensor : %f,%f | toque : %f,%f", ref[2], odrive_leg_pos_0,odrive_leg_vel_0 [01;31m[KLeg_L_cmd[m[K, Leg_R_cmd);
+[3.371s]       |                                                                                                                                             [01;31m[K^~~~~~~~~[m[K
+[3.371s] [01m[K/home/ionia/Desktop/dubal_ws/src/controller/src/controller_main.cpp:102:9:[m[K [01;36m[Knote: [m[Kto match this ‘[01m[K([m[K’
+[3.371s]   102 |         [01;36m[KRCLCPP_INFO[m[K(rclcpp::get_logger("controller"), "cmd : %f |sensor : %f,%f | toque : %f,%f", ref[2], odrive_leg_pos_0,odrive_leg_vel_0 Leg_L_cmd, Leg_R_cmd);
+[3.371s]       |         [01;36m[K^~~~~~~~~~~[m[K
+[5.286s] make[2]: *** [CMakeFiles/controller_main.dir/build.make:63: CMakeFiles/controller_main.dir/src/controller_main.cpp.o] Error 1
+[5.286s] make[1]: *** [CMakeFiles/Makefile2:78: CMakeFiles/controller_main.dir/all] Error 2
+[5.286s] make: *** [Makefile:141: all] Error 2
+[5.290s] Invoked command in '/home/ionia/Desktop/dubal_ws/build/controller' returned '2': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/ionia/Desktop/dubal_ws/install/serial_reciver:/home/ionia/Desktop/dubal_ws/install/odrive_controller:/home/ionia/Desktop/dubal_ws/install/localizer:/home/ionia/Desktop/dubal_ws/install/dubal_eye_AND_web:/opt/ros/foxy /usr/bin/cmake --build /home/ionia/Desktop/dubal_ws/build/controller -- -j4 -l4

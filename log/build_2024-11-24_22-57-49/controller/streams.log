@@ -1,0 +1,14 @@
+[0.041s] Invoking command in '/home/ionia/Desktop/dubal_ws/build/controller': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/ionia/Desktop/dubal_ws/install/serial_reciver:/home/ionia/Desktop/dubal_ws/install/odrive_controller:/home/ionia/Desktop/dubal_ws/install/localizer:/home/ionia/Desktop/dubal_ws/install/dubal_eye_AND_web:/opt/ros/foxy /usr/bin/cmake --build /home/ionia/Desktop/dubal_ws/build/controller -- -j4 -l4
+[0.763s] [ 50%] [32mBuilding CXX object CMakeFiles/controller_main.dir/src/controller_main.cpp.o[0m
+[2.286s] In file included from [01m[K/home/ionia/Desktop/dubal_ws/src/controller/src/controller_main.cpp:2[m[K:
+[2.286s] [01m[K/home/ionia/Desktop/dubal_ws/src/controller/include/controller_main_function.h:[m[K In function ‘[01m[Kvoid sbus_callback(sensor_msgs::msg::JointState_<std::allocator<void> >::SharedPtr)[m[K’:
+[2.286s] [01m[K/home/ionia/Desktop/dubal_ws/src/controller/include/controller_main_function.h:25:5:[m[K [01;31m[Kerror: [m[K‘[01m[Kref_0_in[m[K’ was not declared in this scope
+[2.286s]    25 |     [01;31m[Kref_0_in[m[K += ref[0]*dt;
+[2.286s]       |     [01;31m[K^~~~~~~~[m[K
+[2.288s] [01m[K/home/ionia/Desktop/dubal_ws/src/controller/include/controller_main_function.h:34:5:[m[K [01;31m[Kerror: [m[K‘[01m[Kref_1_in[m[K’ was not declared in this scope
+[2.288s]    34 |     [01;31m[Kref_1_in[m[K+=ref[1]*dt;
+[2.288s]       |     [01;31m[K^~~~~~~~[m[K
+[4.707s] make[2]: *** [CMakeFiles/controller_main.dir/build.make:63: CMakeFiles/controller_main.dir/src/controller_main.cpp.o] Error 1
+[4.707s] make[1]: *** [CMakeFiles/Makefile2:78: CMakeFiles/controller_main.dir/all] Error 2
+[4.708s] make: *** [Makefile:141: all] Error 2
+[4.711s] Invoked command in '/home/ionia/Desktop/dubal_ws/build/controller' returned '2': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/ionia/Desktop/dubal_ws/install/serial_reciver:/home/ionia/Desktop/dubal_ws/install/odrive_controller:/home/ionia/Desktop/dubal_ws/install/localizer:/home/ionia/Desktop/dubal_ws/install/dubal_eye_AND_web:/opt/ros/foxy /usr/bin/cmake --build /home/ionia/Desktop/dubal_ws/build/controller -- -j4 -l4

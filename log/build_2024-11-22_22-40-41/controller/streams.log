@@ -1,0 +1,66 @@
+[0.044s] Invoking command in '/home/ionia/Desktop/dubal_ws/build/controller': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/ionia/Desktop/dubal_ws/install/serial_reciver:/home/ionia/Desktop/dubal_ws/install/odrive_controller:/home/ionia/Desktop/dubal_ws/install/localizer:/home/ionia/Desktop/dubal_ws/install/dubal_eye_AND_web:/opt/ros/foxy /usr/bin/cmake /home/ionia/Desktop/dubal_ws/src/controller -DCMAKE_INSTALL_PREFIX=/home/ionia/Desktop/dubal_ws/install/controller
+[1.198s] -- The C compiler identification is GNU 9.4.0
+[1.198s] -- The CXX compiler identification is GNU 9.4.0
+[1.199s] -- Check for working C compiler: /usr/bin/cc
+[1.199s] -- Check for working C compiler: /usr/bin/cc -- works
+[1.199s] -- Detecting C compiler ABI info
+[1.199s] -- Detecting C compiler ABI info - done
+[1.199s] -- Detecting C compile features
+[1.199s] -- Detecting C compile features - done
+[1.200s] -- Check for working CXX compiler: /usr/bin/c++
+[1.200s] -- Check for working CXX compiler: /usr/bin/c++ -- works
+[1.200s] -- Detecting CXX compiler ABI info
+[1.200s] -- Detecting CXX compiler ABI info - done
+[1.200s] -- Detecting CXX compile features
+[1.200s] -- Detecting CXX compile features - done
+[1.201s] -- Found ament_cmake: 0.9.12 (/opt/ros/foxy/share/ament_cmake/cmake)
+[1.201s] -- Found PythonInterp: /usr/bin/python3 (found suitable version "3.8.10", minimum required is "3") 
+[1.201s] -- Using PYTHON_EXECUTABLE: /usr/bin/python3
+[1.687s] -- Found rclcpp: 2.4.3 (/opt/ros/foxy/share/rclcpp/cmake)
+[1.874s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[1.901s] -- Found rosidl_adapter: 1.3.1 (/opt/ros/foxy/share/rosidl_adapter/cmake)
+[2.226s] -- Found OpenSSL: /usr/lib/x86_64-linux-gnu/libcrypto.so (found version "1.1.1f")  
+[2.293s] -- Found FastRTPS: /opt/ros/foxy/include  
+[2.486s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[2.684s] -- Found rmw_implementation_cmake: 1.0.4 (/opt/ros/foxy/share/rmw_implementation_cmake/cmake)
+[2.689s] -- Using RMW implementation 'rmw_fastrtps_cpp' as default
+[2.691s] -- Looking for pthread.h
+[2.855s] -- Looking for pthread.h - found
+[2.855s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+[2.982s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Failed
+[2.982s] -- Looking for pthread_create in pthreads
+[3.074s] -- Looking for pthread_create in pthreads - not found
+[3.074s] -- Looking for pthread_create in pthread
+[3.178s] -- Looking for pthread_create in pthread - found
+[3.180s] -- Found Threads: TRUE  
+[3.423s] -- Found sensor_msgs: 2.0.5 (/opt/ros/foxy/share/sensor_msgs/cmake)
+[3.791s] -- Configuring done
+[3.812s] -- Generating done
+[3.816s] -- Build files have been written to: /home/ionia/Desktop/dubal_ws/build/controller
+[3.834s] Invoked command in '/home/ionia/Desktop/dubal_ws/build/controller' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/ionia/Desktop/dubal_ws/install/serial_reciver:/home/ionia/Desktop/dubal_ws/install/odrive_controller:/home/ionia/Desktop/dubal_ws/install/localizer:/home/ionia/Desktop/dubal_ws/install/dubal_eye_AND_web:/opt/ros/foxy /usr/bin/cmake /home/ionia/Desktop/dubal_ws/src/controller -DCMAKE_INSTALL_PREFIX=/home/ionia/Desktop/dubal_ws/install/controller
+[3.839s] Invoking command in '/home/ionia/Desktop/dubal_ws/build/controller': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/ionia/Desktop/dubal_ws/install/serial_reciver:/home/ionia/Desktop/dubal_ws/install/odrive_controller:/home/ionia/Desktop/dubal_ws/install/localizer:/home/ionia/Desktop/dubal_ws/install/dubal_eye_AND_web:/opt/ros/foxy /usr/bin/cmake --build /home/ionia/Desktop/dubal_ws/build/controller -- -j4 -l4
+[3.916s] [35m[1mScanning dependencies of target controller_main[0m
+[3.996s] [100%] Built target controller_main
+[4.018s] Invoked command in '/home/ionia/Desktop/dubal_ws/build/controller' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/ionia/Desktop/dubal_ws/install/serial_reciver:/home/ionia/Desktop/dubal_ws/install/odrive_controller:/home/ionia/Desktop/dubal_ws/install/localizer:/home/ionia/Desktop/dubal_ws/install/dubal_eye_AND_web:/opt/ros/foxy /usr/bin/cmake --build /home/ionia/Desktop/dubal_ws/build/controller -- -j4 -l4
+[4.077s] Invoking command in '/home/ionia/Desktop/dubal_ws/build/controller': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/ionia/Desktop/dubal_ws/install/serial_reciver:/home/ionia/Desktop/dubal_ws/install/odrive_controller:/home/ionia/Desktop/dubal_ws/install/localizer:/home/ionia/Desktop/dubal_ws/install/dubal_eye_AND_web:/opt/ros/foxy /usr/bin/cmake --install /home/ionia/Desktop/dubal_ws/build/controller
+[4.097s] -- Install configuration: ""
+[4.097s] -- Up-to-date: /home/ionia/Desktop/dubal_ws/install/controller/lib/controller/controller_main
+[4.098s] -- Up-to-date: /home/ionia/Desktop/dubal_ws/install/controller/share/controller/
+[4.098s] -- Up-to-date: /home/ionia/Desktop/dubal_ws/install/controller/share/controller//dubal_jjas_eye.py
+[4.098s] -- Up-to-date: /home/ionia/Desktop/dubal_ws/install/controller/share/controller//dubal_no_eye.py
+[4.098s] -- Up-to-date: /home/ionia/Desktop/dubal_ws/install/controller/share/ament_index/resource_index/package_run_dependencies/controller
+[4.098s] -- Installing: /home/ionia/Desktop/dubal_ws/install/controller/share/ament_index/resource_index/parent_prefix_path/controller
+[4.098s] -- Up-to-date: /home/ionia/Desktop/dubal_ws/install/controller/share/controller/environment/ament_prefix_path.sh
+[4.098s] -- Installing: /home/ionia/Desktop/dubal_ws/install/controller/share/controller/environment/ament_prefix_path.dsv
+[4.099s] -- Up-to-date: /home/ionia/Desktop/dubal_ws/install/controller/share/controller/environment/path.sh
+[4.099s] -- Installing: /home/ionia/Desktop/dubal_ws/install/controller/share/controller/environment/path.dsv
+[4.099s] -- Up-to-date: /home/ionia/Desktop/dubal_ws/install/controller/share/controller/local_setup.bash
+[4.099s] -- Up-to-date: /home/ionia/Desktop/dubal_ws/install/controller/share/controller/local_setup.sh
+[4.099s] -- Up-to-date: /home/ionia/Desktop/dubal_ws/install/controller/share/controller/local_setup.zsh
+[4.099s] -- Installing: /home/ionia/Desktop/dubal_ws/install/controller/share/controller/local_setup.dsv
+[4.099s] -- Installing: /home/ionia/Desktop/dubal_ws/install/controller/share/controller/package.dsv
+[4.100s] -- Up-to-date: /home/ionia/Desktop/dubal_ws/install/controller/share/ament_index/resource_index/packages/controller
+[4.100s] -- Up-to-date: /home/ionia/Desktop/dubal_ws/install/controller/share/controller/cmake/controllerConfig.cmake
+[4.100s] -- Up-to-date: /home/ionia/Desktop/dubal_ws/install/controller/share/controller/cmake/controllerConfig-version.cmake
+[4.100s] -- Up-to-date: /home/ionia/Desktop/dubal_ws/install/controller/share/controller/package.xml
+[4.103s] Invoked command in '/home/ionia/Desktop/dubal_ws/build/controller' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/ionia/Desktop/dubal_ws/install/serial_reciver:/home/ionia/Desktop/dubal_ws/install/odrive_controller:/home/ionia/Desktop/dubal_ws/install/localizer:/home/ionia/Desktop/dubal_ws/install/dubal_eye_AND_web:/opt/ros/foxy /usr/bin/cmake --install /home/ionia/Desktop/dubal_ws/build/controller

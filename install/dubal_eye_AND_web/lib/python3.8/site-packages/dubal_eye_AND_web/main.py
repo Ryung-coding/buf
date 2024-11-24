@@ -9,7 +9,7 @@ import time
 import threading
 
 # data 전역변수
-data = {'Long': 127.0772, 'Lat': 37.6315, 'Alt': 50,
+data = {'Long': 127.07269052, 'Lat': 37.49640628599, 'Alt': 50,
         'r': -1.0, 'p': -1.0, 'y': -1.0,
         'PL_NUM': '0000', 'PL_STATE': -1,
         'u1': -1.0, 'u2': -1.0, 'u3': -1.0,
@@ -65,7 +65,7 @@ class WebSocket:
             self.sio.emit('message', message)
             self.start_sending_SensorData(data)
 
-    def stop(self):
+    def stop(self):# 퍼블리시
         # 타이머와 스레드를 안전하게 종료
         self.stop_event.set()
         self.timer.cancel()
@@ -77,7 +77,7 @@ class UDPsocket:
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.server_address = target_address
 
-        self.cap = cv2.VideoCapture(0, cv2.CAP_V4L2)  # 웹캠
+        self.cap = cv2.VideoCapture(-1, cv2.CAP_V4L2)  # 웹캠
         self.cap.set(cv2.CAP_PROP_FPS, 13)
         self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
         self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
@@ -96,11 +96,10 @@ class UDPsocket:
                 
             ret, frame = self.cap.read()
 
-            if current_time - last_send_time >= 0.16:
+            if current_time - last_send_time >= 0.16 and ret:
                 last_send_time = current_time
-
                 resized_frame = cv2.resize(frame, (self.new_width, self.new_height), cv2.INTER_AREA)
-
+                
                 # 프레임을 JPEG로 인코딩
                 result, encoded_frame = cv2.imencode('.jpg', resized_frame, self.encode_param)
 
@@ -115,11 +114,11 @@ class UDPsocket:
 # GPS 데이터 콜백 함수
 def gps_callback(msg):
     global data
-    data['Long'] = msg.position[0]
-    data['Long'] = 127.0772
-    data['Lat'] = msg.position[1]
-    data['Lat'] = 37.6315
-    data['Alt'] = msg.position[2]
+    # data['Long'] = msg.position[0]
+    # data['Long'] = 127.0772
+    # data['Lat'] = msg.position[1]
+    # data['Lat'] = 37.6315
+    # data['Alt'] = msg.position[2]
     data['SIV'] = msg.position[3]
     data['FIX'] = msg.position[4]
     print(f"Updated GPS Data: {data}")
@@ -127,10 +126,13 @@ def gps_callback(msg):
 # IMU 데이터 콜백 함수
 def imu_callback(msg):
     global data
+    data['Alt'] = msg.position[2]
     data['r'] = msg.position[2]*180.0/np.pi
     data['p'] = msg.position[1]*180.0/np.pi
     data['u3'] = msg.velocity[1]*180.0/np.pi
     data['u2'] = msg.velocity[2]*180.0/np.pi
+    data['v1'] = msg.position[0]*180.0/np.pi
+    data['v2'] = msg.velocity[0]*180.0/np.pi
     print(f"Updated IMU Data: {data}")
 
 # Controller Input 데이터 콜백 함수
@@ -150,9 +152,16 @@ def controller_callback1(msg):
 # Controller Input 데이터 콜백 함수
 def dubal_callback(msg):
     global data
-    data['v1'] = msg.velocity[0]  # pos1 값을 u2에 저장
-    data['v2'] = msg.velocity[1]  # vel0 값을 u3에 저장
+    data['v1'] = msg.position[0]  # pos1 값을 u2에 저장
+    data['v2'] = msg.position[1]  # vel0 값을 u3에 저장
     print(f"Updated dubal Input Data: {data}")
+
+# UKF로 추청된 상태벡터 데이터 콜백 함수
+def ukf_callback(msg):
+    global data
+    data['Alt'] = msg.position[2]
+    data['Long'] = msg.position[0]
+    data['Lat'] = msg.position[1]
 
 # ------------------------------------------------------------------------------------#
 
@@ -164,6 +173,7 @@ def main(args=None):
     node.create_subscription(JointState, '/joint0_torque_controller/commands', controller_callback0, 10)
     node.create_subscription(JointState, '/joint1_torque_controller/commands', controller_callback1, 10)
     node.create_subscription(JointState, 'dubal_data', dubal_callback, 10)
+    node.create_subscription(JointState, 'ukf_state', ukf_callback, 10)
 
     # 웹소켓 송수신 관련 시작 #
     Socketclient = WebSocket('http://13.125.65.10:5024', 'AA:11:BB:22:CC:33')

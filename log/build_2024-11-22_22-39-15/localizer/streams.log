@@ -1,0 +1,21 @@
+[2.495s] Invoking command in '/home/ionia/Desktop/dubal_ws/src/localizer': PYTHONPATH=/home/ionia/Desktop/dubal_ws/build/localizer/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/ionia/Desktop/dubal_ws/install/localizer/lib/python3.8/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../../build/localizer build --build-base /home/ionia/Desktop/dubal_ws/build/localizer/build install --record /home/ionia/Desktop/dubal_ws/build/localizer/install.log --install-scripts $base/lib/localizer --single-version-externally-managed install_data
+[3.102s] running egg_info
+[3.102s] writing ../../build/localizer/localizer.egg-info/PKG-INFO
+[3.102s] writing dependency_links to ../../build/localizer/localizer.egg-info/dependency_links.txt
+[3.103s] writing entry points to ../../build/localizer/localizer.egg-info/entry_points.txt
+[3.103s] writing requirements to ../../build/localizer/localizer.egg-info/requires.txt
+[3.104s] writing top-level names to ../../build/localizer/localizer.egg-info/top_level.txt
+[3.177s] reading manifest file '../../build/localizer/localizer.egg-info/SOURCES.txt'
+[3.180s] writing manifest file '../../build/localizer/localizer.egg-info/SOURCES.txt'
+[3.180s] running build
+[3.180s] running build_py
+[3.200s] running install
+[3.202s] running install_lib
+[3.206s] running install_data
+[3.207s] running install_egg_info
+[3.210s] removing '/home/ionia/Desktop/dubal_ws/install/localizer/lib/python3.8/site-packages/localizer-0.0.0-py3.8.egg-info' (and everything under it)
+[3.211s] Copying ../../build/localizer/localizer.egg-info to /home/ionia/Desktop/dubal_ws/install/localizer/lib/python3.8/site-packages/localizer-0.0.0-py3.8.egg-info
+[3.217s] running install_scripts
+[3.262s] Installing odometry_node script to /home/ionia/Desktop/dubal_ws/install/localizer/lib/localizer
+[3.263s] writing list of installed files to '/home/ionia/Desktop/dubal_ws/build/localizer/install.log'
+[3.422s] Invoked command in '/home/ionia/Desktop/dubal_ws/src/localizer' returned '0': PYTHONPATH=/home/ionia/Desktop/dubal_ws/build/localizer/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/ionia/Desktop/dubal_ws/install/localizer/lib/python3.8/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../../build/localizer build --build-base /home/ionia/Desktop/dubal_ws/build/localizer/build install --record /home/ionia/Desktop/dubal_ws/build/localizer/install.log --install-scripts $base/lib/localizer --single-version-externally-managed install_data

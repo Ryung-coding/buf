@@ -1,0 +1,24 @@
+[35m[1mScanning dependencies of target controller_main[0m
+[ 50%] [32mBuilding CXX object CMakeFiles/controller_main.dir/src/controller_main.cpp.o[0m
+In file included from [01m[K/home/ionia/Desktop/dubal_ws/src/controller/src/controller_main.cpp:2[m[K:
+[01m[K/home/ionia/Desktop/dubal_ws/src/controller/include/controller_main_function.h:[m[K In function ‘[01m[Kvoid sbus_callback(sensor_msgs::msg::JointState_<std::allocator<void> >::SharedPtr)[m[K’:
+[01m[K/home/ionia/Desktop/dubal_ws/src/controller/include/controller_main_function.h:37:68:[m[K [01;31m[Kerror: [m[K‘[01m[Kbut_leg_ref[m[K’ was not declared in this scope
+   37 |     ref[2] = lowpassfilter(ref[2], sbus_data[2] > leg_down_bound ? [01;31m[Kbut_leg_ref[m[K : (sbus_data[2] > leg_up_bound ? mid_leg_ref : top_leg_ref), 0.2);
+      |                                                                    [01;31m[K^~~~~~~~~~~[m[K
+[01m[K/home/ionia/Desktop/dubal_ws/src/controller/include/controller_main_function.h:37:113:[m[K [01;31m[Kerror: [m[K‘[01m[Kmid_leg_ref[m[K’ was not declared in this scope
+   37 |     ref[2] = lowpassfilter(ref[2], sbus_data[2] > leg_down_bound ? but_leg_ref : (sbus_data[2] > leg_up_bound ? [01;31m[Kmid_leg_ref[m[K : top_leg_ref), 0.2);
+      |                                                                                                                 [01;31m[K^~~~~~~~~~~[m[K
+[01m[K/home/ionia/Desktop/dubal_ws/src/controller/include/controller_main_function.h:37:127:[m[K [01;31m[Kerror: [m[K‘[01m[Ktop_leg_ref[m[K’ was not declared in this scope
+   37 |     ref[2] = lowpassfilter(ref[2], sbus_data[2] > leg_down_bound ? but_leg_ref : (sbus_data[2] > leg_up_bound ? mid_leg_ref : [01;31m[Ktop_leg_ref[m[K), 0.2);
+      |                                                                                                                               [01;31m[K^~~~~~~~~~~[m[K
+[01m[K/home/ionia/Desktop/dubal_ws/src/controller/src/controller_main.cpp:[m[K In function ‘[01m[Kint main(int, char**)[m[K’:
+[01m[K/home/ionia/Desktop/dubal_ws/src/controller/src/controller_main.cpp:82:29:[m[K [01;31m[Kerror: [m[Kexpected ‘[01m[K;[m[K’ before ‘[01m[KMotor_L_cmd[m[K’
+   82 |             leg_controller()
+      |                             [01;31m[K^[m[K
+      |                             [32m[K;[m[K
+   83 | 
+   84 |             [32m[KMotor_L_cmd[m[K = balancing_CMD - heading_CMD;
+      |             [32m[K~~~~~~~~~~~[m[K      
+make[2]: *** [CMakeFiles/controller_main.dir/build.make:63: CMakeFiles/controller_main.dir/src/controller_main.cpp.o] Error 1
+make[1]: *** [CMakeFiles/Makefile2:78: CMakeFiles/controller_main.dir/all] Error 2
+make: *** [Makefile:141: all] Error 2

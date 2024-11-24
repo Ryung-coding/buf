@@ -10,7 +10,6 @@ setup.py
 ../../build/odrive_controller/odrive_controller.egg-info/zip-safe
 odrive_controller/__init__.py
 odrive_controller/odrive_controller.py
-odrive_controller/odrive_leg_controller.py
 resource/odrive_controller
 test/test_copyright.py
 test/test_flake8.py
