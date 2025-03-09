@@ -1,0 +1,16 @@
+<package format="3">
+  <name>pid_debugger</name>
+  <version>0.0.0</version>
+  <description>PID Debugger for monitoring controller and allocator info</description>
+  <maintainer email="milkomeda@seoultech.ac.kr">kyprus</maintainer>
+  <license>None</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <depend>rclpy</depend>
+  <depend>controller_interfaces</depend>
+  <depend>allocator_interfaces</depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

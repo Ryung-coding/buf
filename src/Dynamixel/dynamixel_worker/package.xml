@@ -1,0 +1,17 @@
+<package format="3">
+  <name>dynamixel_worker</name>
+  <version>0.0.0</version>
+  <description>dynamixel read and write node</description>
+  <maintainer email="milkomeda@seoultech.ac.kr">kyprus</maintainer>
+  <license>None</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <exec_depend>allocator_interfaces</exec_depend>
+  <exec_depend>watchdog_interfaces</exec_depend>
+  <depend>dynamixel_sdk</depend>
+  <exec_depend>rclcpp</exec_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

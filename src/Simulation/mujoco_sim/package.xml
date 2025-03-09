@@ -1,0 +1,17 @@
+<package format="3">
+  <name>mujoco_sim</name>
+  <version>0.0.0</version>
+  <description>drone simulator node with mujoco</description>
+  <maintainer email="milkomeda@seoultech.ac.kr">kyprus</maintainer>
+  <license>None</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <depend>rclpy</depend>
+  <depend>simulation_interfaces</depend>
+
+  <exec_depend>mujoco</exec_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

@@ -1,0 +1,17 @@
+<package format="3">
+  <name>imu_worker</name>
+  <version>0.0.0</version>
+  <description>IMU read write node.</description>
+  <maintainer email="milkomeda@seoultech.ac.kr">kyprus</maintainer>
+  <license>None</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <exec_depend>imu_interfaces</exec_depend>
+  <exec_depend>mujoco_interfaces</exec_depend>
+  <exec_depend>watchdog_interfaces</exec_depend>
+  <exec_depend>rclcpp</exec_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

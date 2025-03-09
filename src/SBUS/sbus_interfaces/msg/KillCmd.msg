@@ -1,0 +1,1 @@
+bool kill_activated # kill->true not_killed->false
