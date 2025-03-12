@@ -6,7 +6,17 @@
 #include "mujoco_interfaces/msg/mu_jo_co_meas.hpp"
 #include "watchdog_interfaces/msg/node_state.hpp"
 #include <chrono>
+#include <deque>
 #include <functional>
+
+constexpr double two_PI = 2.0 * M_PI;
+
+struct DelayedData
+{
+  rclcpp::Time stamp;
+  std::array<double, 3> q;
+  std::array<double, 3> qdot;
+};
 
 class IMUnode : public rclcpp::Node {
 public:
@@ -17,23 +27,25 @@ private:
   void heartbeat_timer_callback();
   void mujoco_callback(const mujoco_interfaces::msg::MuJoCoMeas::SharedPtr msg);
 
+  // Publisher
   rclcpp::Publisher<imu_interfaces::msg::ImuMeasured>::SharedPtr imu_publisher_;
-  rclcpp::TimerBase::SharedPtr timer_;
-    
-  // Publisher&Timer for Heartbeat signal
   rclcpp::Publisher<watchdog_interfaces::msg::NodeState>::SharedPtr heartbeat_publisher_;
+
+  // Timers
+  rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::TimerBase::SharedPtr heartbeat_timer_;
 
-  // MuJoCo Subscriber
+  // Subscriber
   rclcpp::Subscription<mujoco_interfaces::msg::MuJoCoMeas>::SharedPtr mujoco_subscription_;
 
-  double alpha_;
-  double beta_;
+  // Buffer (FIFO) to store data for delayed output
+  std::deque<DelayedData> data_buffer_;
 
-  std::array<double, 3> q_filtered_;
-  std::array<double, 3> qdot_filtered_;
+  // Duration representing 3ms delay (3,000,000ns)
+  rclcpp::Duration delay_{0, 3000000};
 
- uint8_t heartbeat_state_;  // previous node state
+  // Heartbeat
+  uint8_t heartbeat_state_;
 };
 
 #endif // IMU_WORKER_HPP

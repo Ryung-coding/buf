@@ -6,7 +6,15 @@
 #include "mujoco_interfaces/msg/mu_jo_co_meas.hpp"
 #include "watchdog_interfaces/msg/node_state.hpp"
 #include <chrono>
+#include <deque>
 #include <functional>
+
+struct DelayedData
+{
+  rclcpp::Time stamp;
+  std::array<double, 3> pos;
+  std::array<double, 3> vel;
+};
 
 class OptiTrackNode : public rclcpp::Node {
 public:
@@ -26,12 +34,12 @@ private:
 
   // MuJoCo Subscriber
   rclcpp::Subscription<mujoco_interfaces::msg::MuJoCoMeas>::SharedPtr mujoco_subscription_;
+  
+  // Buffer (FIFO) to store data for delayed output
+  std::deque<DelayedData> data_buffer_;
 
-  double alpha_;
-  double beta_;
-
-  std::array<double, 3> pos_filtered_;
-  std::array<double, 3> vel_filtered_;
+  // Duration representing 3ms delay (3,000,000ns)
+  rclcpp::Duration delay_{0, 3000000};
 
   uint8_t heartbeat_state_;  // previous node state
 };

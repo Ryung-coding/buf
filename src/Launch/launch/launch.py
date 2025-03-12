@@ -58,14 +58,6 @@ def generate_launch_description():
             executable='watchdog_worker',
             name='watchdog_node'
         ),
-
-        # PID Debugger Node
-        Node(
-            package='pid_debugger',
-            executable='pid_debugger',
-            name='pid_debugger_node',
-            output='screen'
-        ),
         
         # MuJoCo Node
         Node(
@@ -73,6 +65,14 @@ def generate_launch_description():
             executable='mujoco_node',
             name='mujoco_node',
             output = 'screen'
+        ),
+
+        # PID Debugger Node
+        Node(
+            package='pid_debugger',
+            executable='pid_debugger',
+            name='pid_debugger_node',
+            output='screen'
         ),
 
     ])

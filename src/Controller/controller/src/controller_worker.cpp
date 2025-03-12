@@ -5,7 +5,7 @@
 using namespace std::chrono_literals;
 
 //--------------------------------------
-// PID
+// classical cascade - PID
 //--------------------------------------
 
 template <std::size_t N>
@@ -41,7 +41,7 @@ double cascade_PID<N>::update(double ref, const std::array<double, N>& msr, std:
     double derivative = (lpfAlpha[i] * dRaw) + (lpfBeta[i] * prev_derivative[i]);
 
     // Sum
-    output[i] = (Kp[i] * error) + (Ki[i] * integral[i]) - (Kd[i] * derivative);
+    output[i] = (Kp[i] * error) + (Ki[i] * integral[i]) + (Kd[i] * derivative);
 
     // Update states
     prev_err[i] = error;
@@ -57,7 +57,7 @@ template class cascade_PID<3>;
 template class cascade_PID<4>;
 
 //--------------------------------------
-// heading angle PID
+// heading angle cascade - PID
 //--------------------------------------
 
 heading_PID::heading_PID(const std::array<double, 2>& Kp,
@@ -77,7 +77,7 @@ heading_PID::heading_PID(const std::array<double, 2>& Kp,
 
 double heading_PID::update(double ref, const std::array<double, 2>& msr, std::array<double, 2>& output) {
 
-  double error = ref - msr[0]; // First axis error: ref - msr[0]
+  double error = atan2(sin(ref - msr[0]), cos(ref - msr[0])); // angle err
 
   for (std::size_t i = 0; i < 2; i++) {
     if (i > 0) {error = output[i-1] - msr[i];}
@@ -91,7 +91,7 @@ double heading_PID::update(double ref, const std::array<double, 2>& msr, std::ar
     double derivative = (lpfAlpha[i] * dRaw) + (lpfBeta[i] * prev_derivative[i]);
 
     // Sum
-    output[i] = (Kp[i] * error) + (Ki[i] * integral[i]) - (Kd[i] * derivative);
+    output[i] = (Kp[i] * error) + (Ki[i] * integral[i]) + (Kd[i] * derivative);
 
     // Update states
     prev_err[i] = error;
@@ -112,7 +112,7 @@ ControllerNode<M>::ControllerNode() : Node("controller_node"),
    pid_z_(     Kp_z, Ki_z, Kd_z, Sat_gain_z, lpf_gain_z, dt )
 {
   // Drone total mass * gravity example
-  weight = 9.80665 * 4.5; // ~49.03325 N
+  weight = 9.80665 * 4.8; // ~49.03325 N
 
   // Subscriptions
   sbus_subscription_ = this->create_subscription<sbus_interfaces::msg::SbusSignal>("sbus_signal", 1, std::bind(&ControllerNode::sbusCallback, this, std::placeholders::_1));
@@ -210,18 +210,18 @@ void ControllerNode<M>::sbusCallback(const sbus_interfaces::msg::SbusSignal::Sha
     sbus_ref_[1] =  ref_p * 0.1;    // [m/s]
   }
   else if constexpr (M == ControlMode::ATTITUDE) {
-    sbus_ref_[0] =  ref_r * 1.0;   // [rad]
-    sbus_ref_[1] =  ref_p * 1.0;   // [rad]
+    sbus_ref_[0] =  ref_r * 0.1;   // [rad]
+    sbus_ref_[1] =  ref_p * 0.1;   // [rad]
   }
   else {sbus_ref_[0] = 0.0; sbus_ref_[1] = 0.0;}
 
 
   sbus_ref_[3] =  ref_z * 1.5;    // [m]
 
-  sbus_ref_[2] += ref_y * 0.01; // [rad], this clamps to (2-PI, PI)
-  sbus_ref_[2] = fmod(sbus_ref_[2] + PI, two_PI);
+  sbus_ref_[2] += ref_y * 0.003; // [rad], this clamps to (2-PI, PI)
+  sbus_ref_[2] = fmod(sbus_ref_[2] + M_PI, two_PI);
   if (sbus_ref_[2] < 0) {sbus_ref_[2] += two_PI;}
-  sbus_ref_[2] -= PI;
+  sbus_ref_[2] -= M_PI;
 }
 
 template <ControlMode M>

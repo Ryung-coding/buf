@@ -9,7 +9,7 @@ enum class ControlMode {
   ATTITUDE
 };
 
-inline constexpr ControlMode CONTROL_MODE = ControlMode::POS;
+inline constexpr ControlMode CONTROL_MODE = ControlMode::ATTITUDE;
 inline constexpr double dt = 0.001; // [sec]
 
 struct Gains {
@@ -46,16 +46,16 @@ inline constexpr Gains Kd_p       = Gains(0.0, 0.0, 0.0, 1.0);
 inline constexpr Gains Sat_gain_p = Gains(5.0, 5.0, 5.0, 5.0);
 inline constexpr Gains lpf_gain_p = Gains(0.8, 0.8, 0.8, 0.8);
 
-inline constexpr Gains Kp_y       = Gains(0.1, 0.3);
-inline constexpr Gains Ki_y       = Gains(0.2, 0.0);
-inline constexpr Gains Kd_y       = Gains(0.4, 0.2);
-inline constexpr Gains Sat_gain_y = Gains(1.0, 1.0);
+inline constexpr Gains Kp_y       = Gains(1.6, 0.04); // [rad/s N.m]
+inline constexpr Gains Ki_y       = Gains(0.7, 0.01); // [rad/s N.m]
+inline constexpr Gains Kd_y       = Gains(2.2, 0.05); // [rad/s N.m]
+inline constexpr Gains Sat_gain_y = Gains(0.2, 0.2); // [rad/s N.m]
 inline constexpr Gains lpf_gain_y = Gains(0.1, 0.1);
 
-inline constexpr Gains Kp_z       = Gains(2.0, 8.0);
-inline constexpr Gains Ki_z       = Gains(4.0, 0.0);
-inline constexpr Gains Kd_z       = Gains(1.0, 0.0);
-inline constexpr Gains Sat_gain_z = Gains(10.0, 5.0);
+inline constexpr Gains Kp_z       = Gains(1.7, 5.0); // [m/s N]
+inline constexpr Gains Ki_z       = Gains(1.5, 0.2); // [m/s N]
+inline constexpr Gains Kd_z       = Gains(0.3, 0.1); // [m/s N]
+inline constexpr Gains Sat_gain_z = Gains(1.2, 4.0); // [m/s N]
 inline constexpr Gains lpf_gain_z = Gains(0.1, 0.1);
 
 // inline constexpr Gains Kp_r       = Gains(0.0, 0.0, 0.0, 0.0);

@@ -15,8 +15,8 @@
 
 #include "controller_params.hpp"
 
-constexpr double PI = 3.1415926535897932384626433832795;
-constexpr double two_PI = 2.0 * PI;
+constexpr double two_PI = 2.0 * M_PI;
+constexpr double minus_PI = -M_PI;
 
 template <std::size_t N>
 class cascade_PID {
@@ -96,8 +96,8 @@ private:
   // (2) Cascade PID members with those dims
   cascade_PID<ROLL_DIM>  pid_roll_;
   cascade_PID<PITCH_DIM> pid_pitch_;
-  cascade_PID<YAW_DIM>   pid_yaw_;
-  heading_PID            pid_z_;
+  heading_PID            pid_yaw_;
+  cascade_PID<Z_DIM>     pid_z_;
 
   void sbusCallback(const sbus_interfaces::msg::SbusSignal::SharedPtr msg);
   void optitrackCallback(const mocap_interfaces::msg::MocapMeasured::SharedPtr msg);
