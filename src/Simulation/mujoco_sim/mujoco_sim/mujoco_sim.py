@@ -21,7 +21,7 @@ def quaternion_to_euler(quat):
     # Pitch
     sinp = 2.0 * (w * y - z * x)
     if abs(sinp) >= 1: pitch = math.copysign(math.pi / 2, sinp)
-    else: pitch = math.asin(sinp)
+    else: pitch = -math.asin(sinp)
 
     # Yaw
     siny_cosp = 2.0 * (w * z + x * y)
@@ -94,7 +94,7 @@ class MuJoCoSimulatorNode(Node):
         # Create and publish the message
         msg = MuJoCoMeas(
             q=[q[0], q[1], q[2]],
-            qdot=[qdot[0], qdot[1], qdot[2]],
+            qdot=[qdot[0], -qdot[1], -qdot[2]],
             pos=[pos[0], pos[1], pos[2]],
             vel=[vel[0], vel[1], vel[2]]
         )

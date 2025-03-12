@@ -4,6 +4,10 @@
 
 using namespace std::chrono_literals;
 
+//--------------------------------------
+// PID
+//--------------------------------------
+
 template <std::size_t N>
 cascade_PID<N>::cascade_PID(const std::array<double, N>& Kp,
                             const std::array<double, N>& Ki,
@@ -37,7 +41,7 @@ double cascade_PID<N>::update(double ref, const std::array<double, N>& msr, std:
     double derivative = (lpfAlpha[i] * dRaw) + (lpfBeta[i] * prev_derivative[i]);
 
     // Sum
-    output[i] = (Kp[i] * error) + (Ki[i] * integral[i]) + (Kd[i] * derivative);
+    output[i] = (Kp[i] * error) + (Ki[i] * integral[i]) - (Kd[i] * derivative);
 
     // Update states
     prev_err[i] = error;
@@ -52,6 +56,50 @@ template class cascade_PID<2>;
 template class cascade_PID<3>;
 template class cascade_PID<4>;
 
+//--------------------------------------
+// heading angle PID
+//--------------------------------------
+
+heading_PID::heading_PID(const std::array<double, 2>& Kp,
+                         const std::array<double, 2>& Ki,
+                         const std::array<double, 2>& Kd,
+                         const std::array<double, 2>& Sat_gain,
+                         const std::array<double, 2>& lpf_gain,
+                         double dt)
+  :dt(dt), Kp(Kp), Ki(Ki), Kd(Kd),
+  Sat_gain(Sat_gain), integral{}, prev_err{}, prev_derivative{}
+{
+  for (std::size_t i = 0; i < 2; i++) {
+    lpfAlpha[i] = lpf_gain[i];
+    lpfBeta[i]  = 1.0 - lpf_gain[i];
+  }
+}
+
+double heading_PID::update(double ref, const std::array<double, 2>& msr, std::array<double, 2>& output) {
+
+  double error = ref - msr[0]; // First axis error: ref - msr[0]
+
+  for (std::size_t i = 0; i < 2; i++) {
+    if (i > 0) {error = output[i-1] - msr[i];}
+
+    // Integral
+    integral[i] += error * dt;
+    integral[i] = std::clamp(integral[i], -Sat_gain[i], Sat_gain[i]);
+
+    // Derivative
+    double dRaw = (error - prev_err[i]) / dt;
+    double derivative = (lpfAlpha[i] * dRaw) + (lpfBeta[i] * prev_derivative[i]);
+
+    // Sum
+    output[i] = (Kp[i] * error) + (Ki[i] * integral[i]) - (Kd[i] * derivative);
+
+    // Update states
+    prev_err[i] = error;
+    prev_derivative[i] = derivative;
+  }
+
+  return output[1]; // returns final output
+}
 
 //--------------------------------------
 // ControllerNode Implementation
@@ -77,23 +125,13 @@ ControllerNode<M>::ControllerNode() : Node("controller_node"),
   debug_val_publisher_  = this->create_publisher<controller_interfaces::msg::ControllerDebugVal>("controller_info", 1);
 
   // Timers
-
   controller_timer_ = this->create_wall_timer(std::chrono::milliseconds(1), std::bind(&ControllerNode::controller_timer_callback, this));
   heartbeat_timer_ = this->create_wall_timer(std::chrono::milliseconds(100), std::bind(&ControllerNode::heartbeat_timer_callback, this));
   debugging_timer_ = this->create_wall_timer(std::chrono::milliseconds(100), std::bind(&ControllerNode::debugging_timer_callback, this));
-
-  // Initialize times
-  current_callback_time_ = this->now();
-  last_callback_time_    = this->now();
 }
 
 template <ControlMode M>
 void ControllerNode<M>::controller_timer_callback() {
-  //-------- Loop Time Calculate --------
-  current_callback_time_ = this->now();
-  current_dt = (current_callback_time_ - last_callback_time_).seconds();
-  if (current_dt > 0.0) {filtered_frequency_ = 0.05 * (1.0 / current_dt) + 0.95 * filtered_frequency_;}
-  last_callback_time_ = current_callback_time_;
 
   //--------------- ROLL ---------------
   std::array<double,ROLL_DIM> msrRoll{};  
@@ -166,22 +204,24 @@ void ControllerNode<M>::sbusCallback(const sbus_interfaces::msg::SbusSignal::Sha
   if constexpr (M == ControlMode::POS) {
     sbus_ref_[0] += ref_r * 0.01; // [m]
     sbus_ref_[1] += ref_p * 0.01; // [m]
-    sbus_ref_[2] += ref_y * 0.01; // [rad]
-    sbus_ref_[3] =  ref_z * 1.0;    // [m]
   }
   else if constexpr (M == ControlMode::VEL) {
     sbus_ref_[0] =  ref_r * 0.1;    // [m/s]
     sbus_ref_[1] =  ref_p * 0.1;    // [m/s]
-    sbus_ref_[2] += ref_y * 0.0001; // [rad]
-    sbus_ref_[3] =  ref_z * 1.0;    // [m]
   }
   else if constexpr (M == ControlMode::ATTITUDE) {
     sbus_ref_[0] =  ref_r * 1.0;   // [rad]
     sbus_ref_[1] =  ref_p * 1.0;   // [rad]
-    sbus_ref_[2] += ref_y * 0.01; // [rad]
-    sbus_ref_[3] =  ref_z * 1.5;    // [m]
   }
-  else {sbus_ref_[0] = 0.0; sbus_ref_[1] = 0.0; sbus_ref_[2] = 0.0; sbus_ref_[3] = 0.0;}
+  else {sbus_ref_[0] = 0.0; sbus_ref_[1] = 0.0;}
+
+
+  sbus_ref_[3] =  ref_z * 1.5;    // [m]
+
+  sbus_ref_[2] += ref_y * 0.01; // [rad], this clamps to (2-PI, PI)
+  sbus_ref_[2] = fmod(sbus_ref_[2] + PI, two_PI);
+  if (sbus_ref_[2] < 0) {sbus_ref_[2] += two_PI;}
+  sbus_ref_[2] -= PI;
 }
 
 template <ControlMode M>
@@ -213,15 +253,33 @@ void ControllerNode<M>::debugging_timer_callback() {
   for (int i = 0; i < 9; i++) {info_msg.sbus_chnl[i] = sbus_chnl_[i];}
   for (int i = 0; i < 4; i++) {info_msg.des_pos[i] = sbus_ref_[i];}
 
-  info_msg.pid_mx[0] = pid_midval_roll_[0];
-  info_msg.pid_mx[1] = pid_midval_roll_[1];
-  info_msg.pid_mx[2] = pid_midval_roll_[2];
-  info_msg.pid_mx[3] = pid_midval_roll_[3];
+  if constexpr (M == ControlMode::POS) {
+    info_msg.pid_mx[0] = pid_midval_roll_[0];
+    info_msg.pid_mx[1] = pid_midval_roll_[1];
+    info_msg.pid_mx[2] = pid_midval_roll_[2];
+    info_msg.pid_mx[3] = pid_midval_roll_[3];
 
-  info_msg.pid_my[0] = pid_midval_pitch_[0];
-  info_msg.pid_my[1] = pid_midval_pitch_[1];
-  info_msg.pid_my[2] = pid_midval_pitch_[2];
-  info_msg.pid_my[3] = pid_midval_pitch_[3];
+    info_msg.pid_my[0] = pid_midval_pitch_[0];
+    info_msg.pid_my[1] = pid_midval_pitch_[1];
+    info_msg.pid_my[2] = pid_midval_pitch_[2];
+    info_msg.pid_my[3] = pid_midval_pitch_[3];
+  }
+  else if constexpr (M == ControlMode::VEL) {
+    info_msg.pid_mx[1] = pid_midval_roll_[0];
+    info_msg.pid_mx[2] = pid_midval_roll_[1];
+    info_msg.pid_mx[3] = pid_midval_roll_[2];
+
+    info_msg.pid_my[1] = pid_midval_pitch_[0];
+    info_msg.pid_my[2] = pid_midval_pitch_[1];
+    info_msg.pid_my[3] = pid_midval_pitch_[2];
+  }
+  else if constexpr (M == ControlMode::ATTITUDE) {
+    info_msg.pid_mx[2] = pid_midval_roll_[0];
+    info_msg.pid_mx[3] = pid_midval_roll_[1];
+
+    info_msg.pid_my[2] = pid_midval_pitch_[0];
+    info_msg.pid_my[3] = pid_midval_pitch_[1];
+  }
 
   info_msg.pid_mz[0] = pid_midval_yaw_[0];
   info_msg.pid_mz[1] = pid_midval_yaw_[1];

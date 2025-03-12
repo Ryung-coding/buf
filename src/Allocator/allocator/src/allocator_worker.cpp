@@ -6,10 +6,10 @@ AllocatorWorker::AllocatorWorker() : Node("allocator_node") {
   const double l_1 = 0.18;  // Arm length
   const double l_2 = 0.14;
   const double C_m = 0.21496;
-  A = (Matrix4d() << l_1,  l_1, -l_1, -l_1,
-                     l_2, -l_2, -l_2,  l_2,
-                     C_m, -C_m,  C_m, -C_m,
-                     1.0,  1.0,  1.0,  1.0).finished();
+  A = (Matrix4d() << -l_1,  l_1,  l_1, -l_1,
+                     -l_2, -l_2,  l_2,  l_2,
+                      C_m, -C_m,  C_m, -C_m,
+                      1.0,  1.0,  1.0,  1.0).finished();
   A_inv = A.inverse();
 
   // F = a * pwm^2 + b
@@ -31,9 +31,20 @@ AllocatorWorker::AllocatorWorker() : Node("allocator_node") {
   pwm_timer_ = this->create_wall_timer(std::chrono::milliseconds(1), std::bind(&AllocatorWorker::publishPwmVal, this));
   heartbeat_timer_ = this->create_wall_timer(std::chrono::milliseconds(100), std::bind(&AllocatorWorker::heartbeat_timer_callback, this));
   debugging_timer_ = this->create_wall_timer(std::chrono::milliseconds(100), std::bind(&AllocatorWorker::debugging_timer_callback, this));
+
+  // Initialize times
+  current_callback_time_ = this->now();
+  last_callback_time_    = this->now();
 }
 
 void AllocatorWorker::controllerCallback(const controller_interfaces::msg::ControllerOutput::SharedPtr msg) {
+
+  //-------- Loop Time Calculate --------
+  current_callback_time_ = this->now();
+  current_dt = (current_callback_time_ - last_callback_time_).seconds();
+  if (current_dt > 0.0) {filtered_frequency_ = 0.05 * (1.0 / current_dt) + 0.95 * filtered_frequency_;}
+  last_callback_time_ = current_callback_time_;
+
   // get [Mx My Mz F]
   f << msg->moment[0], msg->moment[1], msg->moment[2], msg->force;
 
@@ -94,6 +105,8 @@ void AllocatorWorker::debugging_timer_callback() {
   info_msg.pwm[1] = pwm[1];
   info_msg.pwm[2] = pwm[2];
   info_msg.pwm[3] = pwm[3];
+
+  info_msg.loop_rate = filtered_frequency_;
 
   // Publish
   debug_val_publisher_->publish(info_msg);

@@ -42,6 +42,12 @@ private:
   rclcpp::TimerBase::SharedPtr heartbeat_timer_;
   rclcpp::TimerBase::SharedPtr debugging_timer_;
 
+  // Time tracking
+  rclcpp::Time current_callback_time_;
+  rclcpp::Time last_callback_time_;
+  double current_dt = 0.0; // [sec]
+  double filtered_frequency_ = 900.0; // [Hz]
+
   Vector4d f = Vector4d::Zero(); // PID-control result [N.m N.m N.m N]
   Vector4d u = Vector4d::Zero(); // Allocated result [N N N N]
   Vector4d pwm = Vector4d::Zero(); // Allocated result [pwm pwm pwm pwm]

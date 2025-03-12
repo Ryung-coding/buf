@@ -16,10 +16,10 @@
 #include "controller_params.hpp"
 
 constexpr double PI = 3.1415926535897932384626433832795;
+constexpr double two_PI = 2.0 * PI;
 
 template <std::size_t N>
-class cascade_PID
-{
+class cascade_PID {
 public:
     cascade_PID(const std::array<double, N>& Kp,
                 const std::array<double, N>& Ki,
@@ -33,21 +33,45 @@ public:
                   std::array<double, N>& output);
 
 private:
-    double dt;
-    std::array<double,N> Kp, Ki, Kd;
-    std::array<double,N> Sat_gain;
-    std::array<double,N> lpfAlpha;
-    std::array<double,N> lpfBeta;
+  double dt;
+  std::array<double,N> Kp, Ki, Kd;
+  std::array<double,N> Sat_gain;
+  std::array<double,N> lpfAlpha;
+  std::array<double,N> lpfBeta;
 
-    std::array<double,N> integral;
-    std::array<double,N> prev_err;
-    std::array<double,N> prev_derivative;
+  std::array<double,N> integral;
+  std::array<double,N> prev_err;
+  std::array<double,N> prev_derivative;
 };
 
 // Extern template declarations to avoid link duplication
 extern template class cascade_PID<2>;
 extern template class cascade_PID<3>;
 extern template class cascade_PID<4>;
+
+class heading_PID {
+public:
+  heading_PID(const std::array<double, 2>& Kp,
+              const std::array<double, 2>& Ki,
+              const std::array<double, 2>& Kd,
+              const std::array<double, 2>& Sat_gain,
+              const std::array<double, 2>& lpf_gain,
+              double dt);
+
+  double update(double ref,
+                const std::array<double, 2>& msr,
+                std::array<double, 2>& output);
+
+private:double dt;
+  std::array<double,2> Kp, Ki, Kd;
+  std::array<double,2> Sat_gain;
+  std::array<double,2> lpfAlpha;
+  std::array<double,2> lpfBeta;
+
+  std::array<double,2> integral;
+  std::array<double,2> prev_err;
+  std::array<double,2> prev_derivative;
+};
 
 template <ControlMode M>
 class ControllerNode : public rclcpp::Node {
@@ -73,7 +97,7 @@ private:
   cascade_PID<ROLL_DIM>  pid_roll_;
   cascade_PID<PITCH_DIM> pid_pitch_;
   cascade_PID<YAW_DIM>   pid_yaw_;
-  cascade_PID<Z_DIM>     pid_z_;
+  heading_PID            pid_z_;
 
   void sbusCallback(const sbus_interfaces::msg::SbusSignal::SharedPtr msg);
   void optitrackCallback(const mocap_interfaces::msg::MocapMeasured::SharedPtr msg);
@@ -94,12 +118,6 @@ private:
 
   rclcpp::Publisher<controller_interfaces::msg::ControllerDebugVal>::SharedPtr debug_val_publisher_;
   rclcpp::TimerBase::SharedPtr debugging_timer_;
-
-  // Time tracking
-  rclcpp::Time current_callback_time_;
-  rclcpp::Time last_callback_time_;
-  double current_dt = 0.0; // [sec]
-  double filtered_frequency_ = 900.0; // [Hz]
 
   double weight = 0.0; // drone mg [N]
 
