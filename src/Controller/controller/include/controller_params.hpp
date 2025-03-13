@@ -38,17 +38,17 @@ inline constexpr Gains Kp_r       = Gains(0.5, 0.5, 0.5, 0.5);
 inline constexpr Gains Ki_r       = Gains(0.0, 0.0, 0.0, 0.0);
 inline constexpr Gains Kd_r       = Gains(0.0, 0.0, 0.0, 1.0);
 inline constexpr Gains Sat_gain_r = Gains(5.0, 5.0, 5.0, 5.0);
-inline constexpr Gains lpf_gain_r = Gains(0.8, 0.8, 0.8, 0.8);
+inline constexpr Gains lpf_gain_r = Gains(0.1, 0.1, 0.1, 0.1);
 
 inline constexpr Gains Kp_p       = Gains(0.5, 0.5, 0.5, 0.5);
 inline constexpr Gains Ki_p       = Gains(0.0, 0.0, 0.0, 0.0);
 inline constexpr Gains Kd_p       = Gains(0.0, 0.0, 0.0, 1.0);
 inline constexpr Gains Sat_gain_p = Gains(5.0, 5.0, 5.0, 5.0);
-inline constexpr Gains lpf_gain_p = Gains(0.8, 0.8, 0.8, 0.8);
+inline constexpr Gains lpf_gain_p = Gains(0.1, 0.1, 0.1, 0.1);
 
-inline constexpr Gains Kp_y       = Gains(1.6, 0.04); // [rad/s N.m]
-inline constexpr Gains Ki_y       = Gains(0.7, 0.01); // [rad/s N.m]
-inline constexpr Gains Kd_y       = Gains(2.2, 0.05); // [rad/s N.m]
+inline constexpr Gains Kp_y       = Gains(1.6, 0.02); // [rad/s N.m]
+inline constexpr Gains Ki_y       = Gains(1.2, 0.01); // [rad/s N.m]
+inline constexpr Gains Kd_y       = Gains(2.2, 0.1); // [rad/s N.m]
 inline constexpr Gains Sat_gain_y = Gains(0.2, 0.2); // [rad/s N.m]
 inline constexpr Gains lpf_gain_y = Gains(0.1, 0.1);
 

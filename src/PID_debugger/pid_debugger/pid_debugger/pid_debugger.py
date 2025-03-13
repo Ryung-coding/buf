@@ -4,8 +4,9 @@ from rclpy.node import Node
 import threading
 import signal
 
-from PyQt5.QtWidgets import QApplication, QWidget, QLineEdit, QLabel, QVBoxLayout, QHBoxLayout, QProgressBar, QRadioButton, QGroupBox, QGridLayout
+from PyQt5.QtWidgets import QApplication, QWidget, QLineEdit, QLabel, QVBoxLayout, QHBoxLayout, QProgressBar, QRadioButton, QGroupBox
 from PyQt5.QtCore import pyqtSignal, QTimer
+import pyqtgraph as pg
 
 from controller_interfaces.msg import ControllerDebugVal
 from allocator_interfaces.msg import AllocatorDebugVal
@@ -57,6 +58,10 @@ class DebugGUI(QWidget):
         bot_hbox.addWidget(self.create_dmxl_group())
         layout.addLayout(bot_hbox)
 
+        plot_box = QHBoxLayout()
+        plot_box.addWidget(self.create_plot_group())
+        layout.addLayout(plot_box)
+
         self.setLayout(layout)
 
         self.timer = QTimer()
@@ -84,6 +89,10 @@ class DebugGUI(QWidget):
 
         self.allocator_data = {
             "pwm": [0.0] * 4,
+            "a1_des": [0.0, 0.0, 0.0, 0.0, 0.0],
+            "a2_des": [0.0, 0.0, 0.0, 0.0, 0.0],
+            "a3_des": [0.0, 0.0, 0.0, 0.0, 0.0],
+            "a4_des": [0.0, 0.0, 0.0, 0.0, 0.0],
             "loop_rate": 0.0
         }
 
@@ -166,12 +175,6 @@ class DebugGUI(QWidget):
         padding_label = QLabel()
         padding_label.setFixedWidth(65)
         labels_layout.addWidget(padding_label)
-        # pid_headers = [" m ", "m/s", "rad", "rad/s"]
-        # for label in pid_headers:
-        #     unit_label = QLabel(label)
-        #     unit_label.setFixedHeight(30)
-        #     labels_layout.addWidget(unit_label)
-        # pid_layout.addLayout(labels_layout)
 
         pid_labels = ["r", "p", "y", "z"]
         for label in pid_labels:
@@ -265,14 +268,6 @@ class DebugGUI(QWidget):
         joint_group_box = QGroupBox("Joint Write")
         joint_layout = QVBoxLayout()
 
-        nums = ["  ", "q1", "q2", "q3", "q4", "q5"]
-        num_layout = QHBoxLayout()
-        for num in nums:
-            q_label = QLabel(num)
-            q_label.setFixedHeight(35)
-            num_layout.addWidget(q_label)
-        joint_layout.addLayout(num_layout)
-
         arms = ["A1", "A2", "A3", "A4"]
         for arm in arms:
             arm_des = []
@@ -282,7 +277,7 @@ class DebugGUI(QWidget):
                 value_label = QLineEdit()
                 value_label.setText("  ?")
                 value_label.setReadOnly(True)
-                value_label.setFixedWidth(60)
+                value_label.setFixedWidth(100)
                 arm_des.append(value_label)
                 arm_i_layout.addWidget(value_label)
             joint_layout.addLayout(arm_i_layout)
@@ -294,7 +289,7 @@ class DebugGUI(QWidget):
     def create_nodestate_group(self):
         self.node_states = []
 
-        nodestate_group_box = QGroupBox("Node quality")
+        nodestate_group_box = QGroupBox("Control Hz")
         nodestate_group_box.setFixedWidth(180)
         joint_layout = QVBoxLayout()
 
@@ -349,7 +344,7 @@ class DebugGUI(QWidget):
         padding_label = QLabel()
         padding_label.setFixedWidth(85)
         imu_label_layout.addWidget(padding_label)
-        imu_labels = ["pos", "vel"]
+        imu_labels = ["rad", "rad/s"]
         for label in imu_labels:
             rpy_label = QLabel(label)
             rpy_label.setFixedHeight(35)
@@ -377,7 +372,7 @@ class DebugGUI(QWidget):
             imu_group_layout.addLayout(header_layout)
 
         imu_group_box.setLayout(imu_group_layout)
-        imu_group_box.setFixedWidth(280)
+        imu_group_box.setFixedWidth(350)
         return imu_group_box
 
     def create_opti_group(self):
@@ -390,7 +385,7 @@ class DebugGUI(QWidget):
         padding_label = QLabel()
         padding_label.setFixedWidth(85)
         opti_label_layout.addWidget(padding_label)
-        opti_labels = ["pos", "vel"]
+        opti_labels = [" m ", "m/s"]
         for label in opti_labels:
             opti_label = QLabel(label)
             opti_label.setFixedHeight(35)
@@ -418,7 +413,7 @@ class DebugGUI(QWidget):
 
 
         opti_group_box.setLayout(opti_group_layout)
-        opti_group_box.setFixedWidth(280)
+        opti_group_box.setFixedWidth(350)
         return opti_group_box
 
     def create_dmxl_group(self):
@@ -431,13 +426,6 @@ class DebugGUI(QWidget):
         padding_label = QLabel()
         padding_label.setFixedWidth(1)
         num_layout.addWidget(padding_label)
-        nums = ["q1", "q2", "q3", "q4", "q5"]
-        for num in nums:
-            q_label = QLabel(num)
-            q_label.setFixedHeight(42)
-            q_label.setFixedWidth(30)
-            num_layout.addWidget(q_label)
-        dmxl_group_layout.addLayout(num_layout)
         
         arms = ["A1", "A2", "A3", "A4"]
         for arm in arms:
@@ -448,7 +436,7 @@ class DebugGUI(QWidget):
                 value_label = QLineEdit()
                 value_label.setText("  ?")
                 value_label.setReadOnly(True)
-                value_label.setFixedWidth(85)
+                value_label.setFixedWidth(100)
                 arm_mea.append(value_label)
                 arm_i_layout.addWidget(value_label)
             dmxl_group_layout.addLayout(arm_i_layout)
@@ -482,6 +470,58 @@ class DebugGUI(QWidget):
         self.allocator_data["a3_des"] = msg.a3_des
         self.allocator_data["a4_des"] = msg.a4_des
         self.allocator_data["loop_rate"] = msg.loop_rate
+
+    def create_plot_group(self):
+        plot_group = QGroupBox()
+        vbox = QVBoxLayout()
+
+        self.plot_widgets = []
+        self.plot_curves_ref = []
+        self.plot_curves_mea = []
+
+        # r, p, y, z plots
+        idxs = ["r", "p", "y", "z"]
+        for idx in idxs:
+            hbox = QHBoxLayout()
+            idx_label = QLabel(idx)
+            idx_label.setFixedHeight(50)
+            hbox.addWidget(idx_label)
+
+            plot_widget = pg.PlotWidget()
+            plot_widget.setBackground('w')
+
+            plot_item = plot_widget.getPlotItem()
+            # Hide x-axis
+            plot_item.showAxis('bottom', show=False)
+
+            # Set left axis color to black
+            plot_item.getAxis('left').setPen(pg.mkPen(color='k'))
+            plot_item.getAxis('left').setTextPen(pg.mkPen(color='k'))
+
+            # Set y-axis range
+            if idx == "z": plot_item.setYRange(0.0, 1.5)
+            elif idx == "y": plot_item.setYRange(-3.14, 3.14)
+            else: plot_item.setYRange(-0.017, 0.017)
+
+            # Two curves: reference (blue) and measurement (red), each with thicker lines
+            curve_ref = plot_widget.plot(name="Ref", pen=pg.mkPen(color='b', width=3))
+            curve_mea = plot_widget.plot(name="Mea", pen=pg.mkPen(color='r', width=3))
+
+            self.plot_widgets.append(plot_widget)
+            self.plot_curves_ref.append(curve_ref)
+            self.plot_curves_mea.append(curve_mea)
+
+            hbox.addWidget(plot_widget)
+            vbox.addLayout(hbox)
+
+        plot_group.setLayout(vbox)
+
+        # 5 seconds of buffered data at 10 Hz = 50 samples
+        self.plot_ref_data = [[] for _ in range(4)]  # [r, p, y, z] desired values
+        self.plot_mea_data = [[] for _ in range(4)]  # [r, p, y, z] measured values
+        self.x_data = list(range(50))
+
+        return plot_group
 
     def update_gui(self):
         # Update SBUS channel values
@@ -530,20 +570,47 @@ class DebugGUI(QWidget):
         # Update Joint Desired values
         for i, row in enumerate(self.joint_des):
             for j, joint in enumerate(row):
-                joint.setText(str(round(self.controller_data[f'a{i+1}_mea'][j], 2)))
+                joint.setText(f"{self.allocator_data[f'a{i+1}_des'][j]:.2f}")
+
+        # Update Joint Measured values
+        for i, row in enumerate(self.joint_meas):
+            for j, joint in enumerate(row):
+                joint.setText(f"{self.controller_data[f'a{i+1}_mea'][j]:.2f}")
 
         # Update IMU measurements
         for i, imu_data in enumerate([self.controller_data['imu_roll'], self.controller_data['imu_pitch'], self.controller_data['imu_yaw']]):
             for j, value in enumerate(self.imu_meas[i]):
-                value.setText(str(round(imu_data[j], 2)))
+                value.setText(f"{imu_data[j]:.3f}")
 
         # Update Opti measurements
         for i, opti_data in enumerate([self.controller_data['opti_x'], self.controller_data['opti_y'], self.controller_data['opti_z']]):
             for j, value in enumerate(self.opti_meas[i]):
-                value.setText(str(round(opti_data[j], 2)))
+                value.setText(f"{opti_data[j]:.3f}")
 
         # Update node states
         self.node_states[0].setText(str(round(self.allocator_data['loop_rate'])))  # Controller loop rate
+
+        # Update plots
+
+        for i in range(4):
+            if len(self.plot_ref_data[i]) >= 50:
+                self.plot_ref_data[i].pop(0)
+                self.plot_mea_data[i].pop(0)
+                
+        self.plot_ref_data[0].append(self.controller_data['des_pos'][0])
+        self.plot_ref_data[1].append(self.controller_data['des_pos'][1])
+        self.plot_ref_data[2].append(self.controller_data['des_pos'][2])
+        self.plot_ref_data[3].append(self.controller_data['des_pos'][3])
+
+        self.plot_mea_data[0].append(self.controller_data['imu_roll'][0])
+        self.plot_mea_data[1].append(self.controller_data['imu_pitch'][0])
+        self.plot_mea_data[2].append(self.controller_data['imu_yaw'][0])
+        self.plot_mea_data[3].append(self.controller_data['opti_z'][0])
+        
+        for i in range(4):
+            length = len(self.plot_ref_data[i])
+            self.plot_curves_ref[i].setData(self.x_data[:length], self.plot_ref_data[i])
+            self.plot_curves_mea[i].setData(self.x_data[:length], self.plot_mea_data[i])
 
 def run_ros2_node(node):
     try:

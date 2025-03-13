@@ -41,7 +41,7 @@ private:
   struct sockaddr_can addr_;  // CAN interface address structure.
 
   // Coefficients for conversions
-  const double LPF_alpha_ = 0.5; // Low-pass filter coefficient (0 < alpha_ < 1)
+  const double LPF_alpha_ = 0.01; // Low-pass filter coefficient (0 < alpha_ < 1)
   const double LPF_beta_ = 1.0 - LPF_alpha_; // Low-pass filter coefficient
   const double K1_ = 8568.19;
   const double b_ = 331.7;

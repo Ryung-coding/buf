@@ -210,15 +210,15 @@ void ControllerNode<M>::sbusCallback(const sbus_interfaces::msg::SbusSignal::Sha
     sbus_ref_[1] =  ref_p * 0.1;    // [m/s]
   }
   else if constexpr (M == ControlMode::ATTITUDE) {
-    sbus_ref_[0] =  ref_r * 0.1;   // [rad]
-    sbus_ref_[1] =  ref_p * 0.1;   // [rad]
+    sbus_ref_[0] =  ref_r * 0.06;   // [rad]
+    sbus_ref_[1] =  ref_p * 0.06;   // [rad]
   }
   else {sbus_ref_[0] = 0.0; sbus_ref_[1] = 0.0;}
 
 
   sbus_ref_[3] =  ref_z * 1.5;    // [m]
 
-  sbus_ref_[2] += ref_y * 0.003; // [rad], this clamps to (2-PI, PI)
+  sbus_ref_[2] += ref_y * 0.005; // [rad], this clamps to (2-PI, PI)
   sbus_ref_[2] = fmod(sbus_ref_[2] + M_PI, two_PI);
   if (sbus_ref_[2] < 0) {sbus_ref_[2] += two_PI;}
   sbus_ref_[2] -= M_PI;
