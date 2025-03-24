@@ -24,6 +24,13 @@ def generate_launch_description():
             name='sbus_node',
         ),
 
+        # ARM Changer Node
+        Node(
+            package='arm_changer',
+            executable='arm_changer',
+            name='arm_changing_node',
+        ),
+
         # Controller Node
         Node(
             package='controller',

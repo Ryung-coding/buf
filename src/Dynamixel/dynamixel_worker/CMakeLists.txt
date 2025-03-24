@@ -10,7 +10,7 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp_components REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(dynamixel_sdk REQUIRED)
-find_package(allocator_interfaces REQUIRED)
+find_package(dynamixel_interfaces REQUIRED)
 find_package(watchdog_interfaces REQUIRED)
 
 # Include directories
@@ -24,7 +24,7 @@ ament_target_dependencies(dynamixel_worker
   dynamixel_sdk
   rclcpp
   rclcpp_components
-  allocator_interfaces
+  dynamixel_interfaces
   watchdog_interfaces
 )
 

@@ -8,6 +8,7 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
   <exec_depend>controller_interfaces</exec_depend>
   <exec_depend>allocator_interfaces</exec_depend>
+  <exec_depend>dynamixel_interfaces</exec_depend>
   <exec_depend>watchdog_interfaces</exec_depend>
   <exec_depend>rclcpp</exec_depend>
 

@@ -18,16 +18,14 @@ AllocatorWorker::AllocatorWorker() : Node("allocator_node") {
 
   // Subscriber
   controller_subscriber_ = this->create_subscription<controller_interfaces::msg::ControllerOutput>("controller_output", 1, std::bind(&AllocatorWorker::controllerCallback, this, std::placeholders::_1));
-  joint_subscriber_ = this->create_subscription<allocator_interfaces::msg::JointVal>("joint_mea", 1, std::bind(&AllocatorWorker::jointValCallback, this, std::placeholders::_1));
+  joint_subscriber_ = this->create_subscription<dynamixel_interfaces::msg::JointVal>("joint_mea", 1, std::bind(&AllocatorWorker::jointValCallback, this, std::placeholders::_1));
 
   // Publishers
-  joint_publisher_ = this->create_publisher<allocator_interfaces::msg::JointVal>("joint_val", 1);
   pwm_publisher_ = this->create_publisher<allocator_interfaces::msg::PwmVal>("pwm_val", 1);
   heartbeat_publisher_ = this->create_publisher<watchdog_interfaces::msg::NodeState>("allocator_state", 1);
   debug_val_publisher_ = this->create_publisher<allocator_interfaces::msg::AllocatorDebugVal>("allocator_info", 1);
 
   // Timers for periodic publishing
-  joint_timer_ = this->create_wall_timer(std::chrono::milliseconds(10), std::bind(&AllocatorWorker::publishJointVal, this));
   pwm_timer_ = this->create_wall_timer(std::chrono::milliseconds(1), std::bind(&AllocatorWorker::publishPwmVal, this));
   heartbeat_timer_ = this->create_wall_timer(std::chrono::milliseconds(100), std::bind(&AllocatorWorker::heartbeat_timer_callback, this));
   debugging_timer_ = this->create_wall_timer(std::chrono::milliseconds(100), std::bind(&AllocatorWorker::debugging_timer_callback, this));
@@ -59,22 +57,8 @@ void AllocatorWorker::controllerCallback(const controller_interfaces::msg::Contr
   // RCLCPP_INFO(this->get_logger(), "Clamped PWM: [f1: %.2f, f2: %.2f, f3: %.2f, f4: %.2f]", pwm[0], pwm[1], pwm[2], pwm[3]);
 }
 
-void AllocatorWorker::jointValCallback(const allocator_interfaces::msg::JointVal::SharedPtr msg) {
+void AllocatorWorker::jointValCallback(const dynamixel_interfaces::msg::JointVal::SharedPtr msg) {
   latest_joint_val_ = *msg;
-}
-
-void AllocatorWorker::publishJointVal() {
-  auto joint_msg = allocator_interfaces::msg::JointVal();
-
-  // this is dummy zero
-  for (int i = 0; i < 5; ++i) {
-    joint_msg.a1_q[i] = 0.0;
-    joint_msg.a2_q[i] = 0.0;
-    joint_msg.a3_q[i] = 0.0;
-    joint_msg.a4_q[i] = 0.0;
-  }
-
-  joint_publisher_->publish(joint_msg);
 }
 
 void AllocatorWorker::publishPwmVal() {

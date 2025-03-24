@@ -12,6 +12,7 @@ find_package(rclcpp REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(controller_interfaces REQUIRED)
 find_package(allocator_interfaces REQUIRED)
+find_package(dynamixel_interfaces REQUIRED)
 find_package(watchdog_interfaces REQUIRED)
 
 # Include directories for allocator_worker target
@@ -29,6 +30,7 @@ ament_target_dependencies(allocator_worker
   rclcpp_components
   controller_interfaces
   allocator_interfaces
+  dynamixel_interfaces
   watchdog_interfaces
 )
 
