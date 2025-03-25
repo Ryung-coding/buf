@@ -81,7 +81,7 @@ void ArmChangerWorker::compute_ik(const double x, const double y, const double z
     Eigen::Vector3d p32 = p02 - p03;
 
     double cos_4 = std::clamp(p32.dot(p34) / (a3_ * a4_), -1.0, 1.0);
-    th4_ = -PI + std::acos(cos_4);
+    th4_ = PI - std::acos(cos_4);
     if (std::abs(cos_4) == 1) th4_ = 0.0;
 
     double th4_ref = std::atan2(p34(2), p34(0)) - std::atan2(p32(2), p32(0));

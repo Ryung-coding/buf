@@ -4,96 +4,88 @@
 #include <cstdio>
 #include <memory>
 #include <string>
-
+#include <array>
 #include "rclcpp/rclcpp.hpp"
 #include "watchdog_interfaces/msg/node_state.hpp"
 #include "dynamixel_interfaces/msg/joint_val.hpp"
 #include "dynamixel_sdk/dynamixel_sdk.h"
 
-// Dynamixel Setting
-#define ADDR_OPERATING_MODE 11
-#define ADDR_TORQUE_ENABLE 64
-#define ADDR_GOAL_POSITION 116
-#define ADDR_PRESENT_POSITION 132
+#include <iostream>
+#include <chrono>
+#include <stdexcept>
 
-// Position PID Gain Control Table Address (XM-430)
-#define ADDR_POSITION_P_GAIN 84
-#define ADDR_POSITION_I_GAIN 82
-#define ADDR_POSITION_D_GAIN 80
-
-// Velocity PID Gain Control Table Address
-#define ADDR_VELOCITY_P_GAIN 78
-#define ADDR_VELOCITY_I_GAIN 76
+// Dynamixel Addresses
+#define ADDR_OPERATING_MODE      11
+#define ADDR_TORQUE_ENABLE       64
+#define ADDR_GOAL_POSITION       116
+#define ADDR_PRESENT_POSITION    132
+#define ADDR_POSITION_P_GAIN     84
+#define ADDR_POSITION_I_GAIN     82
+#define ADDR_POSITION_D_GAIN     80
+#define ADDR_VELOCITY_P_GAIN      78
+#define ADDR_VELOCITY_I_GAIN      76
 
 #define PROTOCOL_VERSION 2.0
-#define BAUDRATE 4000000
-#define DEVICE_NAME "/dev/ttyUSB1"
+#define BAUDRATE         4000000
+#define DEVICE_NAME      "/dev/ttyUSB1"
+
+#define ARM_NUM 1
+
+constexpr std::array<std::array<uint8_t, 5>, 4> DXL_IDS = {{
+  {1, 2, 3, 4, 5},   // Arm 1
+  {6, 7, 8, 9, 10},  // Arm 2
+  {11, 12, 13, 14, 15}, // Arm 3
+  {16, 17, 18, 19, 20}  // Arm 4
+}};
 
 constexpr double PI = 3.1415926535897932384626433832706;
+constexpr double rad2ppr_J1 = 6.25 * 2048.0 / PI;
+constexpr double ppr2rad_J1 = PI / 2048.0 / 6.25;
 constexpr double rad2ppr = 2048.0 / PI;
 constexpr double ppr2rad = PI / 2048.0;
-// constexpr int NUM_ARMS = 4;
-// constexpr int JOINTS_PER_ARM = 5;
-// constexpr int TOTAL_MOTORS = NUM_ARMS * JOINTS_PER_ARM; // 20 motors
-
-// only use arm1
-constexpr int NUM_ARMS = 1;                  
-constexpr int JOINTS_PER_ARM = 5;
-constexpr int TOTAL_MOTORS = NUM_ARMS * JOINTS_PER_ARM; // 5 motors (only arm_1)
-// only use arm1
-
-typedef dynamixel_interfaces::msg::JointVal JointValMsg;
-typedef dynamixel_interfaces::msg::JointVal MotorPositionMsg;
 
 class DynamixelNode : public rclcpp::Node {
 public:
-  DynamixelNode();
+  DynamixelNode(const std::string &device_name);
+  virtual ~DynamixelNode();
   bool init_Dynamixel();
 
 private:
-  bool Dynamixel_Write();
-  bool Dynamixel_Read();
+  bool Dynamixel_Write_Read();
 
-  void save_des_pos(double* arm_1, double* arm_2, double* arm_3, double* arm_4);
   void armchanger_callback(const dynamixel_interfaces::msg::JointVal::SharedPtr msg);
-  void set_position_pid(uint8_t dxl_id, uint16_t p_gain, uint16_t i_gain, uint16_t d_gain);
-  void set_velocity_pid(uint8_t dxl_id, uint16_t p_gain, uint16_t i_gain);
+  void change_position_gain(uint8_t dxl_id, uint16_t p_gain, uint16_t i_gain, uint16_t d_gain);
+  void change_velocity_gain(uint8_t dxl_id, uint16_t p_gain, uint16_t i_gain);
   void heartbeat_timer_callback();
-  void read_timer_callback();
 
-
-  // ROS2 subscriber for joint_val topic
+  // ROS2 communication
   rclcpp::Subscription<dynamixel_interfaces::msg::JointVal>::SharedPtr joint_val_subscriber_;
-  
-  // Publisher & Timer for Heartbeat signal
   rclcpp::Publisher<watchdog_interfaces::msg::NodeState>::SharedPtr heartbeat_publisher_;
   rclcpp::Publisher<dynamixel_interfaces::msg::JointVal>::SharedPtr motor_position_publisher_;
-  
-  rclcpp::TimerBase::SharedPtr read_timer_;
+  rclcpp::TimerBase::SharedPtr dynamixel_timer_;
   rclcpp::TimerBase::SharedPtr heartbeat_timer_;
 
+  // Dynamixel SDK objects as class member variables
+  dynamixel::PortHandler* portHandler_;
+  dynamixel::PacketHandler* packetHandler_;
+  dynamixel::GroupSyncWrite* groupSyncWrite_;
+  dynamixel::GroupSyncRead*  groupSyncRead_;
 
-  double arm_1_rad[5] = {0., 0., 0., 0., 0.};
-  double arm_2_rad[5] = {0., 0., 0., 0., 0.};
-  double arm_3_rad[5] = {0., 0., 0., 0., 0.};
-  double arm_4_rad[5] = {0., 0., 0., 0., 0.};
+  int arm_des[4][5] = {
+    {0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0}
+  };
 
-  int16_t arm_1_ppr[5] = {0, 0, 0, 0, 0};
-  int16_t arm_2_ppr[5] = {0, 0, 0, 0, 0};
-  int16_t arm_3_ppr[5] = {0, 0, 0, 0, 0};
-  int16_t arm_4_ppr[5] = {0, 0, 0, 0, 0};
+  double arm_mea[4][5] = {
+    {0., 0., 0., 0., 0.},
+    {0., 0., 0., 0., 0.},
+    {0., 0., 0., 0., 0.},
+    {0., 0., 0., 0., 0.}
+  };
 
-  double arm_1_mea[5] = {0., 0., 0., 0., 0.};
-  double arm_2_mea[5] = {0., 0., 0., 0., 0.};
-  double arm_3_mea[5] = {0., 0., 0., 0., 0.};
-  double arm_4_mea[5] = {0., 0., 0., 0., 0.};
-
-  int present_position;
-  uint8_t heartbeat_state_; // previous node state
+  uint8_t heartbeat_state_;
 };
-
-extern std::array<int, TOTAL_MOTORS> DXL_DES_POS;
-extern std::array<int, TOTAL_MOTORS> DXL_CUR_POS;
-extern std::array<uint8_t, TOTAL_MOTORS> DXL_IDS;
 
 #endif // DYNAMIXEL_WORKER_HPP
