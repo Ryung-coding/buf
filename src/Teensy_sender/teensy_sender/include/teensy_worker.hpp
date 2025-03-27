@@ -13,7 +13,6 @@
 #include <linux/can.h>
 #include <net/if.h>
 
-
 class TeensyNode : public rclcpp::Node {
 public:
   TeensyNode();

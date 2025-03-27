@@ -34,13 +34,13 @@ struct Gains {
   }
 };
 
-inline constexpr Gains Kp_r       = Gains(0.5, 0.5, 0.5, 0.5);
+inline constexpr Gains Kp_r       = Gains(3, 2, 0.5, 0.5); // [m/s rad rad/s N.m]
 inline constexpr Gains Ki_r       = Gains(0.0, 0.0, 0.0, 0.0);
 inline constexpr Gains Kd_r       = Gains(0.0, 0.0, 0.0, 1.0);
 inline constexpr Gains Sat_gain_r = Gains(5.0, 5.0, 5.0, 5.0);
 inline constexpr Gains lpf_gain_r = Gains(0.1, 0.1, 0.1, 0.1);
 
-inline constexpr Gains Kp_p       = Gains(0.5, 0.5, 0.5, 0.5);
+inline constexpr Gains Kp_p       = Gains(3, 2, 0.5, 0.5);
 inline constexpr Gains Ki_p       = Gains(0.0, 0.0, 0.0, 0.0);
 inline constexpr Gains Kd_p       = Gains(0.0, 0.0, 0.0, 1.0);
 inline constexpr Gains Sat_gain_p = Gains(5.0, 5.0, 5.0, 5.0);

@@ -119,7 +119,7 @@ private:
   rclcpp::Publisher<controller_interfaces::msg::ControllerDebugVal>::SharedPtr debug_val_publisher_;
   rclcpp::TimerBase::SharedPtr debugging_timer_;
 
-  double weight = 0.0; // drone mg [N]
+  double weight = 46.5985431978; // drone mg [N]
 
   // Desired states
   int   sbus_chnl_[9] = {1024, 1024, 352, 1024, 352, 352, 352, 352, 352};
