@@ -23,7 +23,7 @@ public:
   IMUnode();
 
 private:
-  void PublishMeasurement();
+  void PublishMuJoCoMeasurement();
   void heartbeat_timer_callback();
   void mujoco_callback(const mujoco_interfaces::msg::MuJoCoMeas::SharedPtr msg);
 
@@ -32,7 +32,7 @@ private:
   rclcpp::Publisher<watchdog_interfaces::msg::NodeState>::SharedPtr heartbeat_publisher_;
 
   // Timers
-  rclcpp::TimerBase::SharedPtr timer_;
+  rclcpp::TimerBase::SharedPtr publish_timer_;
   rclcpp::TimerBase::SharedPtr heartbeat_timer_;
 
   // Subscriber

@@ -5,18 +5,33 @@ using namespace std::chrono_literals;
 IMUnode::IMUnode() : Node("imu_node") {
   imu_publisher_ = this->create_publisher<imu_interfaces::msg::ImuMeasured>("imu_mea", 1);
 
-  // Create a publisher for Heartbeat signal
-  heartbeat_publisher_ = this->create_publisher<watchdog_interfaces::msg::NodeState>("imu_state", 1);
-
-  timer_ = this->create_wall_timer(std::chrono::milliseconds(10), std::bind(&IMUnode::PublishMeasurement, this));
-
   // Create a timer to publish Node state messages at 10Hz
   heartbeat_timer_ = this->create_wall_timer(std::chrono::milliseconds(100), std::bind(&IMUnode::heartbeat_timer_callback, this));
 
-  // Subscription True Measuring value from MuJoCo
-  mujoco_subscription_ = this->create_subscription<mujoco_interfaces::msg::MuJoCoMeas>("mujoco_meas", 1, std::bind(&IMUnode::mujoco_callback, this, std::placeholders::_1));
-}
+  // Create a publisher for Heartbeat signal
+  heartbeat_publisher_ = this->create_publisher<watchdog_interfaces::msg::NodeState>("imu_state", 1);
 
+  // Mode = sim -> mujoco Sub
+  // Mode = real -> Reading IMU
+  this->declare_parameter<std::string>("mode", "None");
+  std::string mode;
+  this->get_parameter("mode", mode);
+
+  if (mode == "real"){
+    RCLCPP_WARN(this->get_logger(), "IMU Node : I cannot do anything :(");
+  }
+  else if (mode == "sim"){
+    // Subscription True Measuring value from MuJoCo
+    mujoco_subscription_ = this->create_subscription<mujoco_interfaces::msg::MuJoCoMeas>("mujoco_meas", 1, std::bind(&IMUnode::mujoco_callback, this, std::placeholders::_1));
+    publish_timer_ = this->create_wall_timer(std::chrono::milliseconds(1), std::bind(&IMUnode::PublishMuJoCoMeasurement, this));
+  }
+  else{
+    RCLCPP_ERROR(this->get_logger(), "Unknown mode: %s. No initialization performed.", mode.c_str());
+  }
+}
+/* for real */
+
+/* for sim */
 void IMUnode::mujoco_callback(const mujoco_interfaces::msg::MuJoCoMeas::SharedPtr msg) {
   // Capture the current ROS time when the data is received
   rclcpp::Time now_time = this->now();
@@ -39,7 +54,7 @@ void IMUnode::mujoco_callback(const mujoco_interfaces::msg::MuJoCoMeas::SharedPt
   }
 }
 
-void IMUnode::PublishMeasurement() {
+void IMUnode::PublishMuJoCoMeasurement() {
   if (data_buffer_.empty()) { return; }
 
   // Determine the target time: current time minus the desired delay
@@ -67,6 +82,7 @@ void IMUnode::PublishMeasurement() {
   imu_publisher_->publish(output_msg);
 }
 
+/* for Both */
 void IMUnode::heartbeat_timer_callback() {
   heartbeat_state_++;
 

@@ -70,7 +70,6 @@ DynamixelNode::DynamixelNode(const std::string &device_name): Node("dynamixel_no
 }
 
 /* for sim */
-
 void DynamixelNode::Mujoco_Pub() {
   /*  Publish to mujoco  */
   dynamixel_interfaces::msg::JointVal msg1;
@@ -123,7 +122,6 @@ void DynamixelNode::mujoco_callback(const mujoco_interfaces::msg::MuJoCoMeas::Sh
 }
 
 /* for real */
-
 void DynamixelNode::Dynamixel_Write_Read() {
   /*  Write  */
   groupSyncWrite_->clearParam();
@@ -228,7 +226,6 @@ void DynamixelNode::change_velocity_gain(uint8_t dxl_id, uint16_t p_gain, uint16
 }
 
 /* for Both */
-
 void DynamixelNode::armchanger_callback(const dynamixel_interfaces::msg::JointVal::SharedPtr msg) {
   arm_des[0][0] = static_cast<double>(msg->a1_q[0] * rad2ppr_J1 + 2048.0);  // Arm 1
   arm_des[1][0] = static_cast<double>(msg->a2_q[0] * rad2ppr_J1 + 2048.0);  // Arm 2

@@ -21,12 +21,12 @@ public:
   OptiTrackNode();
 
 private:
-  void PublishMeasurement();
+  void PublishMuJoCoMeasurement();
   void heartbeat_timer_callback();
   void mujoco_callback(const mujoco_interfaces::msg::MuJoCoMeas::SharedPtr msg);
 
   rclcpp::Publisher<mocap_interfaces::msg::MocapMeasured>::SharedPtr mocap_publisher_;
-  rclcpp::TimerBase::SharedPtr timer_;
+  rclcpp::TimerBase::SharedPtr publish_timer_;
 
   // Publisher&Timer for Heartbeat signal
   rclcpp::Publisher<watchdog_interfaces::msg::NodeState>::SharedPtr heartbeat_publisher_;

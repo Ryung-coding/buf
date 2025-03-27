@@ -11,41 +11,52 @@
 using namespace std::chrono_literals;
 
 TeensyNode::TeensyNode() : Node("teensy_node") {
-  //Publisher
-  mujoco_publisher_ = this->create_publisher<mujoco_interfaces::msg::MotorThrust>("motor_write", 1);
-
-  // Subscriber
-  sbus_subscription_ = this->create_subscription<allocator_interfaces::msg::PwmVal>("motor_cmd", 1, std::bind(&TeensyNode::allocatorCallback, this, std::placeholders::_1));
+  // Subscription
   killcmd_subscription_ = this->create_subscription<sbus_interfaces::msg::KillCmd>("sbus_kill", 1, std::bind(&TeensyNode::KillCmdCallback, this, std::placeholders::_1));
   watchdog_subscription_ = this->create_subscription<watchdog_interfaces::msg::NodeState>("watchdog_state", 1, std::bind(&TeensyNode::watchdogCallback, this, std::placeholders::_1));
 
-  // Create RAW socket for SocketCAN.
-  sock_ = socket(PF_CAN, SOCK_RAW, CAN_RAW);
-  if (sock_ < 0) {
-    RCLCPP_ERROR(this->get_logger(), "Socket creation failed");
-    return;
-  }
+  // Mode = sim -> Pub/Sub with mujoco
+  // Mode = real -> Wirte/Read with dynamixel
+  this->declare_parameter<std::string>("mode", "None");
+  std::string mode;
+  this->get_parameter("mode", mode);
 
-  // Retrieve interface index for "can0".
-  struct ifreq ifr;
-  std::strcpy(ifr.ifr_name, "can0");
-  if (ioctl(sock_, SIOCGIFINDEX, &ifr) < 0) {
-    RCLCPP_ERROR(this->get_logger(), "Interface index retrieval failed");
-    return;
+  if (mode == "real"){
+    allocator_subscription_ = this->create_subscription<allocator_interfaces::msg::PwmVal>("motor_cmd", 1, std::bind(&TeensyNode::allocatorCallback_teensy, this, std::placeholders::_1));
+
+    // Create RAW socket for SocketCAN.
+    sock_ = socket(PF_CAN, SOCK_RAW, CAN_RAW);
+    if (sock_ < 0) {
+      RCLCPP_ERROR(this->get_logger(), "Socket creation failed");
+      return;
+    }
+    // Retrieve interface index for "can0".
+    struct ifreq ifr;
+    std::strcpy(ifr.ifr_name, "can0");
+    if (ioctl(sock_, SIOCGIFINDEX, &ifr) < 0) {
+      RCLCPP_ERROR(this->get_logger(), "Interface index retrieval failed");
+      return;
+    }
+    // Configure CAN address structure.
+    addr_.can_family = AF_CAN;
+    addr_.can_ifindex = ifr.ifr_ifindex;
+    // Bind the socket to the CAN interface.
+    if (bind(sock_, (struct sockaddr *)&addr_, sizeof(addr_)) < 0) {
+      RCLCPP_ERROR(this->get_logger(), "Socket binding failed");
+      return;
+    }
   }
-  
-  // Configure CAN address structure.
-  addr_.can_family = AF_CAN;
-  addr_.can_ifindex = ifr.ifr_ifindex;
-  
-  // Bind the socket to the CAN interface.
-  if (bind(sock_, (struct sockaddr *)&addr_, sizeof(addr_)) < 0) {
-    RCLCPP_ERROR(this->get_logger(), "Socket binding failed");
-    return;
+  else if (mode == "sim"){
+    allocator_subscription_ = this->create_subscription<allocator_interfaces::msg::PwmVal>("motor_cmd", 1, std::bind(&TeensyNode::allocatorCallback_mujoco, this, std::placeholders::_1));
+    mujoco_publisher_ = this->create_publisher<mujoco_interfaces::msg::MotorThrust>("motor_write", 1);
+  }
+  else{
+    RCLCPP_ERROR(this->get_logger(), "Unknown mode: %s. No initialization performed.", mode.c_str());
   }
 }
 
-void TeensyNode::allocatorCallback(const allocator_interfaces::msg::PwmVal::SharedPtr msg) {
+/* for real */
+void TeensyNode::allocatorCallback_teensy(const allocator_interfaces::msg::PwmVal::SharedPtr msg) {
   // Create CAN frame structure and set CAN ID and DLC.
   struct can_frame frame;
   frame.can_id = 0x123; // Set CAN ID.
@@ -68,24 +79,16 @@ void TeensyNode::allocatorCallback(const allocator_interfaces::msg::PwmVal::Shar
   frame.data[7] = mapped4 & 0xFF;
   
   int nbytes = write(sock_, &frame, sizeof(frame));
-  // if (nbytes != sizeof(frame)) {RCLCPP_ERROR(this->get_logger(), "CAN frame transmission error");}
-  // else {RCLCPP_INFO(this->get_logger(), "Sent CAN message: [%.3f, %.3f, %.3f, %.3f]", msg->pwm1, msg->pwm2, msg->pwm3, msg->pwm4);}
-
-  MJC_publish(msg->pwm1, msg->pwm2, msg->pwm3, msg->pwm4);
+  if (nbytes != sizeof(frame)) {can_err_cnt++;}
 }
 
-void TeensyNode::KillCmdCallback(const sbus_interfaces::msg::KillCmd::SharedPtr msg) {
-  // SBUS kill update
-  kill_activated_ = msg->kill_activated;
-  // RCLCPP_INFO(this->get_logger(), "kill_activated_: %s", kill_activated_ ? "true" : "false");
-}
-
-void TeensyNode::MJC_publish(const double pwm1, const double pwm2, const double pwm3, const double pwm4) {
+/* for sim */
+void TeensyNode::allocatorCallback_mujoco(const allocator_interfaces::msg::PwmVal::SharedPtr msg) {
   // pwm LPF
-  pwm1_ = LPF_alpha_ * pwm1 + LPF_beta_ * pwm1_;
-  pwm2_ = LPF_alpha_ * pwm2 + LPF_beta_ * pwm2_;
-  pwm3_ = LPF_alpha_ * pwm3 + LPF_beta_ * pwm3_;
-  pwm4_ = LPF_alpha_ * pwm4 + LPF_beta_ * pwm4_;
+  pwm1_ = LPF_alpha_ * msg->pwm1 + LPF_beta_ * pwm1_;
+  pwm2_ = LPF_alpha_ * msg->pwm2 + LPF_beta_ * pwm2_;
+  pwm3_ = LPF_alpha_ * msg->pwm3 + LPF_beta_ * pwm3_;
+  pwm4_ = LPF_alpha_ * msg->pwm4 + LPF_beta_ * pwm4_;
 
   // 1. PWM to RPM
   auto compute_rpm = [&](double pwm) -> double {
@@ -120,11 +123,18 @@ void TeensyNode::MJC_publish(const double pwm1, const double pwm2, const double 
   // RCLCPP_INFO(this->get_logger(), "[f1: %.2f, f2: %.2f, f3: %.2f, f4: %.2f]", f1_, f2_, f3_, f4_);
   
   // Populate the MotorThrust message
-  mujoco_interfaces::msg::MotorThrust msg;
-  msg.force[0] = f1_; msg.force[1] = f2_; msg.force[2] = f3_; msg.force[3] = f4_;
-  msg.moment[0] = m1_; msg.moment[1] = m2_; msg.moment[2] = m3_; msg.moment[3] = m4_;
+  mujoco_interfaces::msg::MotorThrust wrench;
+  wrench.force[0] = f1_; wrench.force[1] = f2_; wrench.force[2] = f3_; wrench.force[3] = f4_;
+  wrench.moment[0] = m1_; wrench.moment[1] = m2_; wrench.moment[2] = m3_; wrench.moment[3] = m4_;
   
-  mujoco_publisher_->publish(msg);
+  mujoco_publisher_->publish(wrench);
+}
+
+/* for both */
+void TeensyNode::KillCmdCallback(const sbus_interfaces::msg::KillCmd::SharedPtr msg) {
+  // SBUS kill update
+  kill_activated_ = msg->kill_activated;
+  // RCLCPP_INFO(this->get_logger(), "kill_activated_: %s", kill_activated_ ? "true" : "false");
 }
 
 void TeensyNode::watchdogCallback(const watchdog_interfaces::msg::NodeState::SharedPtr msg) {
@@ -133,7 +143,7 @@ void TeensyNode::watchdogCallback(const watchdog_interfaces::msg::NodeState::Sha
 }
 
 TeensyNode::~TeensyNode() {
-  if (sock_ >= 0) {
+  if (sock_ >= 0) { // if mode==sim >>> sock = -1; (do nothing)
     close(sock_);
   }
 }

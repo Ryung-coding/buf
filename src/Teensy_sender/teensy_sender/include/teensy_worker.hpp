@@ -16,27 +16,24 @@
 class TeensyNode : public rclcpp::Node {
 public:
   TeensyNode();
-
   ~TeensyNode();
 
 private:
   // Callback to handle received PwmVal messages
-  void allocatorCallback(const allocator_interfaces::msg::PwmVal::SharedPtr msg);
+  void allocatorCallback_teensy(const allocator_interfaces::msg::PwmVal::SharedPtr msg);
+  void allocatorCallback_mujoco(const allocator_interfaces::msg::PwmVal::SharedPtr msg);
   void KillCmdCallback(const sbus_interfaces::msg::KillCmd::SharedPtr msg);
   void watchdogCallback(const watchdog_interfaces::msg::NodeState::SharedPtr msg);
 
-  // Publisher
-  void MJC_publish(const double pwm1, const double pwm2, const double pwm3, const double pwm4);
-
   // ROS2 subscriber for pwm_val topic
-  rclcpp::Subscription<allocator_interfaces::msg::PwmVal>::SharedPtr sbus_subscription_;
+  rclcpp::Subscription<allocator_interfaces::msg::PwmVal>::SharedPtr allocator_subscription_;
   rclcpp::Subscription<sbus_interfaces::msg::KillCmd>::SharedPtr killcmd_subscription_;
   rclcpp::Subscription<watchdog_interfaces::msg::NodeState>::SharedPtr watchdog_subscription_;
 
   // ROS2 publisher for mujoco
   rclcpp::Publisher<mujoco_interfaces::msg::MotorThrust>::SharedPtr mujoco_publisher_;
 
-  int sock_;                  // SocketCAN socket file descriptor.
+  int sock_ = 0;              // SocketCAN socket file descriptor.
   struct sockaddr_can addr_;  // CAN interface address structure.
 
   // Coefficients for conversions
@@ -76,6 +73,7 @@ private:
   double m4_ = 0.0; // [Nm]
 
   // Watchdog state
+  uint16_t can_err_cnt = 0;
   uint8_t watchdog_state_ = 1; // default(normal) is 1.
   bool kill_activated_ = false;
 };
