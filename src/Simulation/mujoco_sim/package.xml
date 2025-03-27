@@ -7,6 +7,7 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
   <depend>rclpy</depend>
+  <depend>dynamixel_interfaces</depend>
   <depend>simulation_interfaces</depend>
 
   <exec_depend>mujoco</exec_depend>

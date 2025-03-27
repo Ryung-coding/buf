@@ -12,7 +12,7 @@ ArmChangerWorker::ArmChangerWorker(): Node("arm_changing_node") {
   killcmd_subscription_ = this->create_subscription<sbus_interfaces::msg::KillCmd>("sbus_kill", 1, std::bind(&ArmChangerWorker::killCmd_callback, this, std::placeholders::_1));
 
   // ROS2 Publisher
-  joint_publisher_ = this->create_publisher<dynamixel_interfaces::msg::JointVal>("/joint_val", 1);
+  joint_publisher_ = this->create_publisher<dynamixel_interfaces::msg::JointVal>("/joint_cmd", 1);
   heartbeat_publisher_ = this->create_publisher<watchdog_interfaces::msg::NodeState>("armchanger_state", 1);
 
   a1_q.resize(5);

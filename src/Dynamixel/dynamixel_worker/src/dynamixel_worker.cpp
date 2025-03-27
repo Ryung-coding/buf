@@ -16,7 +16,7 @@ DynamixelNode::DynamixelNode(const std::string &device_name): Node("dynamixel_no
 
   // Create ROS2 publishers for heartbeat and motor positions
   heartbeat_publisher_ = this->create_publisher<watchdog_interfaces::msg::NodeState>("dynamixel_state", 1);
-  pos_mea_publisher_ = this->create_publisher<dynamixel_interfaces::msg::JointVal>("motor_mea", 1);
+  pos_mea_publisher_ = this->create_publisher<dynamixel_interfaces::msg::JointVal>("joint_mea", 1);
 
   // Create timer for heartbeat
   heartbeat_timer_ = this->create_wall_timer(std::chrono::milliseconds(100), std::bind(&DynamixelNode::heartbeat_timer_callback, this));
@@ -75,17 +75,30 @@ void DynamixelNode::Mujoco_Pub() {
   /*  Publish to mujoco  */
   dynamixel_interfaces::msg::JointVal msg1;
 
-  msg1.a1_q[0] = static_cast<double>(arm_des[0][0] - 2048.0) * ppr2rad_J1;  // Arm 1
-  msg1.a2_q[0] = static_cast<double>(arm_des[1][0] - 2048.0) * ppr2rad_J1;  // Arm 2
-  msg1.a3_q[0] = static_cast<double>(arm_des[2][0] - 2048.0) * ppr2rad_J1;  // Arm 3
-  msg1.a4_q[0] = static_cast<double>(arm_des[3][0] - 2048.0) * ppr2rad_J1;  // Arm 4
+  msg1.a1_q[0] = static_cast<double>(2048.0 - arm_des[0][0]) * ppr2rad_J1;  // Arm 1
+  msg1.a2_q[0] = static_cast<double>(2048.0 - arm_des[1][0]) * ppr2rad_J1;  // Arm 2
+  msg1.a3_q[0] = static_cast<double>(2048.0 - arm_des[2][0]) * ppr2rad_J1;  // Arm 3
+  msg1.a4_q[0] = static_cast<double>(2048.0 - arm_des[3][0]) * ppr2rad_J1;  // Arm 4
   
-  for (uint8_t i = 1; i < 5; ++i) {
-    msg1.a1_q[i] = static_cast<double>(arm_des[0][i] - 2048.0) * ppr2rad;   // Arm 1
-    msg1.a2_q[i] = static_cast<double>(arm_des[1][i] - 2048.0) * ppr2rad;   // Arm 2
-    msg1.a3_q[i] = static_cast<double>(arm_des[2][i] - 2048.0) * ppr2rad;   // Arm 3
-    msg1.a4_q[i] = static_cast<double>(arm_des[3][i] - 2048.0) * ppr2rad;   // Arm 4
-  }
+  msg1.a1_q[1] = static_cast<double>(2048.0 - arm_des[0][1]) * ppr2rad;   // Arm 1
+  msg1.a2_q[1] = static_cast<double>(2048.0 - arm_des[1][1]) * ppr2rad;   // Arm 2
+  msg1.a3_q[1] = static_cast<double>(2048.0 - arm_des[2][1]) * ppr2rad;   // Arm 3
+  msg1.a4_q[1] = static_cast<double>(2048.0 - arm_des[3][1]) * ppr2rad;   // Arm 4
+
+  msg1.a1_q[2] = static_cast<double>(2048.0 - arm_des[0][2]) * ppr2rad;   // Arm 1
+  msg1.a2_q[2] = static_cast<double>(2048.0 - arm_des[1][2]) * ppr2rad;   // Arm 2
+  msg1.a3_q[2] = static_cast<double>(2048.0 - arm_des[2][2]) * ppr2rad;   // Arm 3
+  msg1.a4_q[2] = static_cast<double>(2048.0 - arm_des[3][2]) * ppr2rad;   // Arm 4
+
+  msg1.a1_q[3] = static_cast<double>(arm_des[0][3] - 2048.0) * ppr2rad;   // Arm 1
+  msg1.a2_q[3] = static_cast<double>(arm_des[1][3] - 2048.0) * ppr2rad;   // Arm 2
+  msg1.a3_q[3] = static_cast<double>(arm_des[2][3] - 2048.0) * ppr2rad;   // Arm 3
+  msg1.a4_q[3] = static_cast<double>(arm_des[3][3] - 2048.0) * ppr2rad;   // Arm 4
+
+  msg1.a1_q[4] = static_cast<double>(2048.0 - arm_des[0][4]) * ppr2rad;   // Arm 1
+  msg1.a2_q[4] = static_cast<double>(2048.0 - arm_des[1][4]) * ppr2rad;   // Arm 2
+  msg1.a3_q[4] = static_cast<double>(2048.0 - arm_des[2][4]) * ppr2rad;   // Arm 3
+  msg1.a4_q[4] = static_cast<double>(2048.0 - arm_des[3][4]) * ppr2rad;   // Arm 4
 
   mujoco_publisher_->publish(msg1);
 
@@ -102,10 +115,10 @@ void DynamixelNode::Mujoco_Pub() {
 
 void DynamixelNode::mujoco_callback(const mujoco_interfaces::msg::MuJoCoMeas::SharedPtr msg) {
   for (uint8_t i = 0; i < 5; ++i) {
-    arm_des[0][i] = msg->a1_q[i];   // Arm 1
-    arm_des[1][i] = msg->a2_q[i];   // Arm 2
-    arm_des[2][i] = msg->a3_q[i];   // Arm 3
-    arm_des[3][i] = msg->a4_q[i];   // Arm 4
+    arm_mea[0][i] = msg->a1_q[i];   // Arm 1
+    arm_mea[1][i] = msg->a2_q[i];   // Arm 2
+    arm_mea[2][i] = msg->a3_q[i];   // Arm 3
+    arm_mea[3][i] = msg->a4_q[i];   // Arm 4
   }
 }
 
@@ -217,16 +230,16 @@ void DynamixelNode::change_velocity_gain(uint8_t dxl_id, uint16_t p_gain, uint16
 /* for Both */
 
 void DynamixelNode::armchanger_callback(const dynamixel_interfaces::msg::JointVal::SharedPtr msg) {
-  arm_mea[0][0] = static_cast<double>(msg->a1_q[0] * rad2ppr_J1 + 2048.0);  // Arm 1
-  arm_mea[1][0] = static_cast<double>(msg->a2_q[0] * rad2ppr_J1 + 2048.0);  // Arm 2
-  arm_mea[2][0] = static_cast<double>(msg->a3_q[0] * rad2ppr_J1 + 2048.0);  // Arm 3
-  arm_mea[3][0] = static_cast<double>(msg->a4_q[0] * rad2ppr_J1 + 2048.0);  // Arm 4
+  arm_des[0][0] = static_cast<double>(msg->a1_q[0] * rad2ppr_J1 + 2048.0);  // Arm 1
+  arm_des[1][0] = static_cast<double>(msg->a2_q[0] * rad2ppr_J1 + 2048.0);  // Arm 2
+  arm_des[2][0] = static_cast<double>(msg->a3_q[0] * rad2ppr_J1 + 2048.0);  // Arm 3
+  arm_des[3][0] = static_cast<double>(msg->a4_q[0] * rad2ppr_J1 + 2048.0);  // Arm 4
     
   for (uint8_t i = 1; i < 5; ++i) {
-    arm_mea[0][i] = static_cast<double>(msg->a1_q[i] * rad2ppr + 2048.0);   // Arm 1
-    arm_mea[1][i] = static_cast<double>(msg->a2_q[i] * rad2ppr + 2048.0);   // Arm 2
-    arm_mea[2][i] = static_cast<double>(msg->a3_q[i] * rad2ppr + 2048.0);   // Arm 3
-    arm_mea[3][i] = static_cast<double>(msg->a4_q[i] * rad2ppr + 2048.0);   // Arm 4
+    arm_des[0][i] = static_cast<double>(msg->a1_q[i] * rad2ppr + 2048.0);   // Arm 1
+    arm_des[1][i] = static_cast<double>(msg->a2_q[i] * rad2ppr + 2048.0);   // Arm 2
+    arm_des[2][i] = static_cast<double>(msg->a3_q[i] * rad2ppr + 2048.0);   // Arm 3
+    arm_des[3][i] = static_cast<double>(msg->a4_q[i] * rad2ppr + 2048.0);   // Arm 4
   }
 }
 

@@ -10,14 +10,30 @@ setup(
     data_files=[
         ('share/ament_index/resource_index/packages', ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
-        
         (os.path.join('share', package_name, 'xml'), [
+            'xml/Arm1_Link1.STL',
+            'xml/Arm1_Link2.STL',
+            'xml/Arm1_Link3.STL',
+            'xml/Arm1_Link4.STL',
+            'xml/Arm1_Link5.STL',
+            'xml/Arm2_Link1.STL',
+            'xml/Arm2_Link2.STL',
+            'xml/Arm2_Link3.STL',
+            'xml/Arm2_Link4.STL',
+            'xml/Arm2_Link5.STL',
+            'xml/Arm3_Link1.STL',
+            'xml/Arm3_Link2.STL',
+            'xml/Arm3_Link3.STL',
+            'xml/Arm3_Link4.STL',
+            'xml/Arm3_Link5.STL',
+            'xml/Arm4_Link1.STL',
+            'xml/Arm4_Link2.STL',
+            'xml/Arm4_Link3.STL',
+            'xml/Arm4_Link4.STL',
+            'xml/Arm4_Link5.STL',
+            'xml/JellyFish.xml',
             'xml/scene.xml',
-            'xml/quadrotor.xml'
-        ]),
-        (os.path.join('share', package_name, 'xml/assets'), [
-            'xml/assets/X2_lowpoly.obj',
-            'xml/assets/X2_lowpoly_texture_SpinningProps_1024.png'
+            'xml/BODY.STL'
         ]),
     ],
     install_requires=['setuptools'],
