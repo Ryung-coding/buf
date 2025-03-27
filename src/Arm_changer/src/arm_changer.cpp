@@ -13,7 +13,10 @@ ArmChangerWorker::ArmChangerWorker(): Node("arm_changing_node") {
 
   // ROS2 Publisher
   joint_publisher_ = this->create_publisher<dynamixel_interfaces::msg::JointVal>("/joint_cmd", 1);
-  heartbeat_publisher_ = this->create_publisher<watchdog_interfaces::msg::NodeState>("armchanger_state", 1);
+  heartbeat_publisher_ = this->create_publisher<watchdog_interfaces::msg::NodeState>("/armchanger_state", 1);
+
+  // joint_cmd timer
+  joint_timer_ = this->create_wall_timer(std::chrono::milliseconds(10), std::bind(&ArmChangerWorker::joint_callback, this));
 
   a1_q.resize(5);
   a2_q.resize(5);
@@ -33,9 +36,7 @@ void ArmChangerWorker::sbus_callback(const sbus_interfaces::msg::SbusSignal::Sha
   double z = map_value(static_cast<double>(msg->ch[11]), 352, 1696, z_min_, z_max_);
 
 //   RCLCPP_INFO(this->get_logger(), "x: %.2f, z: %.2f", x, z);
-
   compute_ik(x, y_fixed_, z, heading_fixed_);
-  publishJointVal();
 }
 
 void ArmChangerWorker::killCmd_callback(const sbus_interfaces::msg::KillCmd::SharedPtr msg) {
@@ -89,15 +90,15 @@ void ArmChangerWorker::compute_ik(const double x, const double y, const double z
     if (th4_ref > PI) th4_ = -th4_;
 }
 
-void ArmChangerWorker::publishJointVal() {
-    auto joint_msg = dynamixel_interfaces::msg::JointVal();
+void ArmChangerWorker::joint_callback() {
+  auto joint_msg = dynamixel_interfaces::msg::JointVal();
 
-    joint_msg.a1_q = {th1_, th2_, th3_, th4_, th5_};
-    joint_msg.a2_q = {th1_, th2_, th3_, th4_, th5_};
-    joint_msg.a3_q = {th1_, th2_, th3_, th4_, th5_};
-    joint_msg.a4_q = {th1_, th2_, th3_, th4_, th5_};
+  joint_msg.a1_q = {th1_, th2_, th3_, th4_, th5_};
+  joint_msg.a2_q = {th1_, th2_, th3_, th4_, th5_};
+  joint_msg.a3_q = {th1_, th2_, th3_, th4_, th5_};
+  joint_msg.a4_q = {th1_, th2_, th3_, th4_, th5_};
 
-    joint_publisher_->publish(joint_msg);
+  joint_publisher_->publish(joint_msg);
 }
 
 void ArmChangerWorker::watchdog_callback(const watchdog_interfaces::msg::NodeState::SharedPtr msg) {

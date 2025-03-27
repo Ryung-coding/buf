@@ -24,7 +24,7 @@ private:
   void killCmd_callback(const sbus_interfaces::msg::KillCmd::SharedPtr msg);
   void watchdog_callback(const watchdog_interfaces::msg::NodeState::SharedPtr msg);
   void compute_ik(const double x, const double y, const double z, const Eigen::Vector3d &heading);
-  void publishJointVal();
+  void joint_callback();
 
   // Publisher
   rclcpp::Publisher<dynamixel_interfaces::msg::JointVal>::SharedPtr joint_publisher_;
@@ -33,6 +33,9 @@ private:
   // ROS2 subscriber for pwm_val topic
   rclcpp::Subscription<sbus_interfaces::msg::KillCmd>::SharedPtr killcmd_subscription_;
   rclcpp::Subscription<sbus_interfaces::msg::SbusSignal>::SharedPtr sbus_subscription_;
+
+  // Timers for joint_cmd
+  rclcpp::TimerBase::SharedPtr joint_timer_;
 
   // DH params
   const double a1_ = 134.;
@@ -52,9 +55,9 @@ private:
 
   // Latest Joint values
   double th1_ = 0.0;       // [rad]
-  double th2_ = PI/4.0;    // [rad]
-  double th3_ = -PI/2.0;   // [rad]
-  double th4_ = 3*PI /4.0; // [rad]
+  double th2_ = 0.84522;    // [rad]
+  double th3_ = -1.50944;   // [rad]
+  double th4_ = 0.90812; // [rad]
   double th5_ = 0.0;       // [rad]
 
   Eigen::VectorXd a1_q, a2_q, a3_q, a4_q;
