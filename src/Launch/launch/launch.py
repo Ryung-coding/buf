@@ -18,7 +18,6 @@ def generate_launch_description():
     # Declare a launch argument 'mode' with default value 'sim'
     mode_arg = DeclareLaunchArgument(
         'mode',
-        default_value='sim',
         description='Launch mode: sim or real'
     )
 
