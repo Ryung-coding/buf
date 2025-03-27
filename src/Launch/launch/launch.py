@@ -1,20 +1,44 @@
 from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument, OpaqueFunction
+from launch.substitutions import LaunchConfiguration, PythonExpression
 from launch_ros.actions import Node
+from launch.conditions import IfCondition
+
+def validate_mode(context, *args, **kwargs):
+    # Retrieve the mode value from the launch configuration
+    mode_val = LaunchConfiguration('mode').perform(context)
+    # Check if the mode is either 'sim' or 'real'
+    if mode_val not in ['sim', 'real']:
+        # Raise an error to abort the launch
+        raise RuntimeError("Invalid mode provided: {}. Please use 'sim' or 'real'.".format(mode_val))
+    # If valid, simply return an empty list (no additional actions needed)
+    return []
 
 def generate_launch_description():
-    return LaunchDescription([
+    # Declare a launch argument 'mode' with default value 'sim'
+    mode_arg = DeclareLaunchArgument(
+        'mode',
+        default_value='sim',
+        description='Launch mode: sim or real'
+    )
+
+    mode = LaunchConfiguration('mode')
+
+    nodes = [
         # Optitrack Node
         Node(
             package='mocap',
             executable='mocap_worker',
-            name='optitrack_node'
+            name='optitrack_node',
+            parameters=[{'mode': mode}],
         ),
 
         # IMU Node
         Node(
             package='imu_worker',
             executable='imu_worker',
-            name='imu_node'
+            name='imu_node',
+            parameters=[{'mode': mode}],
         ),
 
         # SBUS Worker Node
@@ -35,43 +59,46 @@ def generate_launch_description():
         Node(
             package='controller',
             executable='controller_worker',
-            name='controller_node'
+            name='controller_node',
         ),
 
         # Allocator Node
         Node(
             package='allocator',
             executable='allocator_worker',
-            name='allocator_node'
+            name='allocator_node',
         ),
 
         # Dynamixel Node
         Node(
             package='dynamixel_worker',
             executable='dynamixel_worker',
-            name='dynamixel_node'
+            name='dynamixel_node',
+            parameters=[{'mode': mode}],
         ),
 
         # Teensy Node
         Node(
             package='teensy_sender',
             executable='teensy_worker',
-            name='teensy_node'
+            name='teensy_node',
+            parameters=[{'mode': mode}],
         ),
 
         # Watchdog Node
         Node(
             package='watchdog_manager',
             executable='watchdog_worker',
-            name='watchdog_node'
+            name='watchdog_node',
         ),
         
-        # MuJoCo Node
+        # MuJoCo Node (Run only when mode==sim)
         Node(
             package='mujoco_sim',
             executable='mujoco_node',
             name='mujoco_node',
-            output = 'screen'
+            output='screen',
+            condition=IfCondition(PythonExpression(["'", mode, "' == 'sim'"])),
         ),
 
         # PID Debugger Node
@@ -79,7 +106,12 @@ def generate_launch_description():
             package='pid_debugger',
             executable='pid_debugger',
             name='pid_debugger_node',
-            output='screen'
+            output='screen',
         ),
+    ]
 
+    return LaunchDescription([
+        mode_arg,
+        OpaqueFunction(function=validate_mode),
+        *nodes,
     ])

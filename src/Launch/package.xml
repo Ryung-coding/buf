@@ -1,7 +1,6 @@
-<?xml version="1.0"?>
 <package format="3">
-  <name>launch_manager</name>
-  <version>0.1.0</version>
+  <name>jfish</name>
+  <version>0.0.0</version>
   <description>Launch package for managing all nodes</description>
 
   <maintainer email="milkomeda@seoultech.ac.kr">kyprus</maintainer>
