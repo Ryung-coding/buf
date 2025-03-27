@@ -12,10 +12,10 @@ using namespace std::chrono_literals;
 
 TeensyNode::TeensyNode() : Node("teensy_node") {
   //Publisher
-  mujoco_publisher_ = this->create_publisher<mujoco_interfaces::msg::MotorThrust>("motor_thrust", 1);
+  mujoco_publisher_ = this->create_publisher<mujoco_interfaces::msg::MotorThrust>("motor_write", 1);
 
   // Subscriber
-  sbus_subscription_ = this->create_subscription<allocator_interfaces::msg::PwmVal>("pwm_val", 1, std::bind(&TeensyNode::allocatorCallback, this, std::placeholders::_1));
+  sbus_subscription_ = this->create_subscription<allocator_interfaces::msg::PwmVal>("motor_cmd", 1, std::bind(&TeensyNode::allocatorCallback, this, std::placeholders::_1));
   killcmd_subscription_ = this->create_subscription<sbus_interfaces::msg::KillCmd>("sbus_kill", 1, std::bind(&TeensyNode::KillCmdCallback, this, std::placeholders::_1));
   watchdog_subscription_ = this->create_subscription<watchdog_interfaces::msg::NodeState>("watchdog_state", 1, std::bind(&TeensyNode::watchdogCallback, this, std::placeholders::_1));
 

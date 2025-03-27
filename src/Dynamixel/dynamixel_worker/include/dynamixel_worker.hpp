@@ -7,6 +7,7 @@
 #include <array>
 #include "rclcpp/rclcpp.hpp"
 #include "watchdog_interfaces/msg/node_state.hpp"
+#include "mujoco_interfaces/msg/mu_jo_co_meas.hpp"
 #include "dynamixel_interfaces/msg/joint_val.hpp"
 #include "dynamixel_sdk/dynamixel_sdk.h"
 
@@ -51,18 +52,22 @@ public:
   bool init_Dynamixel();
 
 private:
-  bool Dynamixel_Write_Read();
+  void Dynamixel_Write_Read();
+  void Mujoco_Pub();
 
   void armchanger_callback(const dynamixel_interfaces::msg::JointVal::SharedPtr msg);
+  void mujoco_callback(const mujoco_interfaces::msg::MuJoCoMeas::SharedPtr msg);
   void change_position_gain(uint8_t dxl_id, uint16_t p_gain, uint16_t i_gain, uint16_t d_gain);
   void change_velocity_gain(uint8_t dxl_id, uint16_t p_gain, uint16_t i_gain);
   void heartbeat_timer_callback();
 
   // ROS2 communication
   rclcpp::Subscription<dynamixel_interfaces::msg::JointVal>::SharedPtr joint_val_subscriber_;
+  rclcpp::Subscription<mujoco_interfaces::msg::MuJoCoMeas>::SharedPtr mujoco_subscriber_;
   rclcpp::Publisher<watchdog_interfaces::msg::NodeState>::SharedPtr heartbeat_publisher_;
-  rclcpp::Publisher<dynamixel_interfaces::msg::JointVal>::SharedPtr motor_position_publisher_;
-  rclcpp::TimerBase::SharedPtr dynamixel_timer_;
+  rclcpp::Publisher<dynamixel_interfaces::msg::JointVal>::SharedPtr mujoco_publisher_;
+  rclcpp::Publisher<dynamixel_interfaces::msg::JointVal>::SharedPtr pos_mea_publisher_;
+  rclcpp::TimerBase::SharedPtr motor_timer_;
   rclcpp::TimerBase::SharedPtr heartbeat_timer_;
 
   // Dynamixel SDK objects as class member variables
@@ -71,20 +76,23 @@ private:
   dynamixel::GroupSyncWrite* groupSyncWrite_;
   dynamixel::GroupSyncRead*  groupSyncRead_;
 
-  int arm_des[4][5] = {
+  // allocator sub
+  int arm_des[4][5] = { // [ppr]
     {0, 0, 0, 0, 0},
     {0, 0, 0, 0, 0},
     {0, 0, 0, 0, 0},
     {0, 0, 0, 0, 0}
   };
 
-  double arm_mea[4][5] = {
+  // mujoco or dynamixel read
+  double arm_mea[4][5] = { // [rad]
     {0., 0., 0., 0., 0.},
     {0., 0., 0., 0., 0.},
     {0., 0., 0., 0., 0.},
     {0., 0., 0., 0., 0.}
   };
 
+  uint16_t dnmxl_err_cnt_ = 0;
   uint8_t heartbeat_state_;
 };
 

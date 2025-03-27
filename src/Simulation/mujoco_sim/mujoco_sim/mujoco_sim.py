@@ -47,7 +47,7 @@ class MuJoCoSimulatorNode(Node):
         self.motor_moments = [0.0, 0.0, 0.0, 0.0]
 
         # Publisher & Subscriber setup
-        self.create_subscription(MotorThrust, '/motor_thrust', self.motor_thrust_callback, 1)
+        self.create_subscription(MotorThrust, '/motor_write', self.motor_thrust_callback, 1)
         self.mujoco_meas_publisher = self.create_publisher(MuJoCoMeas, '/mujoco_meas', 1)
 
         # Timer to run the simulation at 1ms intervals

@@ -21,7 +21,7 @@ AllocatorWorker::AllocatorWorker() : Node("allocator_node") {
   joint_subscriber_ = this->create_subscription<dynamixel_interfaces::msg::JointVal>("joint_mea", 1, std::bind(&AllocatorWorker::jointValCallback, this, std::placeholders::_1));
 
   // Publishers
-  pwm_publisher_ = this->create_publisher<allocator_interfaces::msg::PwmVal>("pwm_val", 1);
+  pwm_publisher_ = this->create_publisher<allocator_interfaces::msg::PwmVal>("motor_cmd", 1);
   heartbeat_publisher_ = this->create_publisher<watchdog_interfaces::msg::NodeState>("allocator_state", 1);
   debug_val_publisher_ = this->create_publisher<allocator_interfaces::msg::AllocatorDebugVal>("allocator_info", 1);
 

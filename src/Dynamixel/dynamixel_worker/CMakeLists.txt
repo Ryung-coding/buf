@@ -11,6 +11,7 @@ find_package(rclcpp_components REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(dynamixel_sdk REQUIRED)
 find_package(dynamixel_interfaces REQUIRED)
+find_package(mujoco_interfaces REQUIRED)
 find_package(watchdog_interfaces REQUIRED)
 
 # Include directories
@@ -25,6 +26,7 @@ ament_target_dependencies(dynamixel_worker
   rclcpp
   rclcpp_components
   dynamixel_interfaces
+  mujoco_interfaces
   watchdog_interfaces
 )
 

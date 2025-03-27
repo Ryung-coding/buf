@@ -11,58 +11,107 @@ DynamixelNode::DynamixelNode(const std::string &device_name): Node("dynamixel_no
     groupSyncRead_(nullptr),
     heartbeat_state_(0)
 {
-  // Initialize PortHandler and PacketHandler using provided device name and protocol version
-  portHandler_ = PortHandler::getPortHandler(device_name.c_str());
-  packetHandler_ = PacketHandler::getPacketHandler(PROTOCOL_VERSION);
-
-  // Open port and set baudrate
-  if (!portHandler_->openPort()) {
-    RCLCPP_ERROR(this->get_logger(), "Failed to open the port: %s", device_name.c_str());
-    rclcpp::shutdown();
-    exit(1);
-  }
-  if (!portHandler_->setBaudRate(BAUDRATE)) {
-    RCLCPP_ERROR(this->get_logger(), "Failed to set the baudrate!");
-    portHandler_->closePort();
-    rclcpp::shutdown();
-    exit(1);
-  }
-  
-  // Initialize Dynamixel motors and create GroupSync objects
-  if (!init_Dynamixel()) {
-    RCLCPP_ERROR(this->get_logger(), "Failed to initialize Dynamixel motors");
-    portHandler_->closePort();
-    rclcpp::shutdown();
-    exit(1);
-  }  
-
   // Create ROS2 subscriber for joint values
-  joint_val_subscriber_ = this->create_subscription<dynamixel_interfaces::msg::JointVal>( "joint_val", 1, std::bind(&DynamixelNode::armchanger_callback, this, std::placeholders::_1));
+  joint_val_subscriber_ = this->create_subscription<dynamixel_interfaces::msg::JointVal>("joint_cmd", 1, std::bind(&DynamixelNode::armchanger_callback, this, std::placeholders::_1));
 
   // Create ROS2 publishers for heartbeat and motor positions
   heartbeat_publisher_ = this->create_publisher<watchdog_interfaces::msg::NodeState>("dynamixel_state", 1);
-  motor_position_publisher_ = this->create_publisher<dynamixel_interfaces::msg::JointVal>("motor_position", 1);
+  pos_mea_publisher_ = this->create_publisher<dynamixel_interfaces::msg::JointVal>("motor_mea", 1);
 
-  // Create timers for heartbeat and reading motor positions
+  // Create timer for heartbeat
   heartbeat_timer_ = this->create_wall_timer(std::chrono::milliseconds(100), std::bind(&DynamixelNode::heartbeat_timer_callback, this));
-  dynamixel_timer_ = this->create_wall_timer(std::chrono::milliseconds(10), std::bind(&DynamixelNode::Dynamixel_Write_Read, this));
-}
 
-void DynamixelNode::armchanger_callback(const dynamixel_interfaces::msg::JointVal::SharedPtr msg) {
-  arm_des[0][0] = static_cast<int>(msg->a1_q[0] * rad2ppr_J1 + 2048.0);  // Arm 1
-  arm_des[1][0] = static_cast<int>(msg->a2_q[0] * rad2ppr_J1 + 2048.0);  // Arm 2
-  arm_des[2][0] = static_cast<int>(msg->a3_q[0] * rad2ppr_J1 + 2048.0);  // Arm 3
-  arm_des[3][0] = static_cast<int>(msg->a4_q[0] * rad2ppr_J1 + 2048.0);  // Arm 4
+  // Mode = sim -> Pub/Sub with mujoco
+  // Mode = real -> Wirte/Read with dynamixel
+  this->declare_parameter<std::string>("mode", "None");
+  std::string mode;
+  this->get_parameter("mode", mode);
+  
+  if (mode == "real"){
+    // Initialize PortHandler and PacketHandler using provided device name and protocol version
+    portHandler_ = PortHandler::getPortHandler(device_name.c_str());
+    packetHandler_ = PacketHandler::getPacketHandler(PROTOCOL_VERSION);
+
+    // Open port and set baudrate
+    if (!portHandler_->openPort()) {
+      RCLCPP_ERROR(this->get_logger(), "Failed to open the port: %s", device_name.c_str());
+      rclcpp::shutdown();
+      exit(1);
+    }
+    if (!portHandler_->setBaudRate(BAUDRATE)) {
+      RCLCPP_ERROR(this->get_logger(), "Failed to set the baudrate!");
+      portHandler_->closePort();
+      rclcpp::shutdown();
+      exit(1);
+    }
     
-  for (int i = 1; i < 5; ++i) {
-    arm_des[0][i] = static_cast<int>(msg->a1_q[i] * rad2ppr + 2048.0);   // Arm 1
-    arm_des[1][i] = static_cast<int>(msg->a2_q[i] * rad2ppr + 2048.0);   // Arm 2
-    arm_des[2][i] = static_cast<int>(msg->a3_q[i] * rad2ppr + 2048.0);   // Arm 3
-    arm_des[3][i] = static_cast<int>(msg->a4_q[i] * rad2ppr + 2048.0);   // Arm 4
+    // Initialize Dynamixel motors and create GroupSync objects
+    if (!init_Dynamixel()) {
+      RCLCPP_ERROR(this->get_logger(), "Failed to initialize Dynamixel motors");
+      portHandler_->closePort();
+      rclcpp::shutdown();
+      exit(1);
+    }
+
+    // Create timer for Write/Read motor positions
+    motor_timer_ = this->create_wall_timer(std::chrono::milliseconds(10), std::bind(&DynamixelNode::Dynamixel_Write_Read, this));
+  }
+  else if (mode == "sim"){
+    // Create ROS2 subscriber for joint values
+    mujoco_subscriber_ = this->create_subscription<mujoco_interfaces::msg::MuJoCoMeas>("mujoco_meas", 1, std::bind(&DynamixelNode::mujoco_callback, this, std::placeholders::_1));
+    mujoco_publisher_ = this->create_publisher<dynamixel_interfaces::msg::JointVal>("joint_write", 1);
+
+    // Create timer for Write/Read motor positions
+    motor_timer_ = this->create_wall_timer(std::chrono::milliseconds(10), std::bind(&DynamixelNode::Mujoco_Pub, this));
+  }
+  else{
+    RCLCPP_ERROR(this->get_logger(), "Unknown mode: %s. No initialization performed.", mode.c_str());
   }
 }
 
-bool DynamixelNode::Dynamixel_Write_Read() {
+/* for sim */
+
+void DynamixelNode::Mujoco_Pub() {
+  /*  Publish to mujoco  */
+  dynamixel_interfaces::msg::JointVal msg1;
+
+  msg1.a1_q[0] = static_cast<double>(arm_des[0][0] - 2048.0) * ppr2rad_J1;  // Arm 1
+  msg1.a2_q[0] = static_cast<double>(arm_des[1][0] - 2048.0) * ppr2rad_J1;  // Arm 2
+  msg1.a3_q[0] = static_cast<double>(arm_des[2][0] - 2048.0) * ppr2rad_J1;  // Arm 3
+  msg1.a4_q[0] = static_cast<double>(arm_des[3][0] - 2048.0) * ppr2rad_J1;  // Arm 4
+  
+  for (uint8_t i = 1; i < 5; ++i) {
+    msg1.a1_q[i] = static_cast<double>(arm_des[0][i] - 2048.0) * ppr2rad;   // Arm 1
+    msg1.a2_q[i] = static_cast<double>(arm_des[1][i] - 2048.0) * ppr2rad;   // Arm 2
+    msg1.a3_q[i] = static_cast<double>(arm_des[2][i] - 2048.0) * ppr2rad;   // Arm 3
+    msg1.a4_q[i] = static_cast<double>(arm_des[3][i] - 2048.0) * ppr2rad;   // Arm 4
+  }
+
+  mujoco_publisher_->publish(msg1);
+
+  /*  Publish to allocator  */
+  dynamixel_interfaces::msg::JointVal msg2;
+  for (size_t i = 0; i < 5; ++i) {
+    msg2.a1_q[i] = arm_mea[0][i];
+    msg2.a2_q[i] = arm_mea[1][i];
+    msg2.a3_q[i] = arm_mea[2][i];
+    msg2.a4_q[i] = arm_mea[3][i];
+  }
+  pos_mea_publisher_->publish(msg2);
+}
+
+void DynamixelNode::mujoco_callback(const mujoco_interfaces::msg::MuJoCoMeas::SharedPtr msg) {
+  for (uint8_t i = 0; i < 5; ++i) {
+    arm_des[0][i] = msg->a1_q[i];   // Arm 1
+    arm_des[1][i] = msg->a2_q[i];   // Arm 2
+    arm_des[2][i] = msg->a3_q[i];   // Arm 3
+    arm_des[3][i] = msg->a4_q[i];   // Arm 4
+  }
+}
+
+/* for real */
+
+void DynamixelNode::Dynamixel_Write_Read() {
   /*  Write  */
   groupSyncWrite_->clearParam();
   
@@ -75,21 +124,23 @@ bool DynamixelNode::Dynamixel_Write_Read() {
         DXL_HIBYTE(DXL_HIWORD(arm_des[i][j]))
       };
       if (!groupSyncWrite_->addParam(DXL_IDS[i][j], param_goal_position)) {
-        return false;
+        dnmxl_err_cnt_++;
       }
     }
   }
+
+  if (groupSyncWrite_->txPacket() != COMM_SUCCESS){dnmxl_err_cnt_++;}
 
   /*  Read  */
   groupSyncRead_->clearParam();
 
   for (size_t i = 0; i < ARM_NUM; ++i) {
     for (size_t j = 0; j < 5; ++j) {
-      if (!groupSyncRead_->addParam(DXL_IDS[i][j])) {return false;}
+      if (!groupSyncRead_->addParam(DXL_IDS[i][j])) {dnmxl_err_cnt_++;}
     }
   }
 
-  if (groupSyncRead_->txRxPacket() != COMM_SUCCESS){return false;}
+  if (groupSyncRead_->txRxPacket() != COMM_SUCCESS){dnmxl_err_cnt_++;}
 
   // Retrieve the present position for each motor
   for (size_t i = 0; i < ARM_NUM; ++i) {
@@ -99,7 +150,7 @@ bool DynamixelNode::Dynamixel_Write_Read() {
       int ppr = groupSyncRead_->getData(id, ADDR_PRESENT_POSITION, 4);
       arm_mea[i][0] = static_cast<double>(ppr) * ppr2rad_J1;
     }
-    else {return false;}
+    else {dnmxl_err_cnt_++;}
 
     for (size_t j = 1; j < 5; ++j) {
       uint8_t id = DXL_IDS[i][j];
@@ -107,7 +158,7 @@ bool DynamixelNode::Dynamixel_Write_Read() {
         int ppr = groupSyncRead_->getData(id, ADDR_PRESENT_POSITION, 4);
         arm_mea[i][j] = static_cast<double>(ppr) * ppr2rad;
       }
-      else {return false;}
+      else {dnmxl_err_cnt_++;}
     }
   }
   
@@ -119,9 +170,7 @@ bool DynamixelNode::Dynamixel_Write_Read() {
     msg.a3_q[j] = arm_mea[2][j];
     msg.a4_q[j] = arm_mea[3][j];
   }
-  motor_position_publisher_->publish(msg);
-
-  return (groupSyncWrite_->txPacket() == COMM_SUCCESS);
+  pos_mea_publisher_->publish(msg);
 }
 
 bool DynamixelNode::init_Dynamixel() {
@@ -163,6 +212,22 @@ void DynamixelNode::change_velocity_gain(uint8_t dxl_id, uint16_t p_gain, uint16
   uint8_t dxl_error = 0;
   packetHandler_->write2ByteTxRx(portHandler_, dxl_id, ADDR_VELOCITY_P_GAIN, p_gain, &dxl_error);
   packetHandler_->write2ByteTxRx(portHandler_, dxl_id, ADDR_VELOCITY_I_GAIN, i_gain, &dxl_error);
+}
+
+/* for Both */
+
+void DynamixelNode::armchanger_callback(const dynamixel_interfaces::msg::JointVal::SharedPtr msg) {
+  arm_mea[0][0] = static_cast<double>(msg->a1_q[0] * rad2ppr_J1 + 2048.0);  // Arm 1
+  arm_mea[1][0] = static_cast<double>(msg->a2_q[0] * rad2ppr_J1 + 2048.0);  // Arm 2
+  arm_mea[2][0] = static_cast<double>(msg->a3_q[0] * rad2ppr_J1 + 2048.0);  // Arm 3
+  arm_mea[3][0] = static_cast<double>(msg->a4_q[0] * rad2ppr_J1 + 2048.0);  // Arm 4
+    
+  for (uint8_t i = 1; i < 5; ++i) {
+    arm_mea[0][i] = static_cast<double>(msg->a1_q[i] * rad2ppr + 2048.0);   // Arm 1
+    arm_mea[1][i] = static_cast<double>(msg->a2_q[i] * rad2ppr + 2048.0);   // Arm 2
+    arm_mea[2][i] = static_cast<double>(msg->a3_q[i] * rad2ppr + 2048.0);   // Arm 3
+    arm_mea[3][i] = static_cast<double>(msg->a4_q[i] * rad2ppr + 2048.0);   // Arm 4
+  }
 }
 
 void DynamixelNode::heartbeat_timer_callback() {
