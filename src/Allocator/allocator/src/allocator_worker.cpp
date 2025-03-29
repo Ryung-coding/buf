@@ -40,7 +40,7 @@ void AllocatorWorker::controllerCallback(const controller_interfaces::msg::Contr
   //-------- Loop Time Calculate --------
   current_callback_time_ = this->now();
   current_dt = (current_callback_time_ - last_callback_time_).seconds();
-  if (current_dt > 0.0) {filtered_frequency_ = 0.05 * (1.0 / current_dt) + 0.95 * filtered_frequency_;}
+  if (current_dt > 0.0) {filtered_frequency_ = 0.9 * (1.0 / current_dt) + 0.9 * filtered_frequency_;}
   last_callback_time_ = current_callback_time_;
 
   // get [Mx My Mz F]

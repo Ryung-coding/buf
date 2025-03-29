@@ -109,7 +109,8 @@ ControllerNode<M>::ControllerNode() : Node("controller_node"),
    pid_roll_(  Kp_r, Ki_r, Kd_r, Sat_gain_r, lpf_gain_r, dt ),
    pid_pitch_( Kp_p, Ki_p, Kd_p, Sat_gain_p, lpf_gain_p, dt ),
    pid_yaw_(   Kp_y, Ki_y, Kd_y, Sat_gain_y, lpf_gain_y, dt ),
-   pid_z_(     Kp_z, Ki_z, Kd_z, Sat_gain_z, lpf_gain_z, dt )
+   pid_z_(     Kp_z, Ki_z, Kd_z, Sat_gain_z, lpf_gain_z, dt ),
+   thread_running_(true)
 {
   // Drone total mass * gravity example
   weight = 9.80665 * 4.8; // ~49.03325 N
@@ -125,9 +126,11 @@ ControllerNode<M>::ControllerNode() : Node("controller_node"),
   debug_val_publisher_  = this->create_publisher<controller_interfaces::msg::ControllerDebugVal>("controller_info", 1);
 
   // Timers
-  controller_timer_ = this->create_wall_timer(std::chrono::milliseconds(1), std::bind(&ControllerNode::controller_timer_callback, this));
   heartbeat_timer_ = this->create_wall_timer(std::chrono::milliseconds(100), std::bind(&ControllerNode::heartbeat_timer_callback, this));
   debugging_timer_ = this->create_wall_timer(std::chrono::milliseconds(100), std::bind(&ControllerNode::debugging_timer_callback, this));
+
+  // main-tasking thread
+  controller_thread_ = std::thread(&ControllerNode::controller_loop, this);
 }
 
 template <ControlMode M>
@@ -299,6 +302,27 @@ void ControllerNode<M>::debugging_timer_callback() {
   debug_val_publisher_->publish(info_msg);
 }
 
+template <ControlMode M>
+void ControllerNode<M>::controller_loop() {
+  constexpr auto period = std::chrono::microseconds(1000); // 1000Hz
+  auto next_time = std::chrono::steady_clock::now() + period;
+
+  while (rclcpp::ok() && thread_running_) {
+    controller_timer_callback();
+    rclcpp::spin_some(shared_from_this());
+    std::this_thread::sleep_until(next_time);
+    next_time += period;
+  }
+}
+
+template <ControlMode M>
+ControllerNode<M>::~ControllerNode() {
+  thread_running_ = false;
+  if (controller_thread_.joinable()) {
+    controller_thread_.join();
+  }
+}
+
 template class ControllerNode<ControlMode::POS>;
 template class ControllerNode<ControlMode::VEL>;
 template class ControllerNode<ControlMode::ATTITUDE>;
@@ -307,7 +331,16 @@ template class ControllerNode<ControlMode::ATTITUDE>;
 int main(int argc, char **argv) {
   rclcpp::init(argc, argv);
   auto node = std::make_shared<ControllerNode<CONTROL_MODE>>();
-  rclcpp::spin(node);
+
+  // wait forever until signal (Ctrl+C)
+  rclcpp::on_shutdown([&]() {
+    RCLCPP_INFO(node->get_logger(), "Shutdown signal received");
+  });
+
+  while (rclcpp::ok()) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+  }
+
   rclcpp::shutdown();
   return 0;
 }

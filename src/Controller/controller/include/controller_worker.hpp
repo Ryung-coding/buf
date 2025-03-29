@@ -77,6 +77,7 @@ template <ControlMode M>
 class ControllerNode : public rclcpp::Node {
 public:
   ControllerNode();
+  ~ControllerNode();
 
 private:
 
@@ -105,13 +106,15 @@ private:
   void controller_timer_callback();
   void heartbeat_timer_callback();
   void debugging_timer_callback();
+  void controller_loop();
 
   rclcpp::Subscription<sbus_interfaces::msg::SbusSignal>::SharedPtr sbus_subscription_;
   rclcpp::Subscription<mocap_interfaces::msg::MocapMeasured>::SharedPtr optitrack_mea_subscription_;
   rclcpp::Subscription<imu_interfaces::msg::ImuMeasured>::SharedPtr imu_mea_subscription_;
 
   rclcpp::Publisher<controller_interfaces::msg::ControllerOutput>::SharedPtr controller_publisher_;
-  rclcpp::TimerBase::SharedPtr controller_timer_;
+  std::atomic<bool> thread_running_;
+  std::thread controller_thread_;
   
   rclcpp::Publisher<watchdog_interfaces::msg::NodeState>::SharedPtr heartbeat_publisher_;
   rclcpp::TimerBase::SharedPtr heartbeat_timer_;
