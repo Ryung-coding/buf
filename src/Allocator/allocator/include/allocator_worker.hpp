@@ -8,6 +8,8 @@
 #include "dynamixel_interfaces/msg/joint_val.hpp"
 #include "watchdog_interfaces/msg/node_state.hpp"
 #include <Eigen/Dense>
+#include <vector>
+#include <algorithm>
 
 using Eigen::Matrix4d;
 using Eigen::Vector4d;
@@ -40,10 +42,12 @@ private:
   rclcpp::TimerBase::SharedPtr debugging_timer_;
 
   // Time tracking
-  rclcpp::Time current_callback_time_;
-  rclcpp::Time last_callback_time_;
-  double current_dt = 0.0; // [sec]
-  double filtered_frequency_ = 1200.0; // [Hz]
+  size_t buffer_size_ = 1000;           // Size of the moving average window
+  std::vector<double> dt_buffer_;      // Circular buffer for dt values
+  size_t buffer_index_  = 0;           // Current index in the circular buffer
+  double dt_sum_ = 0.0;                // Sum of dt values in the buffer
+  double filtered_frequency_ = 1200.0; // [Hz] calculated from average dt
+  rclcpp::Time last_callback_time_;    // Timestamp of the last callback
 
   Vector4d f = Vector4d::Zero(); // PID-control result [N.m N.m N.m N]
   Vector4d u = Vector4d::Zero(); // Allocated result [N N N N]

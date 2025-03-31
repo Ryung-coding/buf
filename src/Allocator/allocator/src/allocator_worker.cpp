@@ -31,17 +31,23 @@ AllocatorWorker::AllocatorWorker() : Node("allocator_node") {
   debugging_timer_ = this->create_wall_timer(std::chrono::milliseconds(100), std::bind(&AllocatorWorker::debugging_timer_callback, this));
 
   // Initialize times
-  current_callback_time_ = this->now();
-  last_callback_time_    = this->now();
+  const double nominal_dt = 1.0 / filtered_frequency_;  
+  dt_buffer_.resize(buffer_size_, nominal_dt);
+  dt_sum_ = nominal_dt * buffer_size_;
+  last_callback_time_ = this->now();
 }
 
 void AllocatorWorker::controllerCallback(const controller_interfaces::msg::ControllerOutput::SharedPtr msg) {
 
-  //-------- Loop Time Calculate --------
-  current_callback_time_ = this->now();
-  current_dt = (current_callback_time_ - last_callback_time_).seconds();
-  if (current_dt > 0.0) {filtered_frequency_ = 0.1/current_dt + 0.9*filtered_frequency_;}
-  last_callback_time_ = current_callback_time_;
+  //-------- Loop Time Calculate (Moving avg filter) --------
+  rclcpp::Time current_callback_time = this->now();
+  double dt = (current_callback_time - last_callback_time_).seconds();
+  last_callback_time_ = current_callback_time;  
+  dt_sum_ = dt_sum_ - dt_buffer_[buffer_index_] + dt;
+  dt_buffer_[buffer_index_] = dt;
+  buffer_index_ = (buffer_index_ + 1) % buffer_size_;
+  double avg_dt = dt_sum_ / static_cast<double>(buffer_size_);
+  filtered_frequency_ = 1.0 / avg_dt;
 
   // get [Mx My Mz F]
   f << msg->moment[0], msg->moment[1], msg->moment[2], msg->force;
