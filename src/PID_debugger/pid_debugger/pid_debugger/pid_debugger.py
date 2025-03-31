@@ -166,7 +166,10 @@ class DebugGUI(QWidget):
         return sbus_group
 
     def create_pid_group(self):
-        self.pid_midvals = []
+        self.pid_midval_r = []
+        self.pid_midval_p = []
+        self.pid_midval_y = []
+        self.pid_midval_z = []
         
         pid_group = QGroupBox("PID")
         pid_layout = QVBoxLayout()
@@ -178,54 +181,51 @@ class DebugGUI(QWidget):
 
         pid_labels = ["r", "p", "y", "z"]
         for label in pid_labels:
-            bar_layout = QHBoxLayout()
+            label_layout = QHBoxLayout()
             idx_label = QLabel(label)
             idx_label.setFixedHeight(50)
-            bar_layout.addWidget(idx_label)
-            pid_midval = []
+            label_layout.addWidget(idx_label)
             
-            if label in ("r", "p"):
-                unit = ["m/s", "rad", "rad/s", "N.m"]
-                for i in range(4):
-                    progress_bar = QProgressBar()
-                    progress_bar.setRange(0, 2000)
-                    progress_bar.setValue(0)
-                    progress_bar.setFixedHeight(50)
-                    progress_bar.setFixedWidth(170)
-                    progress_bar.valueChanged.connect(lambda v, pb=progress_bar, u=unit[i]: pb.setFormat(f"{(v-1000)/1000.:.3f} {u}"))
-                    bar_layout.addWidget(progress_bar)
-                    pid_midval.append(progress_bar)
+            if label == "r":
+                for _ in range(4):
+                    pid_label = QLineEdit("0.0")
+                    pid_label.setReadOnly(True)
+                    pid_label.setFixedHeight(50)
+                    pid_label.setFixedWidth(170)
+                    label_layout.addWidget(pid_label)
+                    self.pid_midval_r.append(pid_label)
+            elif label == "p":
+                for _ in range(4):
+                    pid_label = QLineEdit("0.0")
+                    pid_label.setReadOnly(True)
+                    pid_label.setFixedHeight(50)
+                    pid_label.setFixedWidth(170)
+                    label_layout.addWidget(pid_label)
+                    self.pid_midval_p.append(pid_label)
             elif label == "y":
-                unit = ["rad/s", "N.m"]
                 padding_label = QLabel()
                 padding_label.setFixedWidth(340)
-                bar_layout.addWidget(padding_label)
-                for i in range(2):
-                    progress_bar = QProgressBar()
-                    progress_bar.setRange(0, 2000)
-                    progress_bar.setValue(0)
-                    progress_bar.setFixedHeight(50)
-                    progress_bar.setFixedWidth(170)
-                    progress_bar.valueChanged.connect(lambda v, pb=progress_bar, u=unit[i]: pb.setFormat(f"{(v-1000)/1000.:.3f} {u}"))
-                    bar_layout.addWidget(progress_bar)
-                    pid_midval.append(progress_bar)
-            else: # "z"
-                unit = ["m/s", "N"]
-                for i in range(2):
-                    progress_bar = QProgressBar()
-                    progress_bar.setRange(0, 2000)
-                    progress_bar.setValue(0)
-                    progress_bar.setFixedHeight(50)
-                    progress_bar.setFixedWidth(170)
-                    progress_bar.valueChanged.connect(lambda v, pb=progress_bar, u=unit[i]: pb.setFormat(f"{(v-1000)/10.:.3f} {u}"))
-                    bar_layout.addWidget(progress_bar)
-                    pid_midval.append(progress_bar)
+                label_layout.addWidget(padding_label)
+                for _ in range(2):
+                    pid_label = QLineEdit("0.0")
+                    pid_label.setReadOnly(True)
+                    pid_label.setFixedHeight(50)
+                    pid_label.setFixedWidth(170)
+                    label_layout.addWidget(pid_label)
+                    self.pid_midval_y.append(pid_label)
+            else:
+                for _ in range(2):
+                    pid_label = QLineEdit("0.0")
+                    pid_label.setReadOnly(True)
+                    pid_label.setFixedHeight(50)
+                    pid_label.setFixedWidth(170)
+                    label_layout.addWidget(pid_label)
+                    self.pid_midval_z.append(pid_label)
                 padding_label = QLabel()
                 padding_label.setFixedWidth(350)
-                bar_layout.addWidget(padding_label)
+                label_layout.addWidget(padding_label)
 
-            self.pid_midvals.append(pid_midval)
-            pid_layout.addLayout(bar_layout)
+            pid_layout.addLayout(label_layout)
 
         pid_group.setLayout(pid_layout)
         return pid_group
@@ -550,18 +550,27 @@ class DebugGUI(QWidget):
         kill_val = self.controller_data["sbus_chnl"][4]
         if kill_val == 1696: self.sbus_toggles[4].setChecked(True)
         else: self.sbus_toggles[4].setChecked(False)
+        
+        # Update PID vals
+        for i, label in enumerate(self.pid_midval_r):
+            if i == 0: label.setText(self.format_pid_value(self.controller_data['pid_mx'][i], " m/s"))
+            elif i == 1: label.setText(self.format_pid_value(self.controller_data['pid_mx'][i], " rad"))
+            elif i == 2: label.setText(self.format_pid_value(self.controller_data['pid_mx'][i], " rad/s"))
+            else: label.setText(self.format_pid_value(self.controller_data['pid_mx'][i], " N.m"))
 
-        # Update PID mid values
-        for i, row in enumerate(self.pid_midvals):
-            for j, bar in enumerate(row):
-                if i == 0:
-                    bar.setValue(int(self.controller_data['pid_mx'][j] * 1000) + 1000)
-                elif i == 1:
-                    bar.setValue(int(self.controller_data['pid_my'][j] * 1000) + 1000)
-                elif i == 2:
-                    bar.setValue(int(self.controller_data['pid_mz'][j] * 1000) + 1000)
-                else:
-                    bar.setValue(int(self.controller_data['pid_f'][j] * 10) + 1000)
+        for i, label in enumerate(self.pid_midval_p):
+            if i == 0: label.setText(self.format_pid_value(self.controller_data['pid_my'][i], " m/s"))
+            elif i == 1: label.setText(self.format_pid_value(self.controller_data['pid_my'][i], " rad"))
+            elif i == 2: label.setText(self.format_pid_value(self.controller_data['pid_my'][i], " rad/s"))
+            else: label.setText(self.format_pid_value(self.controller_data['pid_my'][i], " N.m"))
+
+        for i, label in enumerate(self.pid_midval_y):
+            if i == 0: label.setText(self.format_pid_value(self.controller_data['pid_mz'][i], " rad/s"))
+            elif i == 1: label.setText(self.format_pid_value(self.controller_data['pid_mz'][i], " N.m"))
+
+        for i, label in enumerate(self.pid_midval_z):
+            if i == 0: label.setText(self.format_pid_value(self.controller_data['pid_f'][i], " m/s"))
+            elif i == 1: label.setText(self.format_pid_value(self.controller_data['pid_f'][i], " rad"))
 
         # Update thruster values using allocator PWM
         for i, thruster in enumerate(self.thrusters):
@@ -591,7 +600,6 @@ class DebugGUI(QWidget):
         self.node_states[0].setText(str(round(self.allocator_data['loop_rate'])))  # Controller loop rate
 
         # Update plots
-
         for i in range(4):
             if len(self.plot_ref_data[i]) >= 50:
                 self.plot_ref_data[i].pop(0)
@@ -611,6 +619,13 @@ class DebugGUI(QWidget):
             length = len(self.plot_ref_data[i])
             self.plot_curves_ref[i].setData(self.x_data[:length], self.plot_ref_data[i])
             self.plot_curves_mea[i].setData(self.x_data[:length], self.plot_mea_data[i])
+
+    def format_pid_value(self, value, unit, total_width=13):
+        sign = '-' if value < 0 else '+'
+        num_str = f"{abs(value):.3f}"
+        available = total_width - len(sign) - len(unit)
+        centered_num = num_str.center(available)
+        return f"{sign}{centered_num}{unit}"
 
 def run_ros2_node(node):
     try:
