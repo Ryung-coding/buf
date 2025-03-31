@@ -3,8 +3,8 @@
 AllocatorWorker::AllocatorWorker() : Node("allocator_node") {
 
   // u = A * f
-  const double l_1 = 0.8120559159;  // Arm length
-  const double l_2 = 0.8120559159;
+  const double l_1 = 0.4130990258;  // Arm length
+  const double l_2 = 0.4130990258;
   const double C_m = 0.21496;
   A = (Matrix4d() << -l_1,  l_1,  l_1, -l_1,
                      -l_2, -l_2,  l_2,  l_2,
