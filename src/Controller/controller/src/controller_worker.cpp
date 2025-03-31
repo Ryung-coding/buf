@@ -304,7 +304,7 @@ void ControllerNode<M>::debugging_timer_callback() {
 
 template <ControlMode M>
 void ControllerNode<M>::controller_loop() {
-  constexpr auto period = std::chrono::microseconds(1000); // 1000Hz
+  constexpr auto period = std::chrono::microseconds(Loop_us);
   auto next_time = std::chrono::steady_clock::now() + period;
 
   while (rclcpp::ok() && thread_running_) {

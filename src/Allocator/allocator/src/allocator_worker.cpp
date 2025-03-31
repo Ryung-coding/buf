@@ -26,7 +26,7 @@ AllocatorWorker::AllocatorWorker() : Node("allocator_node") {
   debug_val_publisher_ = this->create_publisher<allocator_interfaces::msg::AllocatorDebugVal>("allocator_info", 1);
 
   // Timers for periodic publishing
-  pwm_timer_ = this->create_wall_timer(std::chrono::milliseconds(1), std::bind(&AllocatorWorker::publishPwmVal, this));
+  pwm_timer_ = this->create_wall_timer(std::chrono::microseconds(800), std::bind(&AllocatorWorker::publishPwmVal, this));
   heartbeat_timer_ = this->create_wall_timer(std::chrono::milliseconds(100), std::bind(&AllocatorWorker::heartbeat_timer_callback, this));
   debugging_timer_ = this->create_wall_timer(std::chrono::milliseconds(100), std::bind(&AllocatorWorker::debugging_timer_callback, this));
 
@@ -40,7 +40,7 @@ void AllocatorWorker::controllerCallback(const controller_interfaces::msg::Contr
   //-------- Loop Time Calculate --------
   current_callback_time_ = this->now();
   current_dt = (current_callback_time_ - last_callback_time_).seconds();
-  if (current_dt > 0.0) {filtered_frequency_ = 0.9 * (1.0 / current_dt) + 0.9 * filtered_frequency_;}
+  if (current_dt > 0.0) {filtered_frequency_ = 0.1/current_dt + 0.9*filtered_frequency_;}
   last_callback_time_ = current_callback_time_;
 
   // get [Mx My Mz F]

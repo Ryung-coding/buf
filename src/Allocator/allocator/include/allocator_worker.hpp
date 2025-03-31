@@ -43,7 +43,7 @@ private:
   rclcpp::Time current_callback_time_;
   rclcpp::Time last_callback_time_;
   double current_dt = 0.0; // [sec]
-  double filtered_frequency_ = 900.0; // [Hz]
+  double filtered_frequency_ = 1200.0; // [Hz]
 
   Vector4d f = Vector4d::Zero(); // PID-control result [N.m N.m N.m N]
   Vector4d u = Vector4d::Zero(); // Allocated result [N N N N]

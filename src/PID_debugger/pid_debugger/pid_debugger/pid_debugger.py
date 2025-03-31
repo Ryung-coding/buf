@@ -501,7 +501,7 @@ class DebugGUI(QWidget):
             # Set y-axis range
             if idx == "z": plot_item.setYRange(0.0, 1.5)
             elif idx == "y": plot_item.setYRange(-3.14, 3.14)
-            else: plot_item.setYRange(-0.017, 0.017)
+            else: plot_item.setYRange(-0.06, 0.06)
 
             # Two curves: reference (blue) and measurement (red), each with thicker lines
             curve_ref = plot_widget.plot(name="Ref", pen=pg.mkPen(color='b', width=3))

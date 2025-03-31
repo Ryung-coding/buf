@@ -3,6 +3,8 @@
 
 #include <array>
 
+#define Loop_us 500 // controller thread loop dt [us]
+
 enum class ControlMode {
   POS,
   VEL,
@@ -10,7 +12,7 @@ enum class ControlMode {
 };
 
 inline constexpr ControlMode CONTROL_MODE = ControlMode::ATTITUDE;
-inline constexpr double dt = 0.001; // [sec]
+inline constexpr double dt = Loop_us / 1000000.0; // [sec]
 
 struct Gains {
   double data[4];
@@ -52,9 +54,9 @@ inline constexpr Gains Kd_y       = Gains(2.2, 0.1); // [rad/s N.m]
 inline constexpr Gains Sat_gain_y = Gains(0.2, 0.2); // [rad/s N.m]
 inline constexpr Gains lpf_gain_y = Gains(0.1, 0.1);
 
-inline constexpr Gains Kp_z       = Gains(1.7, 5.0); // [m/s N]
+inline constexpr Gains Kp_z       = Gains(2.7, 6.0); // [m/s N]
 inline constexpr Gains Ki_z       = Gains(1.5, 0.2); // [m/s N]
-inline constexpr Gains Kd_z       = Gains(0.3, 0.1); // [m/s N]
+inline constexpr Gains Kd_z       = Gains(0.3, 0.2); // [m/s N]
 inline constexpr Gains Sat_gain_z = Gains(1.2, 4.0); // [m/s N]
 inline constexpr Gains lpf_gain_z = Gains(0.1, 0.1);
 
