@@ -30,6 +30,7 @@ def generate_launch_description():
             executable='mocap_worker',
             name='optitrack_node',
             parameters=[{'mode': mode}],
+            # prefix='chrt -f 90',
         ),
 
         # IMU Node
@@ -38,6 +39,7 @@ def generate_launch_description():
             executable='imu_worker',
             name='imu_node',
             parameters=[{'mode': mode}],
+            # prefix='chrt -f 90',
         ),
 
         # SBUS Worker Node
@@ -45,6 +47,7 @@ def generate_launch_description():
             package='sbus',
             executable='sbus_worker',
             name='sbus_node',
+            # prefix='chrt -f 88',
         ),
 
         # ARM Changer Node
@@ -52,6 +55,7 @@ def generate_launch_description():
             package='arm_changer',
             executable='arm_changer',
             name='arm_changing_node',
+            # prefix='chrt -f 88',
         ),
 
         # Controller Node
@@ -59,6 +63,7 @@ def generate_launch_description():
             package='controller',
             executable='controller_worker',
             name='controller_node',
+            # prefix='chrt -f 92',
         ),
 
         # Allocator Node
@@ -66,6 +71,7 @@ def generate_launch_description():
             package='allocator',
             executable='allocator_worker',
             name='allocator_node',
+            # prefix='chrt -f 91',
         ),
 
         # Dynamixel Node
@@ -74,6 +80,7 @@ def generate_launch_description():
             executable='dynamixel_worker',
             name='dynamixel_node',
             parameters=[{'mode': mode}],
+            # prefix='chrt -f 91',
         ),
 
         # Teensy Node
@@ -82,6 +89,7 @@ def generate_launch_description():
             executable='teensy_worker',
             name='teensy_node',
             parameters=[{'mode': mode}],
+            # prefix='chrt -f 91',
         ),
 
         # Watchdog Node
@@ -89,6 +97,7 @@ def generate_launch_description():
             package='watchdog_manager',
             executable='watchdog_worker',
             name='watchdog_node',
+            # prefix='chrt -f 88',
         ),
         
         # MuJoCo Node (Run only when mode==sim)
@@ -98,6 +107,7 @@ def generate_launch_description():
             name='mujoco_node',
             output='screen',
             condition=IfCondition(PythonExpression(["'", mode, "' == 'sim'"])),
+            # prefix='chrt -f 89',
         ),
 
         # PID Debugger Node
@@ -106,6 +116,7 @@ def generate_launch_description():
             executable='pid_debugger',
             name='pid_debugger_node',
             output='screen',
+            # prefix='chrt -f 87',
         ),
     ]
 
