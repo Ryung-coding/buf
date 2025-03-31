@@ -166,10 +166,10 @@
     <motor class="BLDC" name="thrust2" site="thrust2" gear="1 0 0 0 0 0" ctrlrange="0 50"/>
     <motor class="BLDC" name="thrust3" site="thrust3" gear="1 0 0 0 0 0" ctrlrange="0 50"/>
     <motor class="BLDC" name="thrust4" site="thrust4" gear="1 0 0 0 0 0" ctrlrange="0 50"/>
-    <motor class="BLDC" name="torque1" site="torque1" gear="0 0 0 1 0 0" ctrlrange="-1.5 1.5"/>
-    <motor class="BLDC" name="torque2" site="torque2" gear="0 0 0 1 0 0" ctrlrange="-1.5 1.5"/>
-    <motor class="BLDC" name="torque3" site="torque3" gear="0 0 0 1 0 0" ctrlrange="-1.5 1.5"/>
-    <motor class="BLDC" name="torque4" site="torque4" gear="0 0 0 1 0 0" ctrlrange="-1.5 1.5"/>
+    <motor class="BLDC" name="torque1" site="torque1" gear="0 0 0 -1 0 0" ctrlrange="-1.5 1.5"/>
+    <motor class="BLDC" name="torque2" site="torque2" gear="0 0 0 -1 0 0" ctrlrange="-1.5 1.5"/>
+    <motor class="BLDC" name="torque3" site="torque3" gear="0 0 0 -1 0 0" ctrlrange="-1.5 1.5"/>
+    <motor class="BLDC" name="torque4" site="torque4" gear="0 0 0 -1 0 0" ctrlrange="-1.5 1.5"/>
     <!-- Arm1 -->
     <position name="servo_Arm1_joint1" joint="Arm1_joint1" kp="50" kv="0.1" ctrlrange="-2.00713 2.00713"/>
     <position name="servo_Arm1_joint2" joint="Arm1_joint2" kp="50" kv="0.1"  ctrlrange="-2.00713 2.00713"/>

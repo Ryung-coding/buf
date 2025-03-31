@@ -77,10 +77,10 @@ heading_PID::heading_PID(const std::array<double, 2>& Kp,
 
 double heading_PID::update(double ref, const std::array<double, 2>& msr, std::array<double, 2>& output) {
 
-  double error = atan2(sin(ref - msr[0]), cos(ref - msr[0])); // angle err
+  double error = atan2(sin(ref - msr[0]), cos(ref - msr[0])); // angle err [rad]
 
   for (std::size_t i = 0; i < 2; i++) {
-    if (i > 0) {error = output[i-1] - msr[i];}
+    if (i > 0) {error = output[i-1] - msr[i];} // angular rate err [rad/s]
 
     // Integral
     integral[i] += error * dt;
