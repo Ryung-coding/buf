@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(controller)
+project(controller_pid)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
@@ -19,10 +19,10 @@ find_package(watchdog_interfaces REQUIRED)
 include_directories(include)
 
 # Add executables
-add_executable(controller_worker src/controller_worker.cpp)
+add_executable(controller_worker_pid src/controller_worker.cpp)
 
 # Link libraries
-ament_target_dependencies(controller_worker
+ament_target_dependencies(controller_worker_pid
   rclcpp
   rclcpp_components
   controller_interfaces
@@ -33,7 +33,7 @@ ament_target_dependencies(controller_worker
 )
 
 install(TARGETS
-  controller_worker
+  controller_worker_pid
   DESTINATION lib/${PROJECT_NAME}
 )
 
