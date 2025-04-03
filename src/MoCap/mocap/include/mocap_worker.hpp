@@ -14,6 +14,7 @@ struct DelayedData
   rclcpp::Time stamp;
   std::array<double, 3> pos;
   std::array<double, 3> vel;
+  std::array<double, 3> acc;
 };
 
 class OptiTrackNode : public rclcpp::Node {

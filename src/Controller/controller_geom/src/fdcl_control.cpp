@@ -16,7 +16,6 @@ fdcl::control::control(
     fdcl::control::load_config();
 };
 
-
 fdcl::control::control(void)
 {
     // This should not happen as this leads to uninitialized pointers.
@@ -28,12 +27,10 @@ fdcl::control::control(void)
     this->~control();
 }
 
-
 fdcl::control::~control(void)
 {
     // do nothing
 };
-
 
 void fdcl::control::init(void)
 {
@@ -41,7 +38,6 @@ void fdcl::control::init(void)
     e2 << 0.0, 1.0, 0.0;
     e3 << 0.0, 0.0, 1.0;
 }
-
 
 void fdcl::control::position_control(void)
 {

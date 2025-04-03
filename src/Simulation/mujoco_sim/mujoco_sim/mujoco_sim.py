@@ -106,13 +106,15 @@ class MuJoCoSimulatorNode(Node):
         q = quaternion_to_euler(self.data.qpos[3:7])
         vel = self.data.qvel[:3]
         qdot = self.data.qvel[3:6]
+        acc = self.data.qacc[:3]
 
         # Create and publish the message
         msg = MuJoCoMeas(
             q=[q[0], q[1], q[2]],
             qdot=[qdot[0], -qdot[1], qdot[2]],
             pos=[pos[0], pos[1], pos[2]],
-            vel=[vel[0], vel[1], vel[2]]
+            vel=[vel[0], vel[1], vel[2]],
+            acc=[acc[0], acc[1], acc[2]]
         )
         self.mujoco_meas_publisher.publish(msg)
 

@@ -60,8 +60,8 @@ def generate_launch_description():
 
         # Controller Node
         Node(
-            package='controller_geom',
-            executable='controller_worker_geom',
+            package='controller_pid',
+            executable='controller_worker_pid',
             name='controller_node',
             # prefix='chrt -f 92',
         ),

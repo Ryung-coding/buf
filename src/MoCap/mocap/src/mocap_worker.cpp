@@ -43,8 +43,9 @@ void OptiTrackNode::mujoco_callback(const mujoco_interfaces::msg::MuJoCoMeas::Sh
   DelayedData new_data;
   new_data.stamp = now_time;
   for (size_t i = 0; i < 3; ++i) {
-    new_data.pos[i]    = msg->pos[i];
+    new_data.pos[i] = msg->pos[i];
     new_data.vel[i] = msg->vel[i];
+    new_data.acc[i] = msg->acc[i];
   }
   data_buffer_.push_back(new_data);
 
@@ -81,6 +82,7 @@ void OptiTrackNode::PublishMuJoCoMeasurement() {
   auto output_msg = mocap_interfaces::msg::MocapMeasured();
   output_msg.pos = { delayed_data.pos[0], delayed_data.pos[1], delayed_data.pos[2] };
   output_msg.vel = { delayed_data.vel[0], delayed_data.vel[1], delayed_data.vel[2] };
+  output_msg.acc = { delayed_data.acc[0], delayed_data.acc[1], delayed_data.acc[2] };
 
   mocap_publisher_->publish(output_msg);
 }
