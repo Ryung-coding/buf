@@ -236,9 +236,40 @@ void ControllerNode<M>::optitrackCallback(const mocap_interfaces::msg::MocapMeas
 
 template <ControlMode M>
 void ControllerNode<M>::imuCallback(const imu_interfaces::msg::ImuMeasured::SharedPtr msg) {
-  imu_roll_[0]  = msg->q[0];    imu_roll_[1]  = msg->qdot[0];
-  imu_pitch_[0] = msg->q[1];    imu_pitch_[1] = msg->qdot[1];
-  imu_yaw_[0]   = msg->q[2];    imu_yaw_[1]   = msg->qdot[2];
+  // quat -> rpy
+  const double w = msg->q[0];
+  const double x = msg->q[1];
+  const double y = msg->q[2];
+  const double z = msg->q[3];
+  
+  const double xx = x * x;
+  const double yy = y * y;
+  const double zz = z * z;
+  const double wx = w * x;
+  const double wy = w * y;
+  const double wz = w * z;
+  const double xy = x * y;
+  const double xz = x * z;
+  const double yz = y * z;
+
+  // Roll: atan2(2*(w*x + y*z), 1 - 2*(x*x + y*y))
+  double roll = std::atan2(2.0 * (wx + yz), 1.0 - 2.0 * (xx + yy));
+
+  // Pitch: asin(2*(w*y - x*z))
+  double sinp = 2.0 * (wy - xz);
+  double pitch = (std::fabs(sinp) >= 1.0) ? std::copysign(M_PI / 2.0, sinp) : std::asin(sinp);
+
+  // Yaw: atan2(2*(w*z + x*y), 1 - 2*(y*y + z*z))
+  double yaw = std::atan2(2.0 * (wz + xy), 1.0 - 2.0 * (yy + zz));
+  
+  imu_roll_[0]  = roll;
+  imu_pitch_[0] = -pitch;
+  imu_yaw_[0]   = yaw;
+
+  // gyro
+  imu_roll_[1]  = msg->w[0];
+  imu_pitch_[1] = msg->w[1];
+  imu_yaw_[1]   = msg->w[2];
 }
 
 template <ControlMode M>

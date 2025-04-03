@@ -9,27 +9,6 @@ import mujoco
 import mujoco.viewer
 from rclpy.executors import SingleThreadedExecutor
 import threading
-import math
-
-def quaternion_to_euler(quat):
-    w, x, y, z = quat
-
-    # Roll
-    sinr_cosp = 2.0 * (w * x + y * z)
-    cosr_cosp = 1.0 - 2.0 * (x * x + y * y)
-    roll = math.atan2(sinr_cosp, cosr_cosp)
-
-    # Pitch
-    sinp = 2.0 * (w * y - z * x)
-    if abs(sinp) >= 1: pitch = math.copysign(math.pi / 2, sinp)
-    else: pitch = -math.asin(sinp)
-
-    # Yaw
-    siny_cosp = 2.0 * (w * z + x * y)
-    cosy_cosp = 1.0 - 2.0 * (y * y + z * z)
-    yaw = math.atan2(siny_cosp, cosy_cosp)
-
-    return [roll, pitch, yaw]
 
 class MuJoCoSimulatorNode(Node):
     def __init__(self, executor):
@@ -103,15 +82,15 @@ class MuJoCoSimulatorNode(Node):
     def publish_mujoco_meas(self):
         # Extract state information
         pos = self.data.qpos[:3]
-        q = quaternion_to_euler(self.data.qpos[3:7])
+        q = self.data.qpos[3:7]
         vel = self.data.qvel[:3]
-        qdot = self.data.qvel[3:6]
+        w = self.data.qvel[3:6]
         acc = self.data.qacc[:3]
 
         # Create and publish the message
         msg = MuJoCoMeas(
-            q=[q[0], q[1], q[2]],
-            qdot=[qdot[0], -qdot[1], qdot[2]],
+            q=[q[0], q[1], q[2], q[3]],
+            w=[w[0], -w[1], w[2]],
             pos=[pos[0], pos[1], pos[2]],
             vel=[vel[0], vel[1], vel[2]],
             acc=[acc[0], acc[1], acc[2]]

@@ -59,23 +59,9 @@ private:
   rclcpp::Publisher<controller_interfaces::msg::ControllerDebugVal>::SharedPtr debug_val_publisher_;
   rclcpp::TimerBase::SharedPtr debugging_timer_;
 
-  // Desired states
+  // sbus state
   int   sbus_chnl_[9] = {1024, 1024, 352, 1024, 352, 352, 352, 352, 352};
   double sbus_ref_[4] = {0.0, 0.0, 0.0, 0.0};
-
-  // Sensor states
-  double imu_roll_[2]  = {0.0, 0.0}; // [rad, rad/s]
-  double imu_pitch_[2] = {0.0, 0.0}; // [rad, rad/s]
-  double imu_yaw_[2]   = {0.0, 0.0}; // [rad, rad/s]
-  double opti_x_[2]    = {0.0, 0.0}; // [m, m/s]
-  double opti_y_[2]    = {0.0, 0.0}; // [m, m/s]
-  double opti_z_[2]    = {0.0, 0.0}; // [m, m/s]
-
-  // For debugging mid-values
-  double pid_midval_roll_[4]  = {0.0, 0.0, 0.0, 0.0}; // [m, m/s, rad, rad/s]
-  double pid_midval_pitch_[4] = {0.0, 0.0, 0.0, 0.0}; // [m, m/s, rad, rad/s]
-  double pid_midval_yaw_[2]   = {0.0, 0.0}; // [rad, rad/s]
-  double pid_midval_z_[2]     = {0.0, 0.0}; // [m, m/s]
 
   uint8_t heartbeat_state_ = 0;
 };

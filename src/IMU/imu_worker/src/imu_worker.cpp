@@ -39,10 +39,9 @@ void IMUnode::mujoco_callback(const mujoco_interfaces::msg::MuJoCoMeas::SharedPt
   // Push the new data into the buffer
   DelayedData new_data;
   new_data.stamp = now_time;
-  for (size_t i = 0; i < 3; ++i) {
-    new_data.q[i]    = msg->q[i];
-    new_data.qdot[i] = msg->qdot[i];
-  }
+  new_data.q[0] = msg->q[0]; new_data.q[1] = msg->q[1]; new_data.q[2] = msg->q[2]; new_data.q[3] = msg->q[3];
+  new_data.w[0] = msg->w[0]; new_data.w[1] = msg->w[1]; new_data.w[2] = msg->w[2];
+
   data_buffer_.push_back(new_data);
 
   // Remove older data that is no longer needed to reduce memory usage (older than 10ms)
@@ -76,8 +75,8 @@ void IMUnode::PublishMuJoCoMeasurement() {
 
   // Publish data
   auto output_msg = imu_interfaces::msg::ImuMeasured();
-  output_msg.q    = { delayed_data.q[0], delayed_data.q[1], delayed_data.q[2] };
-  output_msg.qdot = { delayed_data.qdot[0], delayed_data.qdot[1], delayed_data.qdot[2] };
+  output_msg.q    = { delayed_data.q[0], delayed_data.q[1], delayed_data.q[2], delayed_data.q[3] };
+  output_msg.w = { delayed_data.w[0], delayed_data.w[1], delayed_data.w[2] };
 
   imu_publisher_->publish(output_msg);
 }

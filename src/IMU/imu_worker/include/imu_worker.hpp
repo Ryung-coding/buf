@@ -14,8 +14,8 @@ constexpr double two_PI = 2.0 * M_PI;
 struct DelayedData
 {
   rclcpp::Time stamp;
-  std::array<double, 3> q;
-  std::array<double, 3> qdot;
+  std::array<double, 4> q;
+  std::array<double, 3> w;
 };
 
 class IMUnode : public rclcpp::Node {

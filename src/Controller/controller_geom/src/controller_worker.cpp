@@ -29,10 +29,6 @@ ControllerNode::ControllerNode()
 }
 
 void ControllerNode::controller_timer_callback() {
-
-  state_->x << 0.0, 0.0, 0.0;
-  state_->v.setZero();
-  state_->a.setZero();
   state_->R.setIdentity();
   state_->W.setZero();
 
@@ -85,15 +81,42 @@ void ControllerNode::sbusCallback(const sbus_interfaces::msg::SbusSignal::Shared
 }
 
 void ControllerNode::optitrackCallback(const mocap_interfaces::msg::MocapMeasured::SharedPtr msg) {
-  opti_x_[0] = msg->pos[0]; opti_x_[1] = msg->vel[0];
-  opti_y_[0] = msg->pos[1]; opti_y_[1] = msg->vel[1];
-  opti_z_[0] = msg->pos[2]; opti_z_[1] = msg->vel[2];
+  state_->x << msg->pos[0], msg->pos[1], msg->pos[2];
+  state_->v << msg->vel[0], msg->vel[1], msg->vel[2];
+  state_->a << msg->acc[0], msg->acc[1], msg->acc[2];
 }
 
 void ControllerNode::imuCallback(const imu_interfaces::msg::ImuMeasured::SharedPtr msg) {
-  imu_roll_[0]  = msg->q[0];    imu_roll_[1]  = msg->qdot[0];
-  imu_pitch_[0] = msg->q[1];    imu_pitch_[1] = msg->qdot[1];
-  imu_yaw_[0]   = msg->q[2];    imu_yaw_[1]   = msg->qdot[2];
+  // quat -> rot matrix
+  const double w = msg->q[0];
+  const double x = msg->q[1];
+  const double y = msg->q[2];
+  const double z = msg->q[3];
+  
+  const double xx = x * x;
+  const double yy = y * y;
+  const double zz = z * z;
+  const double xy = x * y;
+  const double xz = x * z;
+  const double yz = y * z;
+  const double wx = w * x;
+  const double wy = w * y;
+  const double wz = w * z;
+  
+  state_->R(0,0) = 1.0 - 2.0 * (yy + zz);
+  state_->R(0,1) = 2.0 * (xy - wz);
+  state_->R(0,2) = 2.0 * (xz + wy);
+  state_->R(1,0) = 2.0 * (xy + wz);
+  state_->R(1,1) = 1.0 - 2.0 * (xx + zz);
+  state_->R(1,2) = 2.0 * (yz - wx);
+  state_->R(2,0) = 2.0 * (xz - wy);
+  state_->R(2,1) = 2.0 * (yz + wx);
+  state_->R(2,2) = 1.0 - 2.0 * (xx + yy);
+
+  // gyro
+  state_->W(0) = msg->w[0];
+  state_->W(1) = msg->w[1];
+  state_->W(2) = msg->w[2];
 }
 
 void ControllerNode::heartbeat_timer_callback() {
