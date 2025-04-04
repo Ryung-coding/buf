@@ -60,8 +60,8 @@ def generate_launch_description():
 
         # Controller Node
         Node(
-            package='controller_pid',
-            executable='controller_worker_pid',
+            package='controller_geom',
+            executable='controller_worker_geom',
             name='controller_node',
             # prefix='chrt -f 92',
         ),
@@ -110,14 +110,14 @@ def generate_launch_description():
             # prefix='chrt -f 89',
         ),
 
-        # PID Debugger Node
-        Node(
-            package='pid_debugger',
-            executable='pid_debugger',
-            name='pid_debugger_node',
-            output='screen',
-            # prefix='chrt -f 87',
-        ),
+        # # PID Debugger Node
+        # Node(
+        #     package='pid_debugger',
+        #     executable='pid_debugger',
+        #     name='pid_debugger_node',
+        #     output='screen',
+        #     # prefix='chrt -f 87',
+        # ),
     ]
 
     return LaunchDescription([

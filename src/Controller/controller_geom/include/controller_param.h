@@ -36,10 +36,11 @@ struct UAVParameters {
 inline ControlParameters getControlParameters() {
   ControlParameters cp;
   cp.use_decoupled_yaw = true;
-  cp.kX << 16.0, 16.0, 16.0;
-  cp.kV << 13.0, 13.0, 13.0;
-  cp.kR << 1.6, 1.6, 0.60;
-  cp.kW << 0.40, 0.40, 0.10;
+  cp.kX << 20.0, 20.0, 20.0;
+  cp.kV << 6.0, 6.0, 6.0;
+  cp.kR << 8.0, 8.0, 4.0;
+  cp.kW << 0.90, 0.90, 1.4;
+
   cp.c_tf = 0.0135;
   cp.l = 0.23;
   return cp;
@@ -52,7 +53,7 @@ inline IntegralParameters getIntegralParameters() {
   ip.ki = 0.01;
   ip.kIR = 0.015;
   ip.kI = 0.01;
-  ip.kyI = 0.02;
+  ip.kyI = 0.05;
   ip.c1 = 1.0;
   ip.c2 = 1.0;
   ip.c3 = 1.0;
@@ -61,11 +62,11 @@ inline IntegralParameters getIntegralParameters() {
 
 inline UAVParameters getUAVParameters() {
   UAVParameters up;
-  up.J << 0.02, 0.0, 0.0,
-          0.0, 0.02, 0.0,
-          0.0, 0.0, 0.04;
-  up.m = 1.95;
-  up.g = 9.81;
+  up.J << 0.058065042,  0.000104275,  -0.006291258,
+          0.000104275,  0.069250561,  -0.000083225,
+          -0.006291258, -0.000083225, 0.038730723;
+  up.m = 4.751729;
+  up.g = 9.80665;
   return up;
 }
 

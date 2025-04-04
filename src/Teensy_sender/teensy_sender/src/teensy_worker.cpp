@@ -115,10 +115,10 @@ void TeensyNode::allocatorCallback_mujoco(const allocator_interfaces::msg::PwmVa
     return C1_tau_ * omega * omega + C2_tau_ * omega + C3_tau_;
   };
 
-  m1_ = -compute_torque(rpm1_);
-  m2_ = compute_torque(rpm2_);
-  m3_ = -compute_torque(rpm3_);
-  m4_ = compute_torque(rpm4_);
+  m1_ = compute_torque(rpm1_);
+  m2_ = -compute_torque(rpm2_);
+  m3_ = compute_torque(rpm3_);
+  m4_ = -compute_torque(rpm4_);
 
   // RCLCPP_INFO(this->get_logger(), "[f1: %.2f, f2: %.2f, f3: %.2f, f4: %.2f]", f1_, f2_, f3_, f4_);
   

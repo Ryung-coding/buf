@@ -29,14 +29,20 @@ ControllerNode::ControllerNode()
 }
 
 void ControllerNode::controller_timer_callback() {
-  state_->R.setIdentity();
-  state_->W.setZero();
+  state_->x << x_[0], x_[1], x_[2];
+  state_->v << v_[0], v_[1], v_[2];
+  state_->a << a_[0], a_[1], a_[2];
+  state_->R = R_;
+  state_->W << w_[0], w_[1], w_[2];
 
-  command_->xd.setZero();
+  // command_->xd << ref_[0], ref_[1], ref_[2];
+  command_->xd << 0.0, 0.0, -1.0;
   command_->xd_dot.setZero();
   command_->xd_2dot.setZero();
   command_->xd_3dot.setZero();
   command_->xd_4dot.setZero();
+
+  // command_->b1d << std::cos(ref_[3]), std::sin(ref_[3]), 0.0;
   command_->b1d << 1.0, 0.0, 0.0;
   command_->b1d_dot.setZero();
   command_->b1d_ddot.setZero();
@@ -47,6 +53,7 @@ void ControllerNode::controller_timer_callback() {
   //----------- Publsih -----------
   controller_interfaces::msg::ControllerOutput msg;
   msg.force = f_out;
+  // msg.force = 30.0;
   msg.moment = {M_out[0], M_out[1], M_out[2]};
   controller_publisher_->publish(msg);
 }
@@ -64,26 +71,23 @@ void ControllerNode::sbusCallback(const sbus_interfaces::msg::SbusSignal::Shared
   sbus_chnl_[8] = msg->ch[11]; // right-dial
   
   // remap SBUS data to double
-  double ref_r = static_cast<double>(sbus_chnl_[0] - 1024) / 672.;  // [-1, 1]
-  double ref_p = static_cast<double>(sbus_chnl_[1] - 1024) / 672.;  // [-1, 1]
-  double ref_y = static_cast<double>(sbus_chnl_[2] - 1024) / 672.;  // [-1, 1]
-  double ref_z = static_cast<double>(sbus_chnl_[3] -  352) / 1344.; // [ 0, 1]
-  
-  sbus_ref_[0] += ref_r * 1.0; // [m]
-  sbus_ref_[1] += ref_p * 1.0; // [m]
+  ref_[0] = static_cast<double>(sbus_chnl_[0] - 1024) / 672.;  // [-1, 1]
+  ref_[1] = static_cast<double>(sbus_chnl_[1] - 1024) / 672.;  // [-1, 1]
+  double ref_yaw = static_cast<double>(sbus_chnl_[2] - 1024) / 672.;  // [-1, 1]
+  ref_[2] = static_cast<double>(sbus_chnl_[3] -  352) / 1344.; // [ 0, 1]
 
-  sbus_ref_[2] += ref_y * 0.005; // [rad], this clamps to (2-PI, PI)
-  sbus_ref_[2] = fmod(sbus_ref_[2] + M_PI, two_PI);
-  if (sbus_ref_[2] < 0) {sbus_ref_[2] += two_PI;}
-  sbus_ref_[2] -= M_PI;
+  ref_[3] += ref_yaw * 0.005; // [rad], this clamps to (2-PI, PI)
+  ref_[3] = fmod(ref_[3] + M_PI, two_PI);
+  if (ref_[3] < 0) {ref_[3] += two_PI;}
+  ref_[3] -= M_PI;
 
-  sbus_ref_[3] =  ref_z * 1.5;  // [m]
+  ref_[2] = ref_[2] * 1.5; // scale
 }
 
 void ControllerNode::optitrackCallback(const mocap_interfaces::msg::MocapMeasured::SharedPtr msg) {
-  state_->x << msg->pos[0], msg->pos[1], msg->pos[2];
-  state_->v << msg->vel[0], msg->vel[1], msg->vel[2];
-  state_->a << msg->acc[0], msg->acc[1], msg->acc[2];
+  x_[0] = -msg->pos[0]; x_[1] = -msg->pos[1]; x_[2] = -msg->pos[2];
+  v_[0] = -msg->vel[0]; v_[1] = -msg->vel[1]; v_[2] = -msg->vel[2];
+  a_[0] = msg->acc[0]; a_[1] = msg->acc[1]; a_[2] = -msg->acc[2];
 }
 
 void ControllerNode::imuCallback(const imu_interfaces::msg::ImuMeasured::SharedPtr msg) {
@@ -103,20 +107,25 @@ void ControllerNode::imuCallback(const imu_interfaces::msg::ImuMeasured::SharedP
   const double wy = w * y;
   const double wz = w * z;
   
-  state_->R(0,0) = 1.0 - 2.0 * (yy + zz);
-  state_->R(0,1) = 2.0 * (xy - wz);
-  state_->R(0,2) = 2.0 * (xz + wy);
-  state_->R(1,0) = 2.0 * (xy + wz);
-  state_->R(1,1) = 1.0 - 2.0 * (xx + zz);
-  state_->R(1,2) = 2.0 * (yz - wx);
-  state_->R(2,0) = 2.0 * (xz - wy);
-  state_->R(2,1) = 2.0 * (yz + wx);
-  state_->R(2,2) = 1.0 - 2.0 * (xx + yy);
+  R_(0,0) = 1.0 - 2.0 * (yy + zz);
+  R_(0,1) = 2.0 * (xy - wz);
+  R_(0,2) = 2.0 * (xz + wy);
+  R_(1,0) = 2.0 * (xy + wz);
+  R_(1,1) = 1.0 - 2.0 * (xx + zz);
+  R_(1,2) = 2.0 * (yz - wx);
+  R_(2,0) = 2.0 * (xz - wy);
+  R_(2,1) = 2.0 * (yz + wx);
+  R_(2,2) = 1.0 - 2.0 * (xx + yy);
+
+  // std::ostringstream oss;
+  // oss << "R:\n" 
+  //     << state_->R(0,0) << " " << state_->R(0,1) << " " << state_->R(0,2) << "\n"
+  //     << state_->R(1,0) << " " << state_->R(1,1) << " " << state_->R(1,2) << "\n"
+  //     << state_->R(2,0) << " " << state_->R(2,1) << " " << state_->R(2,2);
+  // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100, "%s", oss.str().c_str());
 
   // gyro
-  state_->W(0) = msg->w[0];
-  state_->W(1) = msg->w[1];
-  state_->W(2) = msg->w[2];
+  w_[0] = msg->w[0]; w_[1] = -msg->w[1]; w_[2] = msg->w[2];
 }
 
 void ControllerNode::heartbeat_timer_callback() {
