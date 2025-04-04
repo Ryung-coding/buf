@@ -16,7 +16,7 @@ struct integral_error_vec3
   integral_error_vec3(void){set_zero();}
 
   void integrate(const Vector3 current_integrand, const double dt){
-    error += (integrand + current_integrand) * dt / 2;
+    error += (integrand + current_integrand) * dt / 2.0;
     integrand = current_integrand;
   }
   

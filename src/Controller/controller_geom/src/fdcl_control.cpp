@@ -5,11 +5,10 @@ fdcl::control::control(
   fdcl::command_t *&command_) : 
   state(state_), command(command_)
 {
-  // initialize clock for this class
-  clock_gettime(CLOCK_REALTIME, &tspec_init);
-
   // init uninitialized parameters
-  fdcl::control::init();
+  e1 << 1.0, 0.0, 0.0;
+  e2 << 0.0, 1.0, 0.0;
+  e3 << 0.0, 0.0, 1.0;
 
   // load parameters from the config file
   fdcl::control::load_config();
@@ -25,13 +24,6 @@ fdcl::control::control(void){
 }
 
 fdcl::control::~control(void){};
-
-void fdcl::control::init(void)
-{
-    e1 << 1.0, 0.0, 0.0;
-    e2 << 0.0, 1.0, 0.0;
-    e3 << 0.0, 0.0, 1.0;
-}
 
 void fdcl::control::position_control(void){
   // translational error functions
@@ -114,10 +106,6 @@ void fdcl::control::attitude_control(void){
       + hat(state->R.transpose() * command->Rd * command->Wd) * J * \
             state->R.transpose() * command->Rd * command->Wd \
       + J * state->R.transpose() * command->Rd * command->Wd_dot;
-
-  fM(0) = f_total;
-  fM.block<3,1>(1,0) = M;
-  f_motor = fM_to_forces_inv * fM;
 }
 
 void fdcl::control::attitude_control_decoupled_yaw(void){
@@ -172,10 +160,6 @@ void fdcl::control::attitude_control_decoupled_yaw(void){
 
   M << M1, M2, M3;
 
-  fM(0) = f_total;
-  fM.block<3, 1>(1, 0) = M;
-  f_motor = fM_to_forces_inv * fM;
-
   // for saving:
   Matrix3 RdtR = command->Rd.transpose() * state->R;
   eR = 0.5 * vee(RdtR - RdtR.transpose());
@@ -186,16 +170,6 @@ void fdcl::control::attitude_control_decoupled_yaw(void){
 void fdcl::control::output_fM(double &f, Vector3 &M){
   f = this->f_total;
   M = this->M;
-}
-
-void fdcl::control::set_error_to_zero(void){
-  // Set integral terms to zero.
-  eIX.set_zero();
-  eIR.set_zero();
-  eI1.set_zero();
-  eI2.set_zero();
-  eIy.set_zero();
-  ei.setZero();
 }
 
 void fdcl::control::load_config(void){
@@ -230,24 +204,6 @@ void fdcl::control::load_config(void){
   kW(0,0) = cp.kW[0];
   kW(1,1) = cp.kW[1];
   
-  c_tf = cp.c_tf;
-  l    = cp.l;
   m    = up.m;
   g    = up.g;
-
-  Eigen::Matrix<double,4,4> fm = controller_param::getFMToForcesMatrix();
-  fM_to_forces_inv = fm.inverse();
-}
-
-void fdcl::control::output_uav_properties(double &m, Matrix3 &J){
-  m = this->m;
-  J = this->J;
-}
-
-double fdcl::control::get_time(){
-  double t;
-  clock_gettime(CLOCK_REALTIME, &tspec_curr);
-  t = (double)tspec_curr.tv_sec + ((double)tspec_curr.tv_nsec) / 1.e9;
-  t -= (double)tspec_init.tv_sec + ((double)tspec_init.tv_nsec) / 1.e9;
-  return t;
 }
