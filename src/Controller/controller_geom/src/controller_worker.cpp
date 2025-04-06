@@ -53,7 +53,6 @@ void ControllerNode::controller_timer_callback() {
   //----------- Publsih -----------
   controller_interfaces::msg::ControllerOutput msg;
   msg.force = f_out;
-  // msg.force = 30.0;
   msg.moment = {M_out[0], M_out[1], M_out[2]};
   controller_publisher_->publish(msg);
 }
@@ -87,7 +86,7 @@ void ControllerNode::sbusCallback(const sbus_interfaces::msg::SbusSignal::Shared
 void ControllerNode::optitrackCallback(const mocap_interfaces::msg::MocapMeasured::SharedPtr msg) {
   x_[0] = -msg->pos[0]; x_[1] = -msg->pos[1]; x_[2] = -msg->pos[2];
   v_[0] = -msg->vel[0]; v_[1] = -msg->vel[1]; v_[2] = -msg->vel[2];
-  a_[0] = msg->acc[0]; a_[1] = msg->acc[1]; a_[2] = -msg->acc[2];
+  a_[0] = -msg->acc[0]; a_[1] = -msg->acc[1]; a_[2] = -msg->acc[2];
 }
 
 void ControllerNode::imuCallback(const imu_interfaces::msg::ImuMeasured::SharedPtr msg) {
@@ -117,15 +116,8 @@ void ControllerNode::imuCallback(const imu_interfaces::msg::ImuMeasured::SharedP
   R_(2,1) = 2.0 * (yz + wx);
   R_(2,2) = 1.0 - 2.0 * (xx + yy);
 
-  // std::ostringstream oss;
-  // oss << "R:\n" 
-  //     << state_->R(0,0) << " " << state_->R(0,1) << " " << state_->R(0,2) << "\n"
-  //     << state_->R(1,0) << " " << state_->R(1,1) << " " << state_->R(1,2) << "\n"
-  //     << state_->R(2,0) << " " << state_->R(2,1) << " " << state_->R(2,2);
-  // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100, "%s", oss.str().c_str());
-
   // gyro
-  w_[0] = msg->w[0]; w_[1] = -msg->w[1]; w_[2] = msg->w[2];
+  w_[0] = msg->w[0]; w_[1] = -msg->w[1]; w_[2] = -msg->w[2];
 }
 
 void ControllerNode::heartbeat_timer_callback() {

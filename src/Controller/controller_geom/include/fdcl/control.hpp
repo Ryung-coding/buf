@@ -15,8 +15,6 @@ class control
 public:
   double dt = 0.0005;  /**< Time step size in seconds */
 
-  bool use_integral = false;  /**< Flag to enable/disable integral control */
-
   // for integral controller
   fdcl::integral_error_vec3 eIR; /**< Attitude integral error */
   fdcl::integral_error eI1; /**< Attitude integral error for roll axis */

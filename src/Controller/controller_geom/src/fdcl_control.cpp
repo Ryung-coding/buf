@@ -31,13 +31,9 @@ void fdcl::control::position_control(void){
   eV = state->v - command->xd_dot; // velocity error - eq (12)
 
   // position integral terms
-  // "use_integral" must be set through the config file
-  if (use_integral){
-    eIX.integrate(c1 * eX + eV, dt); // eq (13)
-    double sat_sigma = 1.8;
-    saturate(eIX.error, -sat_sigma, sat_sigma);
-  }
-  else{eIX.set_zero();}
+  eIX.integrate(c1 * eX + eV, dt); // eq (13)
+  double sat_sigma = 1.8;
+  saturate(eIX.error, -sat_sigma, sat_sigma);
 
   // force 'f' along negative b3-axis - eq (14)
   // this term equals to R.e3
@@ -98,7 +94,7 @@ void fdcl::control::attitude_control(void){
   eR = 0.5 * vee(RdtR - RdtR.transpose());
   eW = state->W - state->R.transpose() * command->Rd * command->Wd;
 
-  if(use_integral){eIR.integrate(eW + c2 * eR, dt);}
+  eIR.integrate(eW + c2 * eR, dt);
 
   M = - kR * eR \
       - kW * eW \
@@ -144,7 +140,7 @@ void fdcl::control::attitude_control_decoupled_yaw(void){
         - J(0, 0) * b3.transpose() * W_12d * b3_dot \
         - J(0, 0) * hat(b3) * hat(b3) * W_12d_dot;
 
-  if (use_integral){tau += -kI * eI1.error * b1 - kI * eI2.error * b2;}
+  tau += -kI * eI1.error * b1 - kI * eI2.error * b2;
 
   double M1, M2, M3;
 
@@ -156,7 +152,7 @@ void fdcl::control::attitude_control_decoupled_yaw(void){
 
   // control moment around b3 axis - yaw - eq (52)
   M3 = -ky * ey - kwy * ewy + J(2, 2) * command->wc3_dot;
-  if (use_integral){M3 += -kyI * eIy.error;}
+  M3 += -kyI * eIy.error;
 
   M << M1, M2, M3;
 
@@ -178,7 +174,6 @@ void fdcl::control::load_config(void){
   auto ip = controller_param::getIntegralParameters();
   auto up = controller_param::getUAVParameters();
 
-  use_integral      = ip.use_integral;
   use_decoupled_yaw = cp.use_decoupled_yaw;
   
   kX.setZero();

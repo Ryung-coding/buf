@@ -35,18 +35,17 @@ inline ControlParameters getControlParameters() {
   ControlParameters param;
   param.use_decoupled_yaw = true;
   param.kX << 20.0, 20.0, 20.0;
-  param.kV << 6.0, 6.0, 6.0;
-  param.kR << 8.0, 8.0, 4.0;
-  param.kW << 0.90, 0.90, 1.4;
+  param.kV << 9.0, 9.0, 10.0;
+  param.kR << 5.0, 5.0, 3.0;
+  param.kW << 4, 4, 0.1; // ??? yaw fucking oscillation
   return param;
 }
 
 inline IntegralParameters getIntegralParameters() {
   IntegralParameters param;
-  param.use_integral = true;
-  param.kIX = 4.0;
+  param.kIX = 1.0;
   param.ki = 0.01;
-  param.kIR = 0.015;
+  param.kIR = 0.15;
   param.kI = 0.01;
   param.kyI = 0.05;
   param.c1 = 1.0;
