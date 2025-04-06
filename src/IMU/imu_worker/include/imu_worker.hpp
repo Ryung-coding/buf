@@ -8,8 +8,12 @@
 #include <chrono>
 #include <deque>
 #include <functional>
+#include <random>
+#include <cmath>
 
 constexpr double two_PI = 2.0 * M_PI;
+constexpr double noise_quat_std_dev = 0.001;
+constexpr double noise_gyro_std_dev = 0.005;
 
 struct DelayedData
 {
@@ -46,6 +50,12 @@ private:
 
   // Heartbeat
   uint8_t heartbeat_state_;
+
+  // Random number generator as member variables for reuse
+  std::mt19937 gen_;
+  std::normal_distribution<double> angle_dist_;
+  std::normal_distribution<double> axis_dist_;
+  std::normal_distribution<double> noise_dist_;
 };
 
 #endif // IMU_WORKER_HPP

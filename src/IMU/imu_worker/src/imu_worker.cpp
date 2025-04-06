@@ -2,7 +2,24 @@
 
 using namespace std::chrono_literals;
 
-IMUnode::IMUnode() : Node("imu_node") {
+constexpr inline std::array<double, 4> quaternion_multiply(const std::array<double, 4>& q1, const std::array<double, 4>& q2) noexcept {
+  // Cache components to minimize repeated array accesses
+  const double a = q1[0], b = q1[1], c = q1[2], d = q1[3];
+  const double e = q2[0], f = q2[1], g = q2[2], h = q2[3];
+
+return { a * e - b * f - c * g - d * h,    // Real part
+         a * f + b * e + c * h - d * g,    // i component
+         a * g - b * h + c * e + d * f,    // j component
+         a * h + b * g - c * f + d * e };  // k component
+}
+
+IMUnode::IMUnode()
+: Node("imu_node"),
+  gen_(std::random_device{}()),
+  angle_dist_(0.0, noise_quat_std_dev),
+  axis_dist_(0.0, 1.0),
+  noise_dist_(0.0, noise_gyro_std_dev)
+{
   imu_publisher_ = this->create_publisher<imu_interfaces::msg::ImuMeasured>("imu_mea", 1);
 
   // Create a timer to publish Node state messages at 10Hz
@@ -73,10 +90,44 @@ void IMUnode::PublishMuJoCoMeasurement() {
 
   if (!found) { return; }
 
-  // Publish data
+  // Generate small rotation noise as a quaternion using member distributions
+  double delta_angle = angle_dist_(gen_);
+  double ax = axis_dist_(gen_);
+  double ay = axis_dist_(gen_);
+  double az = axis_dist_(gen_);
+  double norm = std::sqrt(ax * ax + ay * ay + az * az);
+  if (norm < 1e-6) { norm = 1.0; }
+  ax /= norm; ay /= norm; az /= norm;
+
+  double half_angle = delta_angle / 2.0;
+  double cos_half = std::cos(half_angle);
+  double sin_half = std::sin(half_angle);
+  std::array<double, 4> noise_q = { cos_half, sin_half * ax, sin_half * ay, sin_half * az };
+
+  // Retrieve simulation quaternion (assumed [w, x, y, z] order)
+  std::array<double, 4> sim_q = delayed_data.q;
+
+  // Combine noise quaternion with simulation quaternion (noise applied first)
+  std::array<double, 4> noisy_q = quaternion_multiply(noise_q, sim_q);
+
+  // Normalize resulting quaternion
+  double norm_noisy = std::sqrt(noisy_q[0]*noisy_q[0] + noisy_q[1]*noisy_q[1] +
+                                noisy_q[2]*noisy_q[2] + noisy_q[3]*noisy_q[3]);
+  for (int i = 0; i < 4; ++i) {
+    noisy_q[i] /= norm_noisy;
+  }
+
+  // Add white noise to angular velocity measurements using pre-initialized distribution
+  double noisy_w[3] = {
+    delayed_data.w[0] + noise_dist_(gen_),
+    delayed_data.w[1] + noise_dist_(gen_),
+    delayed_data.w[2] + noise_dist_(gen_)
+  };
+
+  // Construct and publish the IMU measurement message
   auto output_msg = imu_interfaces::msg::ImuMeasured();
-  output_msg.q    = { delayed_data.q[0], delayed_data.q[1], delayed_data.q[2], delayed_data.q[3] };
-  output_msg.w = { delayed_data.w[0], delayed_data.w[1], delayed_data.w[2] };
+  output_msg.q = { noisy_q[0], noisy_q[1], noisy_q[2], noisy_q[3] };
+  output_msg.w = { noisy_w[0], noisy_w[1], noisy_w[2] };
 
   imu_publisher_->publish(output_msg);
 }
