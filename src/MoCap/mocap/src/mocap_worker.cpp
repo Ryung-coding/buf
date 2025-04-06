@@ -2,7 +2,13 @@
 
 using namespace std::chrono_literals;
 
-OptiTrackNode::OptiTrackNode() : Node("optitrack_node") {
+OptiTrackNode::OptiTrackNode()
+ : Node("optitrack_node"),
+  gen_(std::random_device{}()),
+  pos_dist_(0.0, noise_pos_std_dev),
+  vel_dist_(0.0, noise_vel_std_dev),
+  acc_dist_(0.0, noise_acc_std_dev)
+{
   mocap_publisher_ = this->create_publisher<mocap_interfaces::msg::MocapMeasured>("optitrack_mea", 1);
 
   // Create a publisher for Heartbeat signal
@@ -78,11 +84,20 @@ void OptiTrackNode::PublishMuJoCoMeasurement() {
 
   if (!found) { return; }
 
+  std::array<double, 3> noisy_pos;
+  std::array<double, 3> noisy_vel;
+  std::array<double, 3> noisy_acc;
+  for (size_t i = 0; i < 3; ++i) {
+    noisy_pos[i] = delayed_data.pos[i] + pos_dist_(gen_);
+    noisy_vel[i] = delayed_data.vel[i] + vel_dist_(gen_);
+    noisy_acc[i] = delayed_data.acc[i] + acc_dist_(gen_);
+  }
+
   // Publish data
   auto output_msg = mocap_interfaces::msg::MocapMeasured();
-  output_msg.pos = { delayed_data.pos[0], delayed_data.pos[1], delayed_data.pos[2] };
-  output_msg.vel = { delayed_data.vel[0], delayed_data.vel[1], delayed_data.vel[2] };
-  output_msg.acc = { delayed_data.acc[0], delayed_data.acc[1], delayed_data.acc[2] };
+  output_msg.pos = { noisy_pos[0], noisy_pos[1], noisy_pos[2] };
+  output_msg.vel = { noisy_vel[0], noisy_vel[1], noisy_vel[2] };
+  output_msg.acc = { noisy_acc[0], noisy_acc[1], noisy_acc[2] };
 
   mocap_publisher_->publish(output_msg);
 }

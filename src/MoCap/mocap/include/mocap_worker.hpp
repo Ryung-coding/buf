@@ -8,6 +8,12 @@
 #include <chrono>
 #include <deque>
 #include <functional>
+#include <random>
+#include <cmath>
+
+constexpr double noise_pos_std_dev = 0.001;
+constexpr double noise_vel_std_dev = 0.005;
+constexpr double noise_acc_std_dev = 0.01;
 
 struct DelayedData
 {
@@ -43,6 +49,12 @@ private:
   rclcpp::Duration delay_{0, 3000000};
 
   uint8_t heartbeat_state_;  // previous node state
+
+  // Random number generator as member variables for reuse
+  std::mt19937 gen_;
+  std::normal_distribution<double> pos_dist_;
+  std::normal_distribution<double> vel_dist_;
+  std::normal_distribution<double> acc_dist_;
 };
 
 #endif // MOCAP_WORKER_HPP
