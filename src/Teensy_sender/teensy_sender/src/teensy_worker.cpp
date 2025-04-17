@@ -16,7 +16,7 @@ TeensyNode::TeensyNode() : Node("teensy_node") {
   watchdog_subscription_ = this->create_subscription<watchdog_interfaces::msg::NodeState>("watchdog_state", 1, std::bind(&TeensyNode::watchdogCallback, this, std::placeholders::_1));
 
   // Mode = sim -> Pub/Sub with mujoco
-  // Mode = real -> Wirte/Read with dynamixel
+  // Mode = real -> Wirte/Read with teensy
   this->declare_parameter<std::string>("mode", "None");
   std::string mode;
   this->get_parameter("mode", mode);

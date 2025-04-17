@@ -198,6 +198,7 @@ void fdcl::control::load_config(void){
   kW.setZero();
   kW(0,0) = cp.kW[0];
   kW(1,1) = cp.kW[1];
+  kW(2,2) = cp.kW[2];
   
   m    = up.m;
   g    = up.g;
