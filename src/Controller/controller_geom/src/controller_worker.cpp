@@ -34,12 +34,6 @@ void ControllerNode::controller_timer_callback() {
   state_->a << a_[0], a_[1], a_[2];
   state_->R = R_;
   state_->W << w_[0], w_[1], w_[2];
-  // RCLCPP_INFO_THROTTLE(
-  //   this->get_logger(),
-  //   *this->get_clock(),
-  //   100,  // milliseconds → 10Hz
-  //   "state_->W = [%.4f, %.4f, %.4f]",
-  //   state_->W(0), state_->W(1), state_->W(2));
 
   // command_->xd << ref_[0], ref_[1], ref_[2];
   command_->xd << 0.0, 0.0, -1.0;

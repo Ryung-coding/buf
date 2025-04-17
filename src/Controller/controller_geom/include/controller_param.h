@@ -36,8 +36,8 @@ inline ControlParameters getControlParameters() {
   param.use_decoupled_yaw = true;
   param.kX << 20.0, 20.0, 20.0;
   param.kV << 9.0, 9.0, 10.0;
-  param.kR << 5.0, 5.0, 3.0;
-  param.kW << 4, 4, -3; // ??? yaw fucking oscillation
+  param.kR << 5.0, 5.0, 2.0;
+  param.kW << 4, 4, -4; // why this gain should be (-)??
   return param;
 }
 
