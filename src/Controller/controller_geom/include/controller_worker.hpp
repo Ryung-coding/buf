@@ -61,14 +61,7 @@ private:
 
   // sbus state
   int   sbus_chnl_[9] = {1024, 1024, 352, 1024, 352, 352, 352, 352, 352};
-  double ref_[4] = {0.0, 0.0, 0.0, 0.0}; // [m, m, m, rad]
-
-  double x_[3] = {0.0, 0.0, 0.0}; // [m]
-  double v_[3] = {0.0, 0.0, 0.0}; // [m/s]
-  double a_[3] = {0.0, 0.0, 0.0}; // [m/s^2]
-
-  Matrix3 R_;
-  double w_[3] = {0.0, 0.0, 0.0}; // [rad/s]
+  double ref_[4] = {0.0, 0.0, 0.0, 0.0}; // x,y,z,yaw cmd [m, m, m, rad]
 
   uint8_t heartbeat_state_ = 0;
 };

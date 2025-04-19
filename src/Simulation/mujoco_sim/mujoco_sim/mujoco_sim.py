@@ -90,10 +90,10 @@ class MuJoCoSimulatorNode(Node):
         # Create and publish the message
         msg = MuJoCoMeas(
             q=[q[0], q[1], q[2], q[3]],
-            w=[w[0], -w[1], w[2]],
-            pos=[pos[0], pos[1], pos[2]],
-            vel=[vel[0], vel[1], vel[2]],
-            acc=[acc[0], acc[1], acc[2]]
+            w=[w[0], w[1], w[2]],
+            pos=[-pos[0], -pos[1], -pos[2]],
+            vel=[-vel[0], -vel[1], -vel[2]],
+            acc=[-acc[0], -acc[1], -acc[2]]
         )
         self.mujoco_meas_publisher.publish(msg)
 
