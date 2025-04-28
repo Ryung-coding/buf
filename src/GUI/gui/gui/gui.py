@@ -69,22 +69,15 @@ class DebugGUI(QWidget):
         self.timer.start(100)  # 100ms (10Hz)
         
         self.controller_data = {
-            "sbus_chnl": [0] * 9,
-            "des_pos": [0] * 4,
-            "pid_mx": [0.0, 0.0, 0.0, 0.0],
-            "pid_my": [0.0, 0.0, 0.0, 0.0],
-            "pid_mz": [0.0, 0.0],
-            "pid_f": [0.0, 0.0],
+            "sbus_chnl": [0.0] * 9,
+            "des_pos": [0.0, 0.0, 0.0, 0.0],
+            "wrench_des": [0.0, 0.0, 0.0, 0.0],
             "imu_roll": [0.0, 0.0],
             "imu_pitch": [0.0, 0.0],
             "imu_yaw": [0.0, 0.0],
             "opti_x": [0.0, 0.0],
             "opti_y": [0.0, 0.0],
-            "opti_z": [0.0, 0.0],
-            "a1_mea": [0.0, 0.0, 0.0, 0.0, 0.0],
-            "a2_mea": [0.0, 0.0, 0.0, 0.0, 0.0],
-            "a3_mea": [0.0, 0.0, 0.0, 0.0, 0.0],
-            "a4_mea": [0.0, 0.0, 0.0, 0.0, 0.0]
+            "opti_z": [0.0, 0.0]
         }
 
         self.allocator_data = {
@@ -93,75 +86,98 @@ class DebugGUI(QWidget):
             "a2_des": [0.0, 0.0, 0.0, 0.0, 0.0],
             "a3_des": [0.0, 0.0, 0.0, 0.0, 0.0],
             "a4_des": [0.0, 0.0, 0.0, 0.0, 0.0],
+            "a1_mea": [0.0, 0.0, 0.0, 0.0, 0.0],
+            "a2_mea": [0.0, 0.0, 0.0, 0.0, 0.0],
+            "a3_mea": [0.0, 0.0, 0.0, 0.0, 0.0],
+            "a4_mea": [0.0, 0.0, 0.0, 0.0, 0.0],
             "loop_rate": 0.0
         }
 
     def create_sbus_group(self):
-        self.channel_vals = []
-        self.sbus_channels = []
-        self.sbus_toggles = []
+        self.cmd_vals = [] # x,y,z,yaw
+        self.sbus_dials_bar = [] # LD, RD
+        self.sbus_dials_label = [] # LD, RD
+        self.sbus_toggles = [] # SE, SG
+        self.sbus_kill = None # KILL
 
         sbus_group = QGroupBox("SBUS")
-        sbus_layout = QVBoxLayout()
+        sbus_layout = QHBoxLayout()
 
         # Channel display
-        channel_outer_layout = QVBoxLayout()
-        channels = ["cmd_r ", "cmd_p ", "cmd_y ", "cmd_z "]
-        for channel in channels:  # Channels 1~4
-            channel_layout = QHBoxLayout()
-            channel_label = QLabel(channel)
-            channel_progress = QProgressBar()
-            channel_progress.setRange(0, 1000)
-            channel_progress.setValue(0)
-            self.sbus_channels.append(channel_progress)
-            channel_val = QLineEdit()
-            channel_val.setText("  ?")
-            channel_val.setReadOnly(True)
-            channel_val.setFixedWidth(90)
-            self.channel_vals.append(channel_val)
+        sbus_cmds_layout = QVBoxLayout()
+        sbus_cmds = ["  cmd_x ", "  cmd_y ", "  cmd_z ", "  cmd_ψ"]
+        for sbus_cmd in sbus_cmds:  # Channels 1~4
+            sbus_cmd_layout = QHBoxLayout()
+            cmd_label = QLabel(sbus_cmd)
+            sbus_cmd_layout.addWidget(cmd_label)
 
-            channel_layout.addWidget(channel_label)
-            channel_layout.addWidget(channel_progress)
-            channel_layout.addWidget(channel_val)
+            cmd_val = QLineEdit()
+            cmd_val.setText("  ?")
+            cmd_val.setReadOnly(True)
+            cmd_val.setFixedWidth(90)
+            sbus_cmd_layout.addWidget(cmd_val)
+            self.cmd_vals.append(cmd_val)
 
-            channel_outer_layout.addLayout(channel_layout)
-        sbus_layout.addLayout(channel_outer_layout)
+            cmd_label = QLabel("° ") if sbus_cmd == "  cmd_ψ" else QLabel("m     ")
+            sbus_cmd_layout.addWidget(cmd_label)
 
-        # Toggle switches (circular style)
+            sbus_cmds_layout.addLayout(sbus_cmd_layout)
+        sbus_layout.addLayout(sbus_cmds_layout)
+
+        # Toggle switches
         toggle_layout = QVBoxLayout()
-        left_toggle_vbox = QHBoxLayout()
 
-        toggles = ["SE", "SG", "LD", "RD", "KILL"]
-        for toggle in toggles:
-            toggle_hbox = QHBoxLayout()
-            toggle_index_label = QLabel(toggle)
+        dials = ["LD", "RD"]
+        for dial in dials:
+            dial_hbox = QHBoxLayout()
+            dial_label = QLabel(dial)
+            dial_hbox.addWidget(dial_label)
 
-            if toggle == "KILL":
-                toggle_val = QRadioButton()
-                toggle_val.setAutoExclusive(False)
-                self.sbus_toggles.append(toggle_val)
+            dial_bar = QProgressBar()
+            dial_bar.setRange(0, 100)
+            dial_bar.setValue(0)
+            dial_hbox.addWidget(dial_bar)
+            self.sbus_dials_bar.append(dial_bar)
 
-            elif toggle == "SE" or toggle == "SG":
-                toggle_val = QLineEdit()
-                toggle_val.setText("  ?")
-                toggle_val.setReadOnly(True)
-                toggle_val.setFixedWidth(40)
-                self.sbus_toggles.append(toggle_val)
+            dial_val = QLineEdit()
+            dial_val.setText("  ?")
+            dial_val.setReadOnly(True)
+            dial_val.setFixedWidth(60)
+            dial_hbox.addWidget(dial_val)
+            self.sbus_dials_label.append(dial_val)
 
-            else:
-                toggle_val = QLineEdit()
-                toggle_val.setText("  ?")
-                toggle_val.setReadOnly(True)
-                toggle_val.setFixedWidth(70)
-                self.sbus_toggles.append(toggle_val)
+            toggle_layout.addLayout(dial_hbox)
 
-            toggle_hbox.addWidget(toggle_index_label)
-            toggle_hbox.addWidget(toggle_val)
-            left_toggle_vbox.addLayout(toggle_hbox)
+        sticks = [" SE ", "  SG "]
+        stick_layout = QHBoxLayout()
+        for stick in sticks:
+            stick_hbox = QHBoxLayout()
+            stick_label = QLabel(stick)
+            stick_hbox.addWidget(stick_label)
 
-        # Layout configuration for toggle switches
-        toggle_layout.addLayout(left_toggle_vbox)
+            stick_val = QLineEdit()
+            stick_val.setText(" ?")
+            stick_val.setReadOnly(True)
+            stick_val.setFixedWidth(60)
+            stick_hbox.addWidget(stick_val)
+            self.sbus_toggles.append(stick_val)
+
+            stick_layout.addLayout(stick_hbox)
+        toggle_layout.addLayout(stick_layout)
+
+        kill_layout = QHBoxLayout()
+        kill_idx_label =  QLabel("      KILL")
+        kill_layout.addWidget(kill_idx_label)
+
+        kill_radio = QRadioButton()
+        kill_radio.setAutoExclusive(False)
+        kill_layout.addWidget(kill_radio)
+        self.sbus_kill = kill_radio
+
+        toggle_layout.addLayout(kill_layout)
+        
         sbus_layout.addLayout(toggle_layout)
+
         sbus_group.setLayout(sbus_layout)
         return sbus_group
 
@@ -447,21 +463,14 @@ class DebugGUI(QWidget):
 
     def controller_update(self, msg):
         self.controller_data["sbus_chnl"] = msg.sbus_chnl
-        self.controller_data["des_pos"] = msg.des_pos
-        self.controller_data["pid_mx"] = msg.pid_mx
-        self.controller_data["pid_my"] = msg.pid_my
-        self.controller_data["pid_mz"] = msg.pid_mz
-        self.controller_data["pid_f"] = msg.pid_f
+        self.controller_data["pos_cmd"] = msg.pos_cmd
+        self.controller_data["wrench_des"] = msg.wrench_des
         self.controller_data["imu_roll"] = msg.imu_roll
         self.controller_data["imu_pitch"] = msg.imu_pitch
         self.controller_data["imu_yaw"] = msg.imu_yaw
         self.controller_data["opti_x"] = msg.opti_x
         self.controller_data["opti_y"] = msg.opti_y
         self.controller_data["opti_z"] = msg.opti_z
-        self.controller_data["a1_mea"] = msg.a1_mea
-        self.controller_data["a2_mea"] = msg.a2_mea
-        self.controller_data["a3_mea"] = msg.a3_mea
-        self.controller_data["a4_mea"] = msg.a4_mea
 
     def allocator_update(self, msg):
         self.allocator_data["pwm"] = msg.pwm
@@ -469,6 +478,10 @@ class DebugGUI(QWidget):
         self.allocator_data["a2_des"] = msg.a2_des
         self.allocator_data["a3_des"] = msg.a3_des
         self.allocator_data["a4_des"] = msg.a4_des
+        self.controller_data["a1_mea"] = msg.a1_mea
+        self.controller_data["a2_mea"] = msg.a2_mea
+        self.controller_data["a3_mea"] = msg.a3_mea
+        self.controller_data["a4_mea"] = msg.a4_mea
         self.allocator_data["loop_rate"] = msg.loop_rate
 
     def create_plot_group(self):
@@ -525,10 +538,7 @@ class DebugGUI(QWidget):
 
     def update_gui(self):
         # Update SBUS channel values
-        for i, (channel, val) in enumerate(zip(self.sbus_channels, self.channel_vals)):
-            if i==3: channel.setValue(round((self.controller_data['sbus_chnl'][i] - 352.) / 1.344))
-            else: channel.setValue(500 + round((self.controller_data['sbus_chnl'][i] - 1024.) / 1.344))
-                
+        for i, val in enumerate(self.cmd_vals):
             val.setText(f"{self.controller_data['des_pos'][i]:.2f}")
 
         for idx, toggle_index in enumerate([0, 1]):
@@ -542,35 +552,37 @@ class DebugGUI(QWidget):
             else:
                 self.sbus_toggles[toggle_index].setText("  ?")
 
-        for idx, toggle_index in enumerate([2, 3]):
+        for idx, dial_index in enumerate([0, 1]):
             ch_val = self.controller_data["sbus_chnl"][7 + idx]
             mapped_val = (ch_val - 352) / 1344.0
-            self.sbus_toggles[toggle_index].setText(f"{mapped_val:.2f}")
+            if mapped_val < 0: break
+            self.sbus_dials_label[dial_index].setText(f"{mapped_val:.2f}")
+            self.sbus_dials_bar[dial_index].setValue(int(mapped_val * 100))
 
         kill_val = self.controller_data["sbus_chnl"][4]
-        if kill_val == 1696: self.sbus_toggles[4].setChecked(True)
-        else: self.sbus_toggles[4].setChecked(False)
+        if kill_val == 1696: self.sbus_kill.setChecked(True)
+        else: self.sbus_kill.setChecked(False)
         
-        # Update PID vals
-        for i, label in enumerate(self.pid_midval_r):
-            if i == 0: label.setText(self.format_pid_value(self.controller_data['pid_mx'][i], " m/s"))
-            elif i == 1: label.setText(self.format_pid_value(self.controller_data['pid_mx'][i], " rad"))
-            elif i == 2: label.setText(self.format_pid_value(self.controller_data['pid_mx'][i], " rad/s"))
-            else: label.setText(self.format_pid_value(self.controller_data['pid_mx'][i], " N.m"))
+        # # Update PID vals
+        # for i, label in enumerate(self.pid_midval_r):
+        #     if i == 0: label.setText(self.format_pid_value(self.controller_data['pid_mx'][i], " m/s"))
+        #     elif i == 1: label.setText(self.format_pid_value(self.controller_data['pid_mx'][i], " rad"))
+        #     elif i == 2: label.setText(self.format_pid_value(self.controller_data['pid_mx'][i], " rad/s"))
+        #     else: label.setText(self.format_pid_value(self.controller_data['pid_mx'][i], " N.m"))
 
-        for i, label in enumerate(self.pid_midval_p):
-            if i == 0: label.setText(self.format_pid_value(self.controller_data['pid_my'][i], " m/s"))
-            elif i == 1: label.setText(self.format_pid_value(self.controller_data['pid_my'][i], " rad"))
-            elif i == 2: label.setText(self.format_pid_value(self.controller_data['pid_my'][i], " rad/s"))
-            else: label.setText(self.format_pid_value(self.controller_data['pid_my'][i], " N.m"))
+        # for i, label in enumerate(self.pid_midval_p):
+        #     if i == 0: label.setText(self.format_pid_value(self.controller_data['pid_my'][i], " m/s"))
+        #     elif i == 1: label.setText(self.format_pid_value(self.controller_data['pid_my'][i], " rad"))
+        #     elif i == 2: label.setText(self.format_pid_value(self.controller_data['pid_my'][i], " rad/s"))
+        #     else: label.setText(self.format_pid_value(self.controller_data['pid_my'][i], " N.m"))
 
-        for i, label in enumerate(self.pid_midval_y):
-            if i == 0: label.setText(self.format_pid_value(self.controller_data['pid_mz'][i], " rad/s"))
-            elif i == 1: label.setText(self.format_pid_value(self.controller_data['pid_mz'][i], " N.m"))
+        # for i, label in enumerate(self.pid_midval_y):
+        #     if i == 0: label.setText(self.format_pid_value(self.controller_data['pid_mz'][i], " rad/s"))
+        #     elif i == 1: label.setText(self.format_pid_value(self.controller_data['pid_mz'][i], " N.m"))
 
-        for i, label in enumerate(self.pid_midval_z):
-            if i == 0: label.setText(self.format_pid_value(self.controller_data['pid_f'][i], " m/s"))
-            elif i == 1: label.setText(self.format_pid_value(self.controller_data['pid_f'][i], " rad"))
+        # for i, label in enumerate(self.pid_midval_z):
+        #     if i == 0: label.setText(self.format_pid_value(self.controller_data['pid_f'][i], " m/s"))
+        #     elif i == 1: label.setText(self.format_pid_value(self.controller_data['pid_f'][i], " rad"))
 
         # Update thruster values using allocator PWM
         for i, thruster in enumerate(self.thrusters):
@@ -584,7 +596,7 @@ class DebugGUI(QWidget):
         # Update Joint Measured values
         for i, row in enumerate(self.joint_meas):
             for j, joint in enumerate(row):
-                joint.setText(f"{self.controller_data[f'a{i+1}_mea'][j]:.2f}")
+                joint.setText(f"{self.allocator_data[f'a{i+1}_mea'][j]:.2f}")
 
         # Update IMU measurements
         for i, imu_data in enumerate([self.controller_data['imu_roll'], self.controller_data['imu_pitch'], self.controller_data['imu_yaw']]):
