@@ -49,18 +49,18 @@ void ControllerNode::sbusCallback(const sbus_interfaces::msg::SbusSignal::Shared
   sbus_chnl_[2] = msg->ch[3];  // heading command
   sbus_chnl_[3] = msg->ch[2];  // z command
   sbus_chnl_[4] = msg->ch[9];  // kill command
-  // sbus_chnl_[5] = msg->ch[8];  // toggle E
-  // sbus_chnl_[6] = msg->ch[7];  // toggle G
-  // sbus_chnl_[7] = msg->ch[10]; // left-dial
-  // sbus_chnl_[8] = msg->ch[11]; // right-dial
+  sbus_chnl_[5] = msg->ch[8];  // toggle E
+  sbus_chnl_[6] = msg->ch[7];  // toggle G
+  sbus_chnl_[7] = msg->ch[10]; // left-dial
+  sbus_chnl_[8] = msg->ch[11]; // right-dial
   
   // remap SBUS data to double
-  ref_[0] = static_cast<double>(sbus_chnl_[0] - 1024) / 672.;  // [-1, 1]
-  ref_[1] = static_cast<double>(sbus_chnl_[1] - 1024) / 672.;  // [-1, 1]
+  ref_[0] = static_cast<double>(sbus_chnl_[0] - 1024) / 336.;  // [-2, 2]
+  ref_[1] = static_cast<double>(sbus_chnl_[1] - 1024) / 336.;  // [-2, 2]
   double ref_yaw = static_cast<double>(sbus_chnl_[2] - 1024) / 672.;  // [-1, 1]
-  ref_[2] = static_cast<double>(sbus_chnl_[3] -  352) / 1344.; // [ 0, 1]
+  ref_[2] = static_cast<double>(sbus_chnl_[3] -  352) / 672.; // [ 0, 2]
 
-  ref_[3] += ref_yaw * 0.005; // [rad], this clamps to (-PI, PI)
+  ref_[3] += ref_yaw * 0.01; // [rad], this clamps to (-PI, PI)
   ref_[3] = fmod(ref_[3] + M_PI, two_PI);
   if (ref_[3] < 0) {ref_[3] += two_PI;}
   ref_[3] -= M_PI;
@@ -123,45 +123,16 @@ void ControllerNode::heartbeat_timer_callback() {
 }
 
 void ControllerNode::debugging_timer_callback() {
-  controller_interfaces::msg::ControllerDebugVal info_msg;
+  controller_interfaces::msg::ControllerDebugVal gui_msg;
 
-  // for (int i = 0; i < 9; i++) {info_msg.sbus_chnl[i] = sbus_chnl_[i];}
-  // for (int i = 0; i < 4; i++) {info_msg.des_pos[i] = sbus_ref_[i];}
+  for (int i = 0; i < 9; i++) {gui_msg.sbus_chnl[i] = sbus_chnl_[i];}
+  for (int i = 0; i < 4; i++){gui_msg.pos_cmd[i] = ref_[i];}
 
-  // if constexpr (M == ControlMode::POS) {
-  // info_msg.pid_mx[0] = pid_midval_roll_[0];
-  // info_msg.pid_mx[1] = pid_midval_roll_[1];
-  // info_msg.pid_mx[2] = pid_midval_roll_[2];
-  // info_msg.pid_mx[3] = pid_midval_roll_[3];
-
-  // info_msg.pid_my[0] = pid_midval_pitch_[0];
-  // info_msg.pid_my[1] = pid_midval_pitch_[1];
-  // info_msg.pid_my[2] = pid_midval_pitch_[2];
-  // info_msg.pid_my[3] = pid_midval_pitch_[3];
-  // }
-  // else if constexpr (M == ControlMode::VEL) {
-  //   info_msg.pid_mx[1] = pid_midval_roll_[0];
-  //   info_msg.pid_mx[2] = pid_midval_roll_[1];
-  //   info_msg.pid_mx[3] = pid_midval_roll_[2];
-
-  //   info_msg.pid_my[1] = pid_midval_pitch_[0];
-  //   info_msg.pid_my[2] = pid_midval_pitch_[1];
-  //   info_msg.pid_my[3] = pid_midval_pitch_[2];
-  // }
-  // else if constexpr (M == ControlMode::ATTITUDE) {
-  //   info_msg.pid_mx[2] = pid_midval_roll_[0];
-  //   info_msg.pid_mx[3] = pid_midval_roll_[1];
-
-  //   info_msg.pid_my[2] = pid_midval_pitch_[0];
-  //   info_msg.pid_my[3] = pid_midval_pitch_[1];
-  // }
-
-  // info_msg.pid_mz[0] = pid_midval_yaw_[0];
-  // info_msg.pid_mz[1] = pid_midval_yaw_[1];
-
-  // info_msg.pid_f[0] = pid_midval_z_[0];
-  // info_msg.pid_f[1] = pid_midval_z_[1];
-
+  gui_msg.wrench_des[0] = f_out;
+  gui_msg.wrench_des[1] = M_out[0];
+  gui_msg.wrench_des[2] = M_out[1];
+  gui_msg.wrench_des[3] = M_out[2];
+  
   // for (int i = 0; i < 2; i++) {
   //   info_msg.imu_roll[i]  = imu_roll_[i];
   //   info_msg.imu_pitch[i] = imu_pitch_[i];
@@ -171,7 +142,7 @@ void ControllerNode::debugging_timer_callback() {
   //   info_msg.opti_z[i]    = opti_z_[i];
   // }
 
-  debug_val_publisher_->publish(info_msg);
+  debug_val_publisher_->publish(gui_msg);
 }
 
 void ControllerNode::controller_loop() {

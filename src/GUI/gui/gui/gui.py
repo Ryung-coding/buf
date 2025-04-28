@@ -63,14 +63,10 @@ class DebugGUI(QWidget):
         layout.addLayout(plot_box)
 
         self.setLayout(layout)
-
-        self.timer = QTimer()
-        self.timer.timeout.connect(self.update_gui)
-        self.timer.start(100)  # 100ms (10Hz)
         
         self.controller_data = {
             "sbus_chnl": [0.0] * 9,
-            "des_pos": [0.0, 0.0, 0.0, 0.0],
+            "pos_cmd": [0.0, 0.0, 0.0, 0.0],
             "wrench_des": [0.0, 0.0, 0.0, 0.0],
             "imu_roll": [0.0, 0.0],
             "imu_pitch": [0.0, 0.0],
@@ -92,6 +88,10 @@ class DebugGUI(QWidget):
             "a4_mea": [0.0, 0.0, 0.0, 0.0, 0.0],
             "loop_rate": 0.0
         }
+
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.update_gui)
+        self.timer.start(100)  # 100ms (10Hz)
 
     def create_sbus_group(self):
         self.cmd_vals = [] # x,y,z,yaw
@@ -509,7 +509,7 @@ class DebugGUI(QWidget):
     def update_gui(self):
         # Update SBUS channel values
         for i, val in enumerate(self.cmd_vals):
-            val.setText(f"{self.controller_data['des_pos'][i]:.2f}")
+            val.setText(f'{self.controller_data["pos_cmd"][i]:.2f}')
 
         for idx, toggle_index in enumerate([0, 1]):
             ch_val = self.controller_data["sbus_chnl"][5 + idx]
@@ -535,9 +535,9 @@ class DebugGUI(QWidget):
 
         for i, bar in enumerate(self.fc_wrench_bar):
             if i==0:
-                bar.setValue(int(self.controller_data["wrench_des"][i]))
+                bar.setValue(int(self.controller_data["wrench_des"][i]*5))
             else:
-                bar.setValue(int(self.controller_data["wrench_des"][i]))
+                bar.setValue(int(abs(self.controller_data["wrench_des"][i]*100)))
 
         for i, label in enumerate(self.fc_wrench_label):
             label.setText(f'{self.controller_data["wrench_des"][i]:.2f}')
@@ -575,10 +575,10 @@ class DebugGUI(QWidget):
                 self.plot_ref_data[i].pop(0)
                 self.plot_mea_data[i].pop(0)
                 
-        self.plot_ref_data[0].append(self.controller_data['des_pos'][0])
-        self.plot_ref_data[1].append(self.controller_data['des_pos'][1])
-        self.plot_ref_data[2].append(self.controller_data['des_pos'][2])
-        self.plot_ref_data[3].append(self.controller_data['des_pos'][3])
+        self.plot_ref_data[0].append(self.controller_data['pos_cmd'][0])
+        self.plot_ref_data[1].append(self.controller_data['pos_cmd'][1])
+        self.plot_ref_data[2].append(self.controller_data['pos_cmd'][2])
+        self.plot_ref_data[3].append(self.controller_data['pos_cmd'][3])
 
         self.plot_mea_data[0].append(self.controller_data['imu_roll'][0])
         self.plot_mea_data[1].append(self.controller_data['imu_pitch'][0])
@@ -589,13 +589,6 @@ class DebugGUI(QWidget):
             length = len(self.plot_ref_data[i])
             self.plot_curves_ref[i].setData(self.x_data[:length], self.plot_ref_data[i])
             self.plot_curves_mea[i].setData(self.x_data[:length], self.plot_mea_data[i])
-
-    def format_pid_value(self, value, unit, total_width=13):
-        sign = '-' if value < 0 else '+'
-        num_str = f"{abs(value):.3f}"
-        available = total_width - len(sign) - len(unit)
-        centered_num = num_str.center(available)
-        return f"{sign}{centered_num}{unit}"
 
 def run_ros2_node(node):
     try:
