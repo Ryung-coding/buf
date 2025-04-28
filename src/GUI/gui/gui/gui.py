@@ -43,7 +43,7 @@ class DebugGUI(QWidget):
         # Create groups and add them to the layout
         top_hbox = QHBoxLayout()
         top_hbox.addWidget(self.create_sbus_group())
-        top_hbox.addWidget(self.create_pid_group())
+        top_hbox.addWidget(self.create_fc_group())
         layout.addLayout(top_hbox)
 
         # Add the remaining groups to the VBox
@@ -181,70 +181,40 @@ class DebugGUI(QWidget):
         sbus_group.setLayout(sbus_layout)
         return sbus_group
 
-    def create_pid_group(self):
-        self.pid_midval_r = []
-        self.pid_midval_p = []
-        self.pid_midval_y = []
-        self.pid_midval_z = []
+    def create_fc_group(self):
+        self.fc_wrench_bar = []
+        self.fc_wrench_label = []
         
-        pid_group = QGroupBox("PID")
-        pid_layout = QVBoxLayout()
-        
-        labels_layout = QHBoxLayout()
-        padding_label = QLabel()
-        padding_label.setFixedWidth(65)
-        labels_layout.addWidget(padding_label)
+        geom_group = QGroupBox("FC")
+        geom_layout = QVBoxLayout()
 
-        pid_labels = ["r", "p", "y", "z"]
-        for label in pid_labels:
+        wrench_labels = [" F ", "Mx", "My", "Mz"]
+        for label in wrench_labels:
             label_layout = QHBoxLayout()
-            idx_label = QLabel(label)
-            idx_label.setFixedHeight(50)
-            label_layout.addWidget(idx_label)
             
-            if label == "r":
-                for _ in range(4):
-                    pid_label = QLineEdit("0.0")
-                    pid_label.setReadOnly(True)
-                    pid_label.setFixedHeight(50)
-                    pid_label.setFixedWidth(170)
-                    label_layout.addWidget(pid_label)
-                    self.pid_midval_r.append(pid_label)
-            elif label == "p":
-                for _ in range(4):
-                    pid_label = QLineEdit("0.0")
-                    pid_label.setReadOnly(True)
-                    pid_label.setFixedHeight(50)
-                    pid_label.setFixedWidth(170)
-                    label_layout.addWidget(pid_label)
-                    self.pid_midval_p.append(pid_label)
-            elif label == "y":
-                padding_label = QLabel()
-                padding_label.setFixedWidth(340)
-                label_layout.addWidget(padding_label)
-                for _ in range(2):
-                    pid_label = QLineEdit("0.0")
-                    pid_label.setReadOnly(True)
-                    pid_label.setFixedHeight(50)
-                    pid_label.setFixedWidth(170)
-                    label_layout.addWidget(pid_label)
-                    self.pid_midval_y.append(pid_label)
-            else:
-                for _ in range(2):
-                    pid_label = QLineEdit("0.0")
-                    pid_label.setReadOnly(True)
-                    pid_label.setFixedHeight(50)
-                    pid_label.setFixedWidth(170)
-                    label_layout.addWidget(pid_label)
-                    self.pid_midval_z.append(pid_label)
-                padding_label = QLabel()
-                padding_label.setFixedWidth(350)
-                label_layout.addWidget(padding_label)
+            label_layout.addWidget(QLabel(label))
+            
+            wrench_bar = QProgressBar()
+            wrench_bar.setRange(0, 1000)
+            wrench_bar.setValue(0)
+            wrench_bar.setFixedWidth(350)
+            label_layout.addWidget(wrench_bar)
+            self.fc_wrench_bar.append(wrench_bar)
 
-            pid_layout.addLayout(label_layout)
+            wrench_val = QLineEdit()
+            wrench_val.setText("    ?")
+            wrench_val.setReadOnly(True)
+            wrench_val.setFixedWidth(100)
+            label_layout.addWidget(wrench_val)
+            self.fc_wrench_label.append(wrench_val)
 
-        pid_group.setLayout(pid_layout)
-        return pid_group
+            unit_label = QLabel("N") if label == " F " else QLabel("Nm")
+            label_layout.addWidget(unit_label)
+
+            geom_layout.addLayout(label_layout)
+
+        geom_group.setLayout(geom_layout)
+        return geom_group
     
     def create_allocation_group(self):
         alloc_group = QGroupBox("Allocation")
@@ -562,27 +532,15 @@ class DebugGUI(QWidget):
         kill_val = self.controller_data["sbus_chnl"][4]
         if kill_val == 1696: self.sbus_kill.setChecked(True)
         else: self.sbus_kill.setChecked(False)
-        
-        # # Update PID vals
-        # for i, label in enumerate(self.pid_midval_r):
-        #     if i == 0: label.setText(self.format_pid_value(self.controller_data['pid_mx'][i], " m/s"))
-        #     elif i == 1: label.setText(self.format_pid_value(self.controller_data['pid_mx'][i], " rad"))
-        #     elif i == 2: label.setText(self.format_pid_value(self.controller_data['pid_mx'][i], " rad/s"))
-        #     else: label.setText(self.format_pid_value(self.controller_data['pid_mx'][i], " N.m"))
 
-        # for i, label in enumerate(self.pid_midval_p):
-        #     if i == 0: label.setText(self.format_pid_value(self.controller_data['pid_my'][i], " m/s"))
-        #     elif i == 1: label.setText(self.format_pid_value(self.controller_data['pid_my'][i], " rad"))
-        #     elif i == 2: label.setText(self.format_pid_value(self.controller_data['pid_my'][i], " rad/s"))
-        #     else: label.setText(self.format_pid_value(self.controller_data['pid_my'][i], " N.m"))
+        for i, bar in enumerate(self.fc_wrench_bar):
+            if i==0:
+                bar.setValue(int(self.controller_data["wrench_des"][i]))
+            else:
+                bar.setValue(int(self.controller_data["wrench_des"][i]))
 
-        # for i, label in enumerate(self.pid_midval_y):
-        #     if i == 0: label.setText(self.format_pid_value(self.controller_data['pid_mz'][i], " rad/s"))
-        #     elif i == 1: label.setText(self.format_pid_value(self.controller_data['pid_mz'][i], " N.m"))
-
-        # for i, label in enumerate(self.pid_midval_z):
-        #     if i == 0: label.setText(self.format_pid_value(self.controller_data['pid_f'][i], " m/s"))
-        #     elif i == 1: label.setText(self.format_pid_value(self.controller_data['pid_f'][i], " rad"))
+        for i, label in enumerate(self.fc_wrench_label):
+            label.setText(f'{self.controller_data["wrench_des"][i]:.2f}')
 
         # Update thruster values using allocator PWM
         for i, thruster in enumerate(self.thrusters):
