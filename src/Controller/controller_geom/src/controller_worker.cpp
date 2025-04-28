@@ -24,7 +24,7 @@ ControllerNode::ControllerNode()
   heartbeat_timer_ = this->create_wall_timer(std::chrono::milliseconds(100), std::bind(&ControllerNode::heartbeat_timer_callback, this));
   debugging_timer_ = this->create_wall_timer(std::chrono::milliseconds(100), std::bind(&ControllerNode::debugging_timer_callback, this));
 
-  command_->xd << 0.0, 0.0, -3.0;
+  command_->xd << 0.0, 0.0, -1.0;
   command_->b1d << 1.0, 0.0, 0.0;
 
   // main-tasking thread

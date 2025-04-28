@@ -110,14 +110,14 @@ def generate_launch_description():
             # prefix='chrt -f 89',
         ),
 
-        # # PID Debugger Node
-        # Node(
-        #     package='pid_debugger',
-        #     executable='pid_debugger',
-        #     name='pid_debugger_node',
-        #     output='screen',
-        #     # prefix='chrt -f 87',
-        # ),
+        # PID Debugger Node
+        Node(
+            package='gui',
+            executable='gui',
+            name='gui_node',
+            output='screen',
+            # prefix='chrt -f 87',
+        ),
     ]
 
     return LaunchDescription([

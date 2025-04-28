@@ -1,7 +1,7 @@
 <package format="3">
-  <name>pid_debugger</name>
+  <name>gui</name>
   <version>0.0.0</version>
-  <description>PID Debugger for monitoring controller and allocator info</description>
+  <description>GUI for monitoring controller and allocator info</description>
   <maintainer email="milkomeda@seoultech.ac.kr">kyprus</maintainer>
   <license>None</license>
 

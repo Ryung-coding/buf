@@ -1,6 +1,6 @@
 from setuptools import setup
 
-package_name = 'pid_debugger'
+package_name = 'gui'
 
 setup(
     name=package_name,
@@ -14,11 +14,11 @@ setup(
     zip_safe=True,
     maintainer='kyprus',
     maintainer_email='kyprus@example.com',
-    description='PID Debugger for monitoring controller and allocator info',
+    description='GUI for monitoring controller and allocator info',
     license='MIT',
     entry_points={
         'console_scripts': [
-            'pid_debugger = pid_debugger.pid_debugger:main',
+            'gui = gui.gui:main',
         ],
     },
 )

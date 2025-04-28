@@ -11,7 +11,7 @@ import pyqtgraph as pg
 from controller_interfaces.msg import ControllerDebugVal
 from allocator_interfaces.msg import AllocatorDebugVal
 
-class PIDDebugger(Node):
+class GUI_NODE(Node):
     def __init__(self, gui):
         super().__init__('pid_debugger')
         self.gui = gui
@@ -639,7 +639,7 @@ def main(args=None):
     gui = DebugGUI(None)  # generate GUI first
 
     # ROS 2 Node generate && connet to GUI
-    node = PIDDebugger(gui)
+    node = GUI_NODE(gui)
     gui.node = node
     gui.show()
 
