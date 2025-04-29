@@ -44,18 +44,18 @@ class DebugGUI(QWidget):
         top_hbox = QHBoxLayout()
         top_hbox.addWidget(self.create_sbus_group())
         top_hbox.addWidget(self.create_fc_group())
+        top_hbox.addWidget(self.create_nodestate_group())
         layout.addLayout(top_hbox)
 
         # Add the remaining groups to the VBox
         mid_hbox = QHBoxLayout()
-        mid_hbox.addWidget(self.create_allocation_group())
-        mid_hbox.addWidget(self.create_nodestate_group())
+        mid_hbox.addWidget(self.create_thruster_group())
+        mid_hbox.addWidget(self.create_dynmxl_group())
         layout.addLayout(mid_hbox)
 
         bot_hbox = QHBoxLayout()
         bot_hbox.addWidget(self.create_imu_group())
         bot_hbox.addWidget(self.create_opti_group())
-        bot_hbox.addWidget(self.create_dmxl_group())
         layout.addLayout(bot_hbox)
 
         plot_box = QHBoxLayout()
@@ -77,7 +77,8 @@ class DebugGUI(QWidget):
         }
 
         self.allocator_data = {
-            "pwm": [0.0] * 4,
+            "pwm": [0.0, 0.0, 0.0, 0.0],
+            "thrust": [0.0, 0.0, 0.0, 0.0],
             "a1_des": [0.0, 0.0, 0.0, 0.0, 0.0],
             "a2_des": [0.0, 0.0, 0.0, 0.0, 0.0],
             "a3_des": [0.0, 0.0, 0.0, 0.0, 0.0],
@@ -215,20 +216,10 @@ class DebugGUI(QWidget):
 
         geom_group.setLayout(geom_layout)
         return geom_group
-    
-    def create_allocation_group(self):
-        alloc_group = QGroupBox("Allocation")
-        alloc_layout = QHBoxLayout()
-
-        # Add Thruster and Joint groups
-        alloc_layout.addWidget(self.create_thruster_group())
-        alloc_layout.addWidget(self.create_joint_group())
-
-        alloc_group.setLayout(alloc_layout)
-        return alloc_group
 
     def create_thruster_group(self):
-        self.thrusters = []
+        self.thrusters_bar = []
+        self.thrusters_label = []
         thruster_group_box = QGroupBox("Thrusters")
         thruster_layout = QVBoxLayout()
 
@@ -236,22 +227,34 @@ class DebugGUI(QWidget):
         for motor in motors:
             motor_layout = QHBoxLayout()
             motor_label = QLabel(motor)
+            motor_layout.addWidget(motor_label)
+
             motor_progress = QProgressBar()
             motor_progress.setRange(0, 100)
             motor_progress.setValue(0)
-            self.thrusters.append(motor_progress)
-
-            motor_layout.addWidget(motor_label)
+            self.thrusters_bar.append(motor_progress)
             motor_layout.addWidget(motor_progress)
+
+            motor_val = QLineEdit()
+            motor_val.setText("  ?")
+            motor_val.setReadOnly(True)
+            motor_val.setFixedWidth(90)
+            motor_layout.addWidget(motor_val)
+            self.thrusters_label.append(motor_val)
+
+            unit_label = QLabel("N")
+            unit_label.setFixedWidth(20)
+            motor_layout.addWidget(unit_label)
+
             thruster_layout.addLayout(motor_layout)
 
         thruster_group_box.setLayout(thruster_layout)
         return thruster_group_box
 
-    def create_joint_group(self):
-        self.joint_des = []
+    def create_dynmxl_group(self):
+        self.dynmxl_label = []
 
-        joint_group_box = QGroupBox("Joint Write")
+        joint_group_box = QGroupBox("Dynmxl R/W")
         joint_layout = QVBoxLayout()
 
         arms = ["A1", "A2", "A3", "A4"]
@@ -263,11 +266,11 @@ class DebugGUI(QWidget):
                 value_label = QLineEdit()
                 value_label.setText("  ?")
                 value_label.setReadOnly(True)
-                value_label.setFixedWidth(100)
+                value_label.setFixedWidth(150)
                 arm_des.append(value_label)
                 arm_i_layout.addWidget(value_label)
             joint_layout.addLayout(arm_i_layout)
-            self.joint_des.append(arm_des)
+            self.dynmxl_label.append(arm_des)
 
         joint_group_box.setLayout(joint_layout)
         return joint_group_box
@@ -315,7 +318,6 @@ class DebugGUI(QWidget):
 
         sensor_layout.addWidget(self.create_imu_group())
         sensor_layout.addWidget(self.create_opti_group())
-        sensor_layout.addWidget(self.create_dmxl_group())
 
         sensor_group.setLayout(sensor_layout)
         return sensor_group
@@ -328,7 +330,6 @@ class DebugGUI(QWidget):
 
         imu_label_layout = QHBoxLayout()
         padding_label = QLabel()
-        padding_label.setFixedWidth(85)
         imu_label_layout.addWidget(padding_label)
         imu_labels = ["rad", "rad/s", "rad/s^2"]
         for label in imu_labels:
@@ -358,7 +359,6 @@ class DebugGUI(QWidget):
             imu_group_layout.addLayout(header_layout)
 
         imu_group_box.setLayout(imu_group_layout)
-        imu_group_box.setFixedWidth(440)
         return imu_group_box
 
     def create_opti_group(self):
@@ -369,7 +369,6 @@ class DebugGUI(QWidget):
 
         opti_label_layout = QHBoxLayout()
         padding_label = QLabel()
-        padding_label.setFixedWidth(85)
         opti_label_layout.addWidget(padding_label)
         opti_labels = [" m ", "m/s", "m/s^2"]
         for label in opti_labels:
@@ -398,37 +397,7 @@ class DebugGUI(QWidget):
             opti_group_layout.addLayout(header_layout)
 
         opti_group_box.setLayout(opti_group_layout)
-        opti_group_box.setFixedWidth(440)
         return opti_group_box
-
-    def create_dmxl_group(self):
-        self.joint_meas = []
-
-        dmxl_group_box = QGroupBox("Joint Read")
-        dmxl_group_layout = QVBoxLayout()
-
-        num_layout = QHBoxLayout()
-        padding_label = QLabel()
-        padding_label.setFixedWidth(1)
-        num_layout.addWidget(padding_label)
-        
-        arms = ["A1", "A2", "A3", "A4"]
-        for arm in arms:
-            arm_mea = []
-            arm_i_layout = QHBoxLayout()
-            arm_i_layout.addWidget(QLabel(arm))
-            for i in range(5):
-                value_label = QLineEdit()
-                value_label.setText("  ?")
-                value_label.setReadOnly(True)
-                value_label.setFixedWidth(100)
-                arm_mea.append(value_label)
-                arm_i_layout.addWidget(value_label)
-            dmxl_group_layout.addLayout(arm_i_layout)
-            self.joint_meas.append(arm_mea)
-
-        dmxl_group_box.setLayout(dmxl_group_layout)
-        return dmxl_group_box
 
     def controller_update(self, msg):
         self.controller_data["sbus_chnl"] = msg.sbus_chnl
@@ -443,6 +412,7 @@ class DebugGUI(QWidget):
 
     def allocator_update(self, msg):
         self.allocator_data["pwm"] = msg.pwm
+        self.allocator_data["thrust"] = msg.thrust        
         self.allocator_data["a1_des"] = msg.a1_des
         self.allocator_data["a2_des"] = msg.a2_des
         self.allocator_data["a3_des"] = msg.a3_des
@@ -539,21 +509,19 @@ class DebugGUI(QWidget):
                 bar.setValue(int(abs(self.controller_data["wrench_des"][i]*100)))
 
         for i, label in enumerate(self.fc_wrench_label):
-            label.setText(f'{self.controller_data["wrench_des"][i]:.2f}')
+            label.setText(f' {self.controller_data["wrench_des"][i]:.2f}')
 
         # Update thruster values using allocator PWM
-        for i, thruster in enumerate(self.thrusters):
+        for i, thruster in enumerate(self.thrusters_bar):
             thruster.setValue(int(self.allocator_data['pwm'][i] * 100))
 
-        # Update Joint Desired values
-        for i, row in enumerate(self.joint_des):
-            for j, joint in enumerate(row):
-                joint.setText(f"{self.allocator_data[f'a{i+1}_des'][j]:.2f}")
+        for i, label in enumerate(self.thrusters_label):
+            label.setText(f" {(self.allocator_data['thrust'][i]):.2f}")
 
-        # Update Joint Measured values
-        for i, row in enumerate(self.joint_meas):
+        # Update Dynamixel Read/Write values
+        for i, row in enumerate(self.dynmxl_label):
             for j, joint in enumerate(row):
-                joint.setText(f"{self.allocator_data[f'a{i+1}_mea'][j]:.2f}")
+                joint.setText(f"{self.allocator_data[f'a{i+1}_des'][j]:.1f} / {self.allocator_data[f'a{i+1}_mea'][j]:.1f}")
 
         # Update IMU measurements
         for i, imu_data in enumerate([self.controller_data['imu_roll'], self.controller_data['imu_pitch'], self.controller_data['imu_yaw']]):
@@ -566,7 +534,7 @@ class DebugGUI(QWidget):
                 value.setText(f"{opti_data[j]:.3f}")
 
         # Update node states
-        self.node_states[0].setText(str(round(self.allocator_data['loop_rate'])))  # Controller loop rate
+        self.node_states[0].setText(f"{int(self.allocator_data['loop_rate'])}")  # Controller loop rate
 
         # Update plots
         for i in range(4):

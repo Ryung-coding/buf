@@ -91,10 +91,10 @@ void AllocatorWorker::heartbeat_timer_callback() {
 void AllocatorWorker::debugging_timer_callback() {
   // Populate the debugging message
   allocator_interfaces::msg::AllocatorDebugVal info_msg;
-  info_msg.pwm[0] = pwm[0];
-  info_msg.pwm[1] = pwm[1];
-  info_msg.pwm[2] = pwm[2];
-  info_msg.pwm[3] = pwm[3];
+  for (int i = 0; i < 4; i++) {
+    info_msg.pwm[i] = pwm[i];
+    info_msg.thrust[i] = u[i];
+  }
 
   info_msg.loop_rate = filtered_frequency_;
 
