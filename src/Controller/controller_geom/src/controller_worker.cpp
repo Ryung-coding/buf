@@ -82,6 +82,10 @@ void ControllerNode::optitrackCallback(const mocap_interfaces::msg::MocapMeasure
   state_->x << msg->pos[0], msg->pos[1], msg->pos[2];
   state_->v << msg->vel[0], msg->vel[1], msg->vel[2];
   state_->a << msg->acc[0], msg->acc[1], msg->acc[2];
+  
+  x_[0] = msg->pos[0]; y_[0] = msg->pos[1]; z_[0] = msg->pos[2];
+  x_[1] = msg->vel[0]; y_[1] = msg->vel[1]; z_[1] = msg->vel[2];
+  x_[2] = msg->acc[0]; y_[2] = msg->acc[1]; z_[2] = msg->acc[2];
 }
 
 void ControllerNode::imuCallback(const imu_interfaces::msg::ImuMeasured::SharedPtr msg) {
@@ -113,6 +117,11 @@ void ControllerNode::imuCallback(const imu_interfaces::msg::ImuMeasured::SharedP
 
   // gyro
   state_->W << msg->w[0], msg->w[1], -msg->w[2];
+
+  // ZYX Tait–Bryan angles
+  roll_[0]  = std::atan2(2.0*(w*x + y*z), 1.0 - 2.0*(x*x + y*y));
+  pitch_[0] = std::asin (2.0*(w*y - z*x));
+  yaw_[0]   = std::atan2(2.0*(w*z + x*y), 1.0 - 2.0*(y*y + z*z));
 }
 
 void ControllerNode::heartbeat_timer_callback() {
@@ -133,14 +142,14 @@ void ControllerNode::debugging_timer_callback() {
   gui_msg.wrench_des[2] = M_out[1];
   gui_msg.wrench_des[3] = M_out[2];
   
-  // for (int i = 0; i < 2; i++) {
-  //   info_msg.imu_roll[i]  = imu_roll_[i];
-  //   info_msg.imu_pitch[i] = imu_pitch_[i];
-  //   info_msg.imu_yaw[i]   = imu_yaw_[i];
-  //   info_msg.opti_x[i]    = opti_x_[i];
-  //   info_msg.opti_y[i]    = opti_y_[i];
-  //   info_msg.opti_z[i]    = opti_z_[i];
-  // }
+  for (int i = 0; i < 3; i++) {
+    gui_msg.imu_roll[i]  = roll_[i];
+    gui_msg.imu_pitch[i] = pitch_[i];
+    gui_msg.imu_yaw[i]   = yaw_[i];
+    // gui_msg.opti_x[i]    = opti_x_[i];
+    // gui_msg.opti_y[i]    = opti_y_[i];
+    // gui_msg.opti_z[i]    = opti_z_[i];
+  }
 
   debug_val_publisher_->publish(gui_msg);
 }

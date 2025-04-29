@@ -62,6 +62,12 @@ private:
   // sbus state
   int   sbus_chnl_[9] = {1024, 1024, 352, 1024, 352, 352, 352, 352, 352};
   double ref_[4] = {0.0, 0.0, 0.0, 0.0}; // x,y,z,yaw cmd [m, m, m, rad]
+  double roll_[3] =  {0.0, 0.0, 0.0}; // imu r [rad, rad/s, rad/s^2]
+  double pitch_[3] = {0.0, 0.0, 0.0}; // imu p [rad, rad/s, rad/s^2]
+  double yaw_[3] =   {0.0, 0.0, 0.0}; // imu y [rad, rad/s, rad/s^2]
+  double x_[3] = {0.0, 0.0, 0.0}; // opti x [m, m/s, m/s^2]
+  double y_[3] = {0.0, 0.0, 0.0}; // opti y [m, m/s, m/s^2]
+  double z_[3] = {0.0, 0.0, 0.0}; // opti z [m, m/s, m/s^2]
 
   uint8_t heartbeat_state_ = 0;
 };

@@ -68,12 +68,12 @@ class DebugGUI(QWidget):
             "sbus_chnl": [0.0] * 9,
             "pos_cmd": [0.0, 0.0, 0.0, 0.0],
             "wrench_des": [0.0, 0.0, 0.0, 0.0],
-            "imu_roll": [0.0, 0.0],
-            "imu_pitch": [0.0, 0.0],
-            "imu_yaw": [0.0, 0.0],
-            "opti_x": [0.0, 0.0],
-            "opti_y": [0.0, 0.0],
-            "opti_z": [0.0, 0.0]
+            "imu_roll": [0.0, 0.0, 0.0],
+            "imu_pitch": [0.0, 0.0, 0.0],
+            "imu_yaw": [0.0, 0.0, 0.0],
+            "opti_x": [0.0, 0.0, 0.0],
+            "opti_y": [0.0, 0.0, 0.0],
+            "opti_z": [0.0, 0.0, 0.0]
         }
 
         self.allocator_data = {
@@ -330,7 +330,7 @@ class DebugGUI(QWidget):
         padding_label = QLabel()
         padding_label.setFixedWidth(85)
         imu_label_layout.addWidget(padding_label)
-        imu_labels = ["rad", "rad/s"]
+        imu_labels = ["rad", "rad/s", "rad/s^2"]
         for label in imu_labels:
             rpy_label = QLabel(label)
             rpy_label.setFixedHeight(35)
@@ -358,7 +358,7 @@ class DebugGUI(QWidget):
             imu_group_layout.addLayout(header_layout)
 
         imu_group_box.setLayout(imu_group_layout)
-        imu_group_box.setFixedWidth(350)
+        imu_group_box.setFixedWidth(440)
         return imu_group_box
 
     def create_opti_group(self):
@@ -371,7 +371,7 @@ class DebugGUI(QWidget):
         padding_label = QLabel()
         padding_label.setFixedWidth(85)
         opti_label_layout.addWidget(padding_label)
-        opti_labels = [" m ", "m/s"]
+        opti_labels = [" m ", "m/s", "m/s^2"]
         for label in opti_labels:
             opti_label = QLabel(label)
             opti_label.setFixedHeight(35)
@@ -397,9 +397,8 @@ class DebugGUI(QWidget):
             self.opti_meas.append(opti_mea)
             opti_group_layout.addLayout(header_layout)
 
-
         opti_group_box.setLayout(opti_group_layout)
-        opti_group_box.setFixedWidth(350)
+        opti_group_box.setFixedWidth(440)
         return opti_group_box
 
     def create_dmxl_group(self):
@@ -462,8 +461,8 @@ class DebugGUI(QWidget):
         self.plot_curves_ref = []
         self.plot_curves_mea = []
 
-        # r, p, y, z plots
-        idxs = ["r", "p", "y", "z"]
+        # plots
+        idxs = ["x", "y", "z", "ψ"]
         for idx in idxs:
             hbox = QHBoxLayout()
             idx_label = QLabel(idx)
