@@ -64,7 +64,17 @@ void AllocatorWorker::controllerCallback(const controller_interfaces::msg::Contr
 }
 
 void AllocatorWorker::jointValCallback(const dynamixel_interfaces::msg::JointVal::SharedPtr msg) {
-  latest_joint_val_ = *msg;
+  for (uint8_t i = 0; i < 5; ++i) {
+    arm_mea[0][i] = msg->a1_mea[i];   // Arm 1
+    arm_mea[1][i] = msg->a2_mea[i];   // Arm 2
+    arm_mea[2][i] = msg->a3_mea[i];   // Arm 3
+    arm_mea[3][i] = msg->a4_mea[i];   // Arm 4
+
+    arm_des[0][i] = msg->a1_des[i];   // Arm 1
+    arm_des[1][i] = msg->a2_des[i];   // Arm 2
+    arm_des[2][i] = msg->a3_des[i];   // Arm 3
+    arm_des[3][i] = msg->a4_des[i];   // Arm 4
+  }
 }
 
 void AllocatorWorker::publishPwmVal() {
@@ -94,6 +104,18 @@ void AllocatorWorker::debugging_timer_callback() {
   for (int i = 0; i < 4; i++) {
     info_msg.pwm[i] = pwm[i];
     info_msg.thrust[i] = u[i];
+  }
+
+  for (size_t i = 0; i < 5; ++i) {
+    info_msg.a1_des[i] = arm_des[0][i];
+    info_msg.a2_des[i] = arm_des[1][i];
+    info_msg.a3_des[i] = arm_des[2][i];
+    info_msg.a4_des[i] = arm_des[3][i];
+
+    info_msg.a1_mea[i] = arm_mea[0][i];
+    info_msg.a2_mea[i] = arm_mea[1][i];
+    info_msg.a3_mea[i] = arm_mea[2][i];
+    info_msg.a4_mea[i] = arm_mea[3][i];
   }
 
   info_msg.loop_rate = filtered_frequency_;

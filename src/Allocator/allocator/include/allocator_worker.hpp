@@ -56,8 +56,21 @@ private:
   Matrix4d A_inv;
   double pwm_alpha_;
   double pwm_beta_;
+  
+  double arm_des[4][5] = { // [rad]
+    {0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0}
+  };
 
-  dynamixel_interfaces::msg::JointVal latest_joint_val_; // Example
+  // mujoco or dynamixel read
+  double arm_mea[4][5] = { // [rad]
+    {0., -0.84522, 1.50944, 0.90812, 0.},
+    {0., -0.84522, 1.50944, 0.90812, 0.},
+    {0., -0.84522, 1.50944, 0.90812, 0.},
+    {0., -0.84522, 1.50944, 0.90812, 0.}
+  };
 
   uint8_t heartbeat_state_; // previous node state
 };

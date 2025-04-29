@@ -74,40 +74,25 @@ void DynamixelNode::Mujoco_Pub() {
   /*  Publish to mujoco  */
   dynamixel_interfaces::msg::JointVal msg1;
 
-  msg1.a1_q[0] = static_cast<double>(2048.0 - arm_des[0][0]) * ppr2rad_J1;  // Arm 1
-  msg1.a2_q[0] = static_cast<double>(2048.0 - arm_des[1][0]) * ppr2rad_J1;  // Arm 2
-  msg1.a3_q[0] = static_cast<double>(2048.0 - arm_des[2][0]) * ppr2rad_J1;  // Arm 3
-  msg1.a4_q[0] = static_cast<double>(2048.0 - arm_des[3][0]) * ppr2rad_J1;  // Arm 4
-  
-  msg1.a1_q[1] = static_cast<double>(2048.0 - arm_des[0][1]) * ppr2rad;   // Arm 1
-  msg1.a2_q[1] = static_cast<double>(2048.0 - arm_des[1][1]) * ppr2rad;   // Arm 2
-  msg1.a3_q[1] = static_cast<double>(2048.0 - arm_des[2][1]) * ppr2rad;   // Arm 3
-  msg1.a4_q[1] = static_cast<double>(2048.0 - arm_des[3][1]) * ppr2rad;   // Arm 4
-
-  msg1.a1_q[2] = static_cast<double>(2048.0 - arm_des[0][2]) * ppr2rad;   // Arm 1
-  msg1.a2_q[2] = static_cast<double>(2048.0 - arm_des[1][2]) * ppr2rad;   // Arm 2
-  msg1.a3_q[2] = static_cast<double>(2048.0 - arm_des[2][2]) * ppr2rad;   // Arm 3
-  msg1.a4_q[2] = static_cast<double>(2048.0 - arm_des[3][2]) * ppr2rad;   // Arm 4
-
-  msg1.a1_q[3] = static_cast<double>(arm_des[0][3] - 2048.0) * ppr2rad;   // Arm 1
-  msg1.a2_q[3] = static_cast<double>(arm_des[1][3] - 2048.0) * ppr2rad;   // Arm 2
-  msg1.a3_q[3] = static_cast<double>(arm_des[2][3] - 2048.0) * ppr2rad;   // Arm 3
-  msg1.a4_q[3] = static_cast<double>(arm_des[3][3] - 2048.0) * ppr2rad;   // Arm 4
-
-  msg1.a1_q[4] = static_cast<double>(2048.0 - arm_des[0][4]) * ppr2rad;   // Arm 1
-  msg1.a2_q[4] = static_cast<double>(2048.0 - arm_des[1][4]) * ppr2rad;   // Arm 2
-  msg1.a3_q[4] = static_cast<double>(2048.0 - arm_des[2][4]) * ppr2rad;   // Arm 3
-  msg1.a4_q[4] = static_cast<double>(2048.0 - arm_des[3][4]) * ppr2rad;   // Arm 4
-
+  for (size_t i = 0; i < 5; ++i) {
+    msg1.a1_des[i] = arm_des_rad[0][i];  // Arm 1
+    msg1.a2_des[i] = arm_des_rad[1][i];  // Arm 2
+    msg1.a3_des[i] = arm_des_rad[2][i];  // Arm 3
+    msg1.a4_des[i] = arm_des_rad[3][i];  // Arm 4
+  }
   mujoco_publisher_->publish(msg1);
 
   /*  Publish to allocator  */
   dynamixel_interfaces::msg::JointVal msg2;
   for (size_t i = 0; i < 5; ++i) {
-    msg2.a1_q[i] = arm_mea[0][i];
-    msg2.a2_q[i] = arm_mea[1][i];
-    msg2.a3_q[i] = arm_mea[2][i];
-    msg2.a4_q[i] = arm_mea[3][i];
+    msg2.a1_des[i] = arm_des_rad[0][i];
+    msg2.a2_des[i] = arm_des_rad[1][i];
+    msg2.a3_des[i] = arm_des_rad[2][i];
+    msg2.a4_des[i] = arm_des_rad[3][i];
+    msg2.a1_mea[i] = arm_mea[0][i];
+    msg2.a2_mea[i] = arm_mea[1][i];
+    msg2.a3_mea[i] = arm_mea[2][i];
+    msg2.a4_mea[i] = arm_mea[3][i];
   }
   pos_mea_publisher_->publish(msg2);
 }
@@ -129,10 +114,10 @@ void DynamixelNode::Dynamixel_Write_Read() {
   for (size_t i = 0; i < ARM_NUM; ++i) {
     for (size_t j = 0; j < 5; ++j) {
       uint8_t param_goal_position[4] = {
-        DXL_LOBYTE(DXL_LOWORD(arm_des[i][j])),
-        DXL_HIBYTE(DXL_LOWORD(arm_des[i][j])),
-        DXL_LOBYTE(DXL_HIWORD(arm_des[i][j])),
-        DXL_HIBYTE(DXL_HIWORD(arm_des[i][j]))
+        DXL_LOBYTE(DXL_LOWORD(arm_des_ppr[i][j])),
+        DXL_HIBYTE(DXL_LOWORD(arm_des_ppr[i][j])),
+        DXL_LOBYTE(DXL_HIWORD(arm_des_ppr[i][j])),
+        DXL_HIBYTE(DXL_HIWORD(arm_des_ppr[i][j]))
       };
       if (!groupSyncWrite_->addParam(DXL_IDS[i][j], param_goal_position)) {
         dnmxl_err_cnt_++;
@@ -176,10 +161,10 @@ void DynamixelNode::Dynamixel_Write_Read() {
   /*  Publish  */
   dynamixel_interfaces::msg::JointVal msg;
   for (size_t j = 0; j < 5; ++j) {
-    msg.a1_q[j] = arm_mea[0][j];
-    msg.a2_q[j] = arm_mea[1][j];
-    msg.a3_q[j] = arm_mea[2][j];
-    msg.a4_q[j] = arm_mea[3][j];
+    msg.a1_mea[j] = arm_mea[0][j];
+    msg.a2_mea[j] = arm_mea[1][j];
+    msg.a3_mea[j] = arm_mea[2][j];
+    msg.a4_mea[j] = arm_mea[3][j];
   }
   pos_mea_publisher_->publish(msg);
 }
@@ -227,16 +212,32 @@ void DynamixelNode::change_velocity_gain(uint8_t dxl_id, uint16_t p_gain, uint16
 
 /* for Both */
 void DynamixelNode::armchanger_callback(const dynamixel_interfaces::msg::JointVal::SharedPtr msg) {
-  arm_des[0][0] = static_cast<double>(msg->a1_q[0] * rad2ppr_J1 + 2048.0);  // Arm 1
-  arm_des[1][0] = static_cast<double>(msg->a2_q[0] * rad2ppr_J1 + 2048.0);  // Arm 2
-  arm_des[2][0] = static_cast<double>(msg->a3_q[0] * rad2ppr_J1 + 2048.0);  // Arm 3
-  arm_des[3][0] = static_cast<double>(msg->a4_q[0] * rad2ppr_J1 + 2048.0);  // Arm 4
+
+  for (uint8_t i = 0; i < 5; ++i) {
+    if (i != 3){
+      arm_des_rad[0][i] = -msg->a1_des[i];  // Arm 1
+      arm_des_rad[1][i] = -msg->a2_des[i];  // Arm 2
+      arm_des_rad[2][i] = -msg->a3_des[i];  // Arm 3
+      arm_des_rad[3][i] = -msg->a4_des[i];  // Arm 4
+    }
+    else{
+      arm_des_rad[0][i] = msg->a1_des[i];   // Arm 1
+      arm_des_rad[1][i] = msg->a2_des[i];   // Arm 2
+      arm_des_rad[2][i] = msg->a3_des[i];   // Arm 3
+      arm_des_rad[3][i] = msg->a4_des[i];   // Arm 4
+    }
+  }
+
+  arm_des_ppr[0][0] = msg->a1_des[0] * rad2ppr_J1 + 2048.0;  // Arm 1
+  arm_des_ppr[1][0] = msg->a2_des[0] * rad2ppr_J1 + 2048.0;  // Arm 2
+  arm_des_ppr[2][0] = msg->a3_des[0] * rad2ppr_J1 + 2048.0;  // Arm 3
+  arm_des_ppr[3][0] = msg->a4_des[0] * rad2ppr_J1 + 2048.0;  // Arm 4
     
   for (uint8_t i = 1; i < 5; ++i) {
-    arm_des[0][i] = static_cast<double>(msg->a1_q[i] * rad2ppr + 2048.0);   // Arm 1
-    arm_des[1][i] = static_cast<double>(msg->a2_q[i] * rad2ppr + 2048.0);   // Arm 2
-    arm_des[2][i] = static_cast<double>(msg->a3_q[i] * rad2ppr + 2048.0);   // Arm 3
-    arm_des[3][i] = static_cast<double>(msg->a4_q[i] * rad2ppr + 2048.0);   // Arm 4
+    arm_des_ppr[0][i] = msg->a1_des[i] * rad2ppr + 2048.0;   // Arm 1
+    arm_des_ppr[1][i] = msg->a2_des[i] * rad2ppr + 2048.0;   // Arm 2
+    arm_des_ppr[2][i] = msg->a3_des[i] * rad2ppr + 2048.0;   // Arm 3
+    arm_des_ppr[3][i] = msg->a4_des[i] * rad2ppr + 2048.0;   // Arm 4
   }
 }
 

@@ -10,6 +10,7 @@ import pyqtgraph as pg
 
 from controller_interfaces.msg import ControllerDebugVal
 from allocator_interfaces.msg import AllocatorDebugVal
+from math import pi
 
 class GUI_NODE(Node):
     def __init__(self, gui):
@@ -50,12 +51,12 @@ class DebugGUI(QWidget):
         # Add the remaining groups to the VBox
         mid_hbox = QHBoxLayout()
         mid_hbox.addWidget(self.create_thruster_group())
-        mid_hbox.addWidget(self.create_dynmxl_group())
+        mid_hbox.addWidget(self.create_imu_group())
+        mid_hbox.addWidget(self.create_opti_group())
         layout.addLayout(mid_hbox)
 
         bot_hbox = QHBoxLayout()
-        bot_hbox.addWidget(self.create_imu_group())
-        bot_hbox.addWidget(self.create_opti_group())
+        bot_hbox.addWidget(self.create_dynmxl_group())
         layout.addLayout(bot_hbox)
 
         plot_box = QHBoxLayout()
@@ -262,11 +263,12 @@ class DebugGUI(QWidget):
             arm_des = []
             arm_i_layout = QHBoxLayout()
             arm_i_layout.addWidget(QLabel(arm))
-            for _ in range(5):
+            for i in range(5):
                 value_label = QLineEdit()
                 value_label.setText("  ?")
                 value_label.setReadOnly(True)
-                value_label.setFixedWidth(150)
+                if i == 2: value_label.setFixedWidth(220)
+                else: value_label.setFixedWidth(180)
                 arm_des.append(value_label)
                 arm_i_layout.addWidget(value_label)
             joint_layout.addLayout(arm_i_layout)
@@ -413,14 +415,14 @@ class DebugGUI(QWidget):
     def allocator_update(self, msg):
         self.allocator_data["pwm"] = msg.pwm
         self.allocator_data["thrust"] = msg.thrust        
-        self.allocator_data["a1_des"] = msg.a1_des
-        self.allocator_data["a2_des"] = msg.a2_des
-        self.allocator_data["a3_des"] = msg.a3_des
-        self.allocator_data["a4_des"] = msg.a4_des
-        self.controller_data["a1_mea"] = msg.a1_mea
-        self.controller_data["a2_mea"] = msg.a2_mea
-        self.controller_data["a3_mea"] = msg.a3_mea
-        self.controller_data["a4_mea"] = msg.a4_mea
+        self.allocator_data["a1_des"] = msg.a1_des / pi * 180
+        self.allocator_data["a2_des"] = msg.a2_des / pi * 180
+        self.allocator_data["a3_des"] = msg.a3_des / pi * 180
+        self.allocator_data["a4_des"] = msg.a4_des / pi * 180
+        self.allocator_data["a1_mea"] = msg.a1_mea / pi * 180
+        self.allocator_data["a2_mea"] = msg.a2_mea / pi * 180
+        self.allocator_data["a3_mea"] = msg.a3_mea / pi * 180
+        self.allocator_data["a4_mea"] = msg.a4_mea / pi * 180
         self.allocator_data["loop_rate"] = msg.loop_rate
 
     def create_plot_group(self):
@@ -521,7 +523,10 @@ class DebugGUI(QWidget):
         # Update Dynamixel Read/Write values
         for i, row in enumerate(self.dynmxl_label):
             for j, joint in enumerate(row):
-                joint.setText(f"{self.allocator_data[f'a{i+1}_des'][j]:.1f} / {self.allocator_data[f'a{i+1}_mea'][j]:.1f}")
+                mea = self.allocator_data[f'a{i+1}_mea'][j]
+                des = self.allocator_data[f'a{i+1}_des'][j]
+                # :6.1f -> width=6, precision=1
+                joint.setText(f"{mea:+6.1f}/{des:+6.1f}")
 
         # Update IMU measurements
         for i, imu_data in enumerate([self.controller_data['imu_roll'], self.controller_data['imu_pitch'], self.controller_data['imu_yaw']]):

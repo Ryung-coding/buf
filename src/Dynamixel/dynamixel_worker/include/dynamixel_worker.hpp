@@ -76,8 +76,15 @@ private:
   dynamixel::GroupSyncWrite* groupSyncWrite_;
   dynamixel::GroupSyncRead*  groupSyncRead_;
 
-  // allocator sub
-  int arm_des[4][5] = { // [ppr]
+  // arm changer sub
+  double arm_des_rad[4][5] = { // [rad]
+    {0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0}
+  };
+
+  int arm_des_ppr[4][5] = { // [ppr]
     {0, 0, 0, 0, 0},
     {0, 0, 0, 0, 0},
     {0, 0, 0, 0, 0},
