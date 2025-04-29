@@ -42,7 +42,7 @@ class SbusNode(Node):
       failsafe_status = frame.get_failsafe_status()
 
       # Log the received channels and failsafe status
-    #   self.get_logger().info(f"Received channels: {channels}, Failsafe status: {failsafe_status}")
+      # self.get_logger().info(f"Received channels: {channels}, Failsafe status: {failsafe_status}")
 
       # Create and populate the SbusSignal message
       msg = SbusSignal()
