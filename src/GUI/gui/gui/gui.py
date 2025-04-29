@@ -116,7 +116,7 @@ class DebugGUI(QWidget):
             cmd_val = QLineEdit()
             cmd_val.setText("  ?")
             cmd_val.setReadOnly(True)
-            cmd_val.setFixedWidth(90)
+            cmd_val.setFixedWidth(100)
             sbus_cmd_layout.addWidget(cmd_val)
             self.cmd_vals.append(cmd_val)
 
@@ -144,7 +144,7 @@ class DebugGUI(QWidget):
             dial_val = QLineEdit()
             dial_val.setText("  ?")
             dial_val.setReadOnly(True)
-            dial_val.setFixedWidth(60)
+            dial_val.setFixedWidth(80)
             dial_hbox.addWidget(dial_val)
             self.sbus_dials_label.append(dial_val)
 
@@ -218,6 +218,41 @@ class DebugGUI(QWidget):
         geom_group.setLayout(geom_layout)
         return geom_group
 
+    def create_nodestate_group(self):
+        self.node_states = []
+
+        nodestate_group_box = QGroupBox("Control Hz")
+        joint_layout = QVBoxLayout()
+
+        nodes = [" Allocator"]
+        for node in nodes:
+            q_label = QLabel(node)
+            q_label.setFixedHeight(60)
+            joint_layout.addWidget(q_label)
+
+            row_layout = QHBoxLayout()
+
+            value_label = QLineEdit()
+            value_label.setText("0")
+            value_label.setReadOnly(True)
+            value_label.setFixedWidth(90)
+            value_label.setFixedHeight(45)
+            self.node_states.append(value_label)
+            dummy = QLabel()
+            dummy.setFixedWidth(1)
+            row_layout.addWidget(dummy)
+            row_layout.addWidget(value_label)
+
+            unit_label = QLabel("Hz")
+            row_layout.addWidget(unit_label)
+
+            joint_layout.addLayout(row_layout)
+
+            if node == "Controller": joint_layout.addWidget(QLabel()) # dummy
+
+        nodestate_group_box.setLayout(joint_layout)
+        return nodestate_group_box
+
     def create_thruster_group(self):
         self.thrusters_bar = []
         self.thrusters_label = []
@@ -239,80 +274,18 @@ class DebugGUI(QWidget):
             motor_val = QLineEdit()
             motor_val.setText("  ?")
             motor_val.setReadOnly(True)
-            motor_val.setFixedWidth(90)
+            motor_val.setFixedWidth(100)
             motor_layout.addWidget(motor_val)
             self.thrusters_label.append(motor_val)
 
             unit_label = QLabel("N")
-            unit_label.setFixedWidth(20)
+            unit_label.setFixedWidth(30)
             motor_layout.addWidget(unit_label)
 
             thruster_layout.addLayout(motor_layout)
 
         thruster_group_box.setLayout(thruster_layout)
         return thruster_group_box
-
-    def create_dynmxl_group(self):
-        self.dynmxl_label = []
-
-        joint_group_box = QGroupBox("Dynmxl R/W")
-        joint_layout = QVBoxLayout()
-
-        arms = ["A1", "A2", "A3", "A4"]
-        for arm in arms:
-            arm_des = []
-            arm_i_layout = QHBoxLayout()
-            arm_i_layout.addWidget(QLabel(arm))
-            for i in range(5):
-                value_label = QLineEdit()
-                value_label.setText("  ?")
-                value_label.setReadOnly(True)
-                if i == 2: value_label.setFixedWidth(220)
-                else: value_label.setFixedWidth(180)
-                arm_des.append(value_label)
-                arm_i_layout.addWidget(value_label)
-            joint_layout.addLayout(arm_i_layout)
-            self.dynmxl_label.append(arm_des)
-
-        joint_group_box.setLayout(joint_layout)
-        return joint_group_box
-
-    def create_nodestate_group(self):
-        self.node_states = []
-
-        nodestate_group_box = QGroupBox("Control Hz")
-        nodestate_group_box.setFixedWidth(180)
-        joint_layout = QVBoxLayout()
-
-        nodes = [" Allocator"]
-        for node in nodes:
-            q_label = QLabel(node)
-            q_label.setFixedHeight(35)
-            joint_layout.addWidget(q_label)
-
-            row_layout = QHBoxLayout()
-
-            value_label = QLineEdit()
-            value_label.setText("0")
-            value_label.setReadOnly(True)
-            value_label.setFixedWidth(85)
-            value_label.setFixedHeight(45)
-            self.node_states.append(value_label)
-            dummy = QLabel()
-            dummy.setFixedWidth(1)
-            row_layout.addWidget(dummy)
-            row_layout.addWidget(value_label)
-
-            unit_label = QLabel("Hz")
-            unit_label.setFixedHeight(20)
-            row_layout.addWidget(unit_label)
-
-            joint_layout.addLayout(row_layout)
-
-            if node == "Controller": joint_layout.addWidget(QLabel()) # dummy
-
-        nodestate_group_box.setLayout(joint_layout)
-        return nodestate_group_box
 
     def create_sensor_group(self):
         sensor_group = QGroupBox("Sensing")
@@ -352,7 +325,7 @@ class DebugGUI(QWidget):
                 value_label = QLineEdit()
                 value_label.setText("  ?")
                 value_label.setReadOnly(True)
-                value_label.setFixedWidth(110)
+                value_label.setFixedWidth(120)
                 header_layout.addWidget(value_label)
 
                 imu_mea.append(value_label)
@@ -391,7 +364,7 @@ class DebugGUI(QWidget):
                 value_label = QLineEdit()
                 value_label.setText("  ?")
                 value_label.setReadOnly(True)
-                value_label.setFixedWidth(110)
+                value_label.setFixedWidth(120)
                 header_layout.addWidget(value_label)
                 opti_mea.append(value_label)
 
@@ -401,29 +374,30 @@ class DebugGUI(QWidget):
         opti_group_box.setLayout(opti_group_layout)
         return opti_group_box
 
-    def controller_update(self, msg):
-        self.controller_data["sbus_chnl"] = msg.sbus_chnl
-        self.controller_data["pos_cmd"] = msg.pos_cmd
-        self.controller_data["wrench_des"] = msg.wrench_des
-        self.controller_data["imu_roll"] = msg.imu_roll
-        self.controller_data["imu_pitch"] = msg.imu_pitch
-        self.controller_data["imu_yaw"] = msg.imu_yaw
-        self.controller_data["opti_x"] = msg.opti_x
-        self.controller_data["opti_y"] = msg.opti_y
-        self.controller_data["opti_z"] = msg.opti_z
+    def create_dynmxl_group(self):
+        self.dynmxl_label = []
 
-    def allocator_update(self, msg):
-        self.allocator_data["pwm"] = msg.pwm
-        self.allocator_data["thrust"] = msg.thrust        
-        self.allocator_data["a1_des"] = msg.a1_des / pi * 180
-        self.allocator_data["a2_des"] = msg.a2_des / pi * 180
-        self.allocator_data["a3_des"] = msg.a3_des / pi * 180
-        self.allocator_data["a4_des"] = msg.a4_des / pi * 180
-        self.allocator_data["a1_mea"] = msg.a1_mea / pi * 180
-        self.allocator_data["a2_mea"] = msg.a2_mea / pi * 180
-        self.allocator_data["a3_mea"] = msg.a3_mea / pi * 180
-        self.allocator_data["a4_mea"] = msg.a4_mea / pi * 180
-        self.allocator_data["loop_rate"] = msg.loop_rate
+        joint_group_box = QGroupBox("Dynmxl R/W")
+        joint_layout = QVBoxLayout()
+
+        arms = ["A1", "A2", "A3", "A4"]
+        for arm in arms:
+            arm_des = []
+            arm_i_layout = QHBoxLayout()
+            arm_i_layout.addWidget(QLabel(arm))
+            for i in range(5):
+                value_label = QLineEdit()
+                value_label.setText("  ?")
+                value_label.setReadOnly(True)
+                if i == 2: value_label.setFixedWidth(250)
+                else: value_label.setFixedWidth(220)
+                arm_des.append(value_label)
+                arm_i_layout.addWidget(value_label)
+            joint_layout.addLayout(arm_i_layout)
+            self.dynmxl_label.append(arm_des)
+
+        joint_group_box.setLayout(joint_layout)
+        return joint_group_box
 
     def create_plot_group(self):
         plot_group = QGroupBox()
@@ -453,9 +427,9 @@ class DebugGUI(QWidget):
             plot_item.getAxis('left').setTextPen(pg.mkPen(color='k'))
 
             # Set y-axis range
-            if idx == "z": plot_item.setYRange(0.0, 1.5)
-            elif idx == "y": plot_item.setYRange(-3.14, 3.14)
-            else: plot_item.setYRange(-0.06, 0.06)
+            if idx == "z": plot_item.setYRange(-0.1, 2.0)
+            elif idx == "ψ": plot_item.setYRange(-3.14, 3.14)
+            else: plot_item.setYRange(-2.0, 2.0)
 
             # Two curves: reference (blue) and measurement (red), each with thicker lines
             curve_ref = plot_widget.plot(name="Ref", pen=pg.mkPen(color='b', width=3))
@@ -470,17 +444,44 @@ class DebugGUI(QWidget):
 
         plot_group.setLayout(vbox)
 
-        # 5 seconds of buffered data at 10 Hz = 50 samples
-        self.plot_ref_data = [[] for _ in range(4)]  # [r, p, y, z] desired values
-        self.plot_mea_data = [[] for _ in range(4)]  # [r, p, y, z] measured values
-        self.x_data = list(range(50))
+        # 20 seconds of buffered data at 10 Hz = 200 samples
+        self.buffer_size = 200
+
+        self.x_data = list(range(self.buffer_size))
+        self.plot_ref_data = [[0.0] * self.buffer_size for _ in range(4)]
+        self.plot_mea_data = [[0.0] * self.buffer_size for _ in range(4)]
 
         return plot_group
+
+    def controller_update(self, msg):
+        self.controller_data["sbus_chnl"] = msg.sbus_chnl
+        self.controller_data["pos_cmd"] = msg.pos_cmd
+        self.controller_data["wrench_des"] = msg.wrench_des
+        self.controller_data["imu_roll"] = msg.imu_roll
+        self.controller_data["imu_pitch"] = msg.imu_pitch
+        self.controller_data["imu_yaw"] = msg.imu_yaw
+        self.controller_data["opti_x"] = msg.opti_x
+        self.controller_data["opti_y"] = msg.opti_y
+        self.controller_data["opti_z"] = msg.opti_z
+
+    def allocator_update(self, msg):
+        self.allocator_data["pwm"] = msg.pwm
+        self.allocator_data["thrust"] = msg.thrust        
+        self.allocator_data["a1_des"] = msg.a1_des / pi * 180
+        self.allocator_data["a2_des"] = msg.a2_des / pi * 180
+        self.allocator_data["a3_des"] = msg.a3_des / pi * 180
+        self.allocator_data["a4_des"] = msg.a4_des / pi * 180
+        self.allocator_data["a1_mea"] = msg.a1_mea / pi * 180
+        self.allocator_data["a2_mea"] = msg.a2_mea / pi * 180
+        self.allocator_data["a3_mea"] = msg.a3_mea / pi * 180
+        self.allocator_data["a4_mea"] = msg.a4_mea / pi * 180
+        self.allocator_data["loop_rate"] = msg.loop_rate
 
     def update_gui(self):
         # Update SBUS channel values
         for i, val in enumerate(self.cmd_vals):
-            val.setText(f'{self.controller_data["pos_cmd"][i]:.2f}')
+            if i != 3: val.setText(f'{self.controller_data["pos_cmd"][i]:.2f}')
+            else: val.setText(f'{self.controller_data["pos_cmd"][i]*180/pi:.1f}')
 
         for idx, toggle_index in enumerate([0, 1]):
             ch_val = self.controller_data["sbus_chnl"][5 + idx]
@@ -534,7 +535,7 @@ class DebugGUI(QWidget):
                 value.setText(f"{imu_data[j]:.3f}")
 
         # Update Opti measurements
-        for i, opti_data in enumerate([self.controller_data['opti_x'], self.controller_data['opti_y'], self.controller_data['opti_z']]):
+        for i, opti_data in enumerate([self.controller_data['opti_x'], self.controller_data['opti_y'], -self.controller_data['opti_z']]):
             for j, value in enumerate(self.opti_meas[i]):
                 value.setText(f"{opti_data[j]:.3f}")
 
@@ -543,7 +544,7 @@ class DebugGUI(QWidget):
 
         # Update plots
         for i in range(4):
-            if len(self.plot_ref_data[i]) >= 50:
+            if len(self.plot_ref_data[i]) >= self.buffer_size:
                 self.plot_ref_data[i].pop(0)
                 self.plot_mea_data[i].pop(0)
                 
@@ -552,10 +553,10 @@ class DebugGUI(QWidget):
         self.plot_ref_data[2].append(self.controller_data['pos_cmd'][2])
         self.plot_ref_data[3].append(self.controller_data['pos_cmd'][3])
 
-        self.plot_mea_data[0].append(self.controller_data['imu_roll'][0])
-        self.plot_mea_data[1].append(self.controller_data['imu_pitch'][0])
-        self.plot_mea_data[2].append(self.controller_data['imu_yaw'][0])
-        self.plot_mea_data[3].append(self.controller_data['opti_z'][0])
+        self.plot_mea_data[0].append(self.controller_data['opti_x'][0])
+        self.plot_mea_data[1].append(self.controller_data['opti_y'][0])
+        self.plot_mea_data[2].append(-self.controller_data['opti_z'][0])
+        self.plot_mea_data[3].append(self.controller_data['imu_yaw'][0])
         
         for i in range(4):
             length = len(self.plot_ref_data[i])

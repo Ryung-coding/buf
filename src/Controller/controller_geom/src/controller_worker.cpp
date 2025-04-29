@@ -117,6 +117,7 @@ void ControllerNode::imuCallback(const imu_interfaces::msg::ImuMeasured::SharedP
 
   // gyro
   state_->W << msg->w[0], msg->w[1], -msg->w[2];
+  roll_[1] = msg->w[0]; pitch_[1] = msg->w[1]; yaw_[1] = msg->w[2];
 
   // ZYX Tait–Bryan angles
   roll_[0]  = std::atan2(2.0*(w*x + y*z), 1.0 - 2.0*(x*x + y*y));
@@ -146,9 +147,9 @@ void ControllerNode::debugging_timer_callback() {
     gui_msg.imu_roll[i]  = roll_[i];
     gui_msg.imu_pitch[i] = pitch_[i];
     gui_msg.imu_yaw[i]   = yaw_[i];
-    // gui_msg.opti_x[i]    = opti_x_[i];
-    // gui_msg.opti_y[i]    = opti_y_[i];
-    // gui_msg.opti_z[i]    = opti_z_[i];
+    gui_msg.opti_x[i]    = x_[i];
+    gui_msg.opti_y[i]    = y_[i];
+    gui_msg.opti_z[i]    = z_[i];
   }
 
   debug_val_publisher_->publish(gui_msg);
