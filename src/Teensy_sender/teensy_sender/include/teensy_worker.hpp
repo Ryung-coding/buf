@@ -13,6 +13,12 @@
 #include <linux/can.h>
 #include <net/if.h>
 
+struct DelayedData
+{
+  rclcpp::Time stamp;
+  std::array<double, 4> w; // f, Mx, My, Mz
+};
+
 class TeensyNode : public rclcpp::Node {
 public:
   TeensyNode();
@@ -47,6 +53,12 @@ private:
   const double C1_tau_ = 1.5958 / 100000000.0;
   const double C2_tau_ = 0.0;
   const double C3_tau_ = 0.0;
+
+  // Buffer (FIFO) to store data for delayed output
+  std::deque<DelayedData> data_buffer_;
+
+  // Duration representing 3ms delay (3,000,000ns)
+  rclcpp::Duration delay_{0, 3000000};
 
   // Latest PWM values
   double pwm1_ = 0.0; // [0, 1]

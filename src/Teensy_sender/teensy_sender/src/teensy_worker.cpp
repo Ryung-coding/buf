@@ -106,6 +106,24 @@ void TeensyNode::allocatorCallback_teensy(const allocator_interfaces::msg::PwmVa
 
 /* for sim */
 void TeensyNode::allocatorCallback_mujoco(const allocator_interfaces::msg::PwmVal::SharedPtr msg) {
+  // first, apply 3ms time-delay
+  rclcpp::Time now_time = this->now();
+
+  // Push the new data into the buffer
+  DelayedData new_data;
+  new_data.stamp = now_time;
+  new_data.w[0] = msg->w[0]; new_data.w[1] = msg->w[1]; new_data.w[2] = msg->w[2]; new_data.w[3] = msg->w[3];
+
+  data_buffer_.push_back(new_data);
+
+  // Remove older data that is no longer needed to reduce memory usage (older than 10ms)
+  while (!data_buffer_.empty()) {
+    if ((now_time - data_buffer_.front().stamp).nanoseconds() > 10000000LL) {
+      data_buffer_.pop_front();
+    }
+    else { break; }
+  }
+
   // pwm LPF
   pwm1_ = LPF_alpha_ * msg->pwm1 + LPF_beta_ * pwm1_;
   pwm2_ = LPF_alpha_ * msg->pwm2 + LPF_beta_ * pwm2_;
