@@ -1,3 +1,6 @@
+import os
+os.environ['RCUTILS_CONSOLE_OUTPUT_FORMAT'] = '[{severity}]: {message}'
+
 import rclpy
 from rclpy.node import Node
 from sbus_interfaces.msg import KillCmd, SbusSignal
@@ -31,8 +34,14 @@ class SbusNode(Node):
     2. Wait for SBUS frames (await sbus.get_frame()).
     3. Convert each frame to a ROS2 message and publish it.
     """
+
+    port_name = "/dev/ttyUSB0"
     
-    sbus = await SBUSReceiver.create("/dev/ttyUSB0")
+    try:
+      sbus = await SBUSReceiver.create(port_name)
+    except Exception as e:
+      self.get_logger().error(f"!! SBUS port Failed : >> {port_name} << !!")
+      return
     self.get_logger().info("SBUS Receiver connected.")
 
     while rclpy.ok():

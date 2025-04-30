@@ -2,7 +2,7 @@
   <include file="JellyFish.xml"/>
 
   <!-- <option ortho="true"/> -->
-  <statistic center="0 0 0.1" extent="0.6" meansize=".05"/>
+  <!-- <statistic center="0 0 0.1" extent="0.6" meansize=".05"/> -->
 
   <visual>
     <headlight diffuse="0.6 0.6 0.6" ambient="0.1 0.1 0.1" specular="0 0 0"/>

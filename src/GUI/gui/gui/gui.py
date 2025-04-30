@@ -10,6 +10,7 @@ import pyqtgraph as pg
 
 from controller_interfaces.msg import ControllerDebugVal
 from allocator_interfaces.msg import AllocatorDebugVal
+from mujoco_interfaces.msg import MujocoState
 from math import pi
 
 class GUI_NODE(Node):
@@ -20,6 +21,7 @@ class GUI_NODE(Node):
         # Subscription
         self.controller_sub = self.create_subscription(ControllerDebugVal, '/controller_info', self.controller_callback, 1)
         self.allocator_sub = self.create_subscription(AllocatorDebugVal, '/allocator_info', self.allocator_callback, 1)
+        self.mujoco_sub = self.create_subscription(MujocoState, '/mujoco_state', self.mujoco_callback, 1)
 
     def controller_callback(self, msg):
         self.gui.controller_update_signal.emit(msg)
@@ -27,15 +29,20 @@ class GUI_NODE(Node):
     def allocator_callback(self, msg):
         self.gui.allocator_update_signal.emit(msg)
 
+    def mujoco_callback(self, msg):
+        self.gui.mujoco_update_signal.emit(msg)
+
 class DebugGUI(QWidget):
     controller_update_signal = pyqtSignal(ControllerDebugVal)
     allocator_update_signal = pyqtSignal(AllocatorDebugVal)
+    mujoco_update_signal = pyqtSignal(MujocoState)
 
     def __init__(self, node):
         super().__init__()
         self.node = node
         self.controller_update_signal.connect(self.controller_update)
         self.allocator_update_signal.connect(self.allocator_update)
+        self.mujoco_update_signal.connect(self.mujoco_update)
 
         self.setWindowTitle("jFish Debugger")
         self.setGeometry(100, 100, 100, 100)
@@ -88,6 +95,10 @@ class DebugGUI(QWidget):
             "a2_mea": [0.0, 0.0, 0.0, 0.0, 0.0],
             "a3_mea": [0.0, 0.0, 0.0, 0.0, 0.0],
             "a4_mea": [0.0, 0.0, 0.0, 0.0, 0.0],
+            "loop_rate": 0.0
+        }
+
+        self.mujoco_data = {
             "loop_rate": 0.0
         }
 
@@ -224,7 +235,7 @@ class DebugGUI(QWidget):
         nodestate_group_box = QGroupBox("Control Hz")
         joint_layout = QVBoxLayout()
 
-        nodes = [" Allocator"]
+        nodes = [" Allocator", "MuJoCo"]
         for node in nodes:
             q_label = QLabel(node)
             q_label.setFixedHeight(60)
@@ -477,6 +488,9 @@ class DebugGUI(QWidget):
         self.allocator_data["a4_mea"] = msg.a4_mea / pi * 180
         self.allocator_data["loop_rate"] = msg.loop_rate
 
+    def mujoco_update(self, msg):
+        self.mujoco_data["loop_rate"] = msg.hz
+
     def update_gui(self):
         # Update SBUS channel values
         for i, val in enumerate(self.cmd_vals):
@@ -535,12 +549,14 @@ class DebugGUI(QWidget):
                 value.setText(f"{imu_data[j]:.3f}")
 
         # Update Opti measurements
-        for i, opti_data in enumerate([self.controller_data['opti_x'], self.controller_data['opti_y'], -self.controller_data['opti_z']]):
+        neg_z = [-z for z in self.controller_data['opti_z']]
+        for i, opti_data in enumerate([self.controller_data['opti_x'], self.controller_data['opti_y'], neg_z]):
             for j, value in enumerate(self.opti_meas[i]):
                 value.setText(f"{opti_data[j]:.3f}")
 
         # Update node states
-        self.node_states[0].setText(f"{int(self.allocator_data['loop_rate'])}")  # Controller loop rate
+        self.node_states[0].setText(f"{int(self.allocator_data['loop_rate'])}")  # Allocator loop rate
+        self.node_states[1].setText(f"{ int(self.mujoco_data['loop_rate'])}")  # MuJoCo loop rate
 
         # Update plots
         for i in range(4):

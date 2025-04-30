@@ -13,6 +13,7 @@ find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
 set(msg_files
   "msg/MotorThrust.msg"
   "msg/MuJoCoMeas.msg"
+  "msg/MujocoState.msg"
 )
 
 # Generate interfaces

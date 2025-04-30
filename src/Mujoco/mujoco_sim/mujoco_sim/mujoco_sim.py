@@ -2,13 +2,15 @@ import os
 from ament_index_python.packages import get_package_share_directory
 import rclpy
 from rclpy.node import Node
-from mujoco_interfaces.msg import MotorThrust, MuJoCoMeas
+from mujoco_interfaces.msg import MotorThrust, MuJoCoMeas, MujocoState
 from dynamixel_interfaces.msg import JointVal
 
 import mujoco
 import mujoco.viewer
 from rclpy.executors import SingleThreadedExecutor
 import threading
+import time
+from collections import deque
 
 class MuJoCoSimulatorNode(Node):
     def __init__(self, executor):
@@ -25,23 +27,37 @@ class MuJoCoSimulatorNode(Node):
         # Initialize motor thrust and moments
         self.motor_thrusts = [0.0, 0.0, 0.0, 0.0]
         self.motor_moments = [0.0, 0.0, 0.0, 0.0]
-        self.a1_des = [0.0, 0.0, 0.0, 0.0, 0.0]
-        self.a2_des = [0.0, 0.0, 0.0, 0.0, 0.0]
-        self.a3_des = [0.0, 0.0, 0.0, 0.0, 0.0]
-        self.a4_des = [0.0, 0.0, 0.0, 0.0, 0.0]
-
-        # Publisher & Subscriber setup
-        self.create_subscription(MotorThrust, '/motor_write', self.motor_thrust_callback, 1)
-        self.create_subscription(JointVal, '/joint_write', self.joint_arm_callback, 1)
-        self.mujoco_meas_publisher = self.create_publisher(MuJoCoMeas, '/mujoco_meas', 1)
+        self.a1_des = [0.0, -0.84522, 1.50944, 0.90812, 0.0]
+        self.a2_des = [0.0, -0.84522, 1.50944, 0.90812, 0.0]
+        self.a3_des = [0.0, -0.84522, 1.50944, 0.90812, 0.0]
+        self.a4_des = [0.0, -0.84522, 1.50944, 0.90812, 0.0]
 
         # Timer to run the simulation at 1ms intervals
+        self._sim_times = deque(maxlen=1200)
+        now = time.monotonic()
+        self._sim_times.append(now)
         self.timer = self.create_timer(0.001, self.run_simulation)  # 1ms interval (1kHz)
 
         # Start MuJoCo viewer in a separate thread
         self.viewer_thread = threading.Thread(target=self.run_viewer, daemon=True)
         self.data_lock = threading.Lock()
         self.viewer_thread.start()
+
+        # publishers
+        self.mujoco_meas_publisher = self.create_publisher(MuJoCoMeas, '/mujoco_meas', 1)
+        self.mujoco_state_publisher = self.create_publisher(MujocoState, '/mujoco_state', 1)
+
+        # Timer to publish /mujoco_state
+        self.create_timer(0.1, self.publish_mujoco_state)
+
+        # Start Subscriber after some delay
+        self._delayed_timer = self.create_timer(3.0, self._start_sub)
+
+    def _start_sub(self):
+        self._delayed_timer.cancel()
+        
+        self.create_subscription(MotorThrust, '/motor_write', self.motor_thrust_callback, 1)
+        self.create_subscription(JointVal, '/joint_write', self.joint_arm_callback, 1)
 
     def motor_thrust_callback(self, msg: MotorThrust):
         self.motor_thrusts = msg.force
@@ -54,6 +70,12 @@ class MuJoCoSimulatorNode(Node):
         self.a4_des = msg.a4_des
 
     def run_simulation(self):
+        now = time.monotonic()
+        self._sim_times.append(now)
+        
+        cutoff = now - 1.0
+        while self._sim_times and self._sim_times[0] < cutoff: self._sim_times.popleft()
+
         # Set control inputs for MuJoCo
         with self.data_lock:
             self.data.ctrl[0:4] = self.motor_thrusts
@@ -88,8 +110,7 @@ class MuJoCoSimulatorNode(Node):
         acc = self.data.qacc[:3]
 
         # --- Joint slices based on XML ordering ---
-        #   free joint (7 DOF) → Arm3_joint1..5 → Arm2_joint1..5 → Arm1_joint1..5 → Arm4_joint1..5
-        base_offset    = 7           # free joint 다음 qpos 인덱스
+        base_offset    = 7
         joints_per_arm = 5
 
         # Arm3 joints are qpos[7:12]
@@ -115,6 +136,13 @@ class MuJoCoSimulatorNode(Node):
             a4_q = a4_q
         )
         self.mujoco_meas_publisher.publish(msg)
+
+    def publish_mujoco_state(self):
+        measured_hz = len(self._sim_times) / (self._sim_times[-1] - self._sim_times[0])
+        msg = MujocoState()
+        msg.hz = measured_hz
+        self.mujoco_state_publisher.publish(msg)
+
 
 def main(args=None):
     rclpy.init(args=args)
