@@ -20,7 +20,7 @@ TeensyNode::TeensyNode() : Node("teensy_node") {
   this->get_parameter("mode", mode);
 
   if (mode == "real"){
-    allocator_subscription_ = this->create_subscription<allocator_interfaces::msg::PwmVal>("motor_cmd", 1, std::bind(&TeensyNode::allocatorCallback_teensy, this, std::placeholders::_1));
+    allocator_subscription_ = this->create_subscription<allocator_interfaces::msg::PwmVal>("motor_cmd", 1, std::bind(&TeensyNode::allocatorCallback_CAN_send, this, std::placeholders::_1));
 
     // Create RAW socket for SocketCAN.
     sock_ = socket(PF_CAN, SOCK_RAW, CAN_RAW);
@@ -45,7 +45,7 @@ TeensyNode::TeensyNode() : Node("teensy_node") {
     }
   }
   else if (mode == "sim"){
-    allocator_subscription_ = this->create_subscription<allocator_interfaces::msg::PwmVal>("motor_cmd", 1, std::bind(&TeensyNode::allocatorCallback_mujoco, this, std::placeholders::_1));
+    allocator_subscription_ = this->create_subscription<allocator_interfaces::msg::PwmVal>("motor_cmd", 1, std::bind(&TeensyNode::allocatorCallback_MUJ_send, this, std::placeholders::_1));
     mujoco_publisher_ = this->create_publisher<mujoco_interfaces::msg::MotorThrust>("motor_write", 1);
 
     // Create RAW socket for SocketCAN.
@@ -78,7 +78,7 @@ TeensyNode::TeensyNode() : Node("teensy_node") {
 }
 
 /* for real */
-void TeensyNode::allocatorCallback_teensy(const allocator_interfaces::msg::PwmVal::SharedPtr msg) {
+void TeensyNode::allocatorCallback_CAN_send(const allocator_interfaces::msg::PwmVal::SharedPtr msg) {
   // Create CAN frame structure and set CAN ID and DLC.
   struct can_frame frame;
   frame.can_id = 0x123; // Set CAN ID.
@@ -105,15 +105,14 @@ void TeensyNode::allocatorCallback_teensy(const allocator_interfaces::msg::PwmVa
 }
 
 /* for sim */
-void TeensyNode::allocatorCallback_mujoco(const allocator_interfaces::msg::PwmVal::SharedPtr msg) {
+void TeensyNode::allocatorCallback_MUJ_send(const allocator_interfaces::msg::PwmVal::SharedPtr msg) {
   // first, apply 3ms time-delay
   rclcpp::Time now_time = this->now();
 
   // Push the new data into the buffer
   DelayedData new_data;
   new_data.stamp = now_time;
-  new_data.w[0] = msg->w[0]; new_data.w[1] = msg->w[1]; new_data.w[2] = msg->w[2]; new_data.w[3] = msg->w[3];
-
+  new_data.pwm_val[0] = msg->pwm1; new_data.pwm_val[1] = msg->pwm2; new_data.pwm_val[2] = msg->pwm3; new_data.pwm_val[3] = msg->pwm4;
   data_buffer_.push_back(new_data);
 
   // Remove older data that is no longer needed to reduce memory usage (older than 10ms)
@@ -124,11 +123,28 @@ void TeensyNode::allocatorCallback_mujoco(const allocator_interfaces::msg::PwmVa
     else { break; }
   }
 
+  // Determine the target time: current time minus the desired delay
+  rclcpp::Time target_time = this->now() - delay_;
+
+  // Search backwards (from newest to oldest) to find the first sample with stamp <= target_time
+  DelayedData delayed_data;
+  bool found = false;
+
+  for (auto it = data_buffer_.rbegin(); it != data_buffer_.rend(); ++it) {
+    if (it->stamp <= target_time) {
+      delayed_data = *it;
+      found = true;
+      break;
+    }
+  }
+
+  if (!found) { return; }
+
   // pwm LPF
-  pwm1_ = LPF_alpha_ * msg->pwm1 + LPF_beta_ * pwm1_;
-  pwm2_ = LPF_alpha_ * msg->pwm2 + LPF_beta_ * pwm2_;
-  pwm3_ = LPF_alpha_ * msg->pwm3 + LPF_beta_ * pwm3_;
-  pwm4_ = LPF_alpha_ * msg->pwm4 + LPF_beta_ * pwm4_;
+  pwm1_ = LPF_alpha_ * delayed_data.pwm_val[0] + LPF_beta_ * pwm1_;
+  pwm2_ = LPF_alpha_ * delayed_data.pwm_val[1] + LPF_beta_ * pwm2_;
+  pwm3_ = LPF_alpha_ * delayed_data.pwm_val[2] + LPF_beta_ * pwm3_;
+  pwm4_ = LPF_alpha_ * delayed_data.pwm_val[3] + LPF_beta_ * pwm4_;
 
   // 1. PWM to RPM
   auto compute_rpm = [&](double pwm) -> double {
@@ -167,37 +183,7 @@ void TeensyNode::allocatorCallback_mujoco(const allocator_interfaces::msg::PwmVa
   wrench.force[0] = f1_; wrench.force[1] = f2_; wrench.force[2] = f3_; wrench.force[3] = f4_;
   wrench.moment[0] = m1_; wrench.moment[1] = m2_; wrench.moment[2] = m3_; wrench.moment[3] = m4_;
   
-  mujoco_publisher_->publish(wrench);
-
-
-
-  // Create CAN frame structure and set CAN ID and DLC.
-  struct can_frame frame;
-  frame.can_id = 0x123; // Set CAN ID.
-  frame.can_dlc = 8;    // 4 channels of 16-bit data → total 8 bytes.
-
-  // Mapping: input 0 -> 16383, input 1 -> 32767.
-  uint16_t mapped1 = static_cast<uint16_t>(msg->pwm1 * 16384.) + 16383;
-  uint16_t mapped2 = static_cast<uint16_t>(msg->pwm2 * 16384.) + 16383;
-  uint16_t mapped3 = static_cast<uint16_t>(msg->pwm3 * 16384.) + 16383;
-  uint16_t mapped4 = static_cast<uint16_t>(msg->pwm4 * 16384.) + 16383;
-
-  // Split 16-bit values into 2 bytes each and pack them into the CAN frame.
-  frame.data[0] = (mapped1 >> 8) & 0xFF;
-  frame.data[1] = mapped1 & 0xFF;
-  frame.data[2] = (mapped2 >> 8) & 0xFF;
-  frame.data[3] = mapped2 & 0xFF;
-  frame.data[4] = (mapped3 >> 8) & 0xFF;
-  frame.data[5] = mapped3 & 0xFF;
-  frame.data[6] = (mapped4 >> 8) & 0xFF;
-  frame.data[7] = mapped4 & 0xFF;
-  
-  int nbytes = write(sock_, &frame, sizeof(frame));
-  if (nbytes != sizeof(frame)) {can_err_cnt++;}
-
-
-
-  
+  mujoco_publisher_->publish(wrench);  
 }
 
 /* for both */

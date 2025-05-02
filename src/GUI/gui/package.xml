@@ -9,6 +9,7 @@
   <depend>rclpy</depend>
   <depend>controller_interfaces</depend>
   <depend>allocator_interfaces</depend>
+  <depend>mujoco_interfaces</depend>
 
   <export>
     <build_type>ament_python</build_type>

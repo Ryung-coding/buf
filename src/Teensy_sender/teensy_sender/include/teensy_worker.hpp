@@ -13,10 +13,12 @@
 #include <linux/can.h>
 #include <net/if.h>
 
+#include <deque>
+
 struct DelayedData
 {
   rclcpp::Time stamp;
-  std::array<double, 4> w; // f, Mx, My, Mz
+  std::array<double, 4> pwm_val; // pwm1, pwm2, pwm3, pwm4
 };
 
 class TeensyNode : public rclcpp::Node {
@@ -26,8 +28,8 @@ public:
 
 private:
   // Callback to handle received PwmVal messages
-  void allocatorCallback_teensy(const allocator_interfaces::msg::PwmVal::SharedPtr msg);
-  void allocatorCallback_mujoco(const allocator_interfaces::msg::PwmVal::SharedPtr msg);
+  void allocatorCallback_CAN_send(const allocator_interfaces::msg::PwmVal::SharedPtr msg);
+  void allocatorCallback_MUJ_send(const allocator_interfaces::msg::PwmVal::SharedPtr msg);
   void KillCmdCallback(const sbus_interfaces::msg::KillCmd::SharedPtr msg);
   void watchdogCallback(const watchdog_interfaces::msg::NodeState::SharedPtr msg);
 
@@ -48,7 +50,7 @@ private:
   const double K1_ = 8568.19;
   const double b_ = 331.7;
   const double n_pwm_ = 0.67;
-  const double C_T_ = 2.6242 / 1000000.0;
+  const double C_T_ = 2.5 / 1000000.0;
   const double n_thrust_ = 1.8555;
   const double C1_tau_ = 1.5958 / 100000000.0;
   const double C2_tau_ = 0.0;
@@ -58,7 +60,7 @@ private:
   std::deque<DelayedData> data_buffer_;
 
   // Duration representing 3ms delay (3,000,000ns)
-  rclcpp::Duration delay_{0, 3000000};
+  rclcpp::Duration delay_{0, 1000000};
 
   // Latest PWM values
   double pwm1_ = 0.0; // [0, 1]
