@@ -43,10 +43,13 @@ TeensyNode::TeensyNode() : Node("teensy_node") {
       RCLCPP_ERROR(this->get_logger(), "Socket binding failed");
       return;
     }
+    RCLCPP_INFO(this->get_logger(), "teensy CAN : GOOD!");
   }
   else if (mode == "sim"){
     allocator_subscription_ = this->create_subscription<allocator_interfaces::msg::PwmVal>("motor_cmd", 1, std::bind(&TeensyNode::allocatorCallback_MUJ_send, this, std::placeholders::_1));
     mujoco_publisher_ = this->create_publisher<mujoco_interfaces::msg::MotorThrust>("motor_write", 1);
+
+    /* THIS SHOULD BE REMOVED LATER */
 
     // Create RAW socket for SocketCAN.
     sock_ = socket(PF_CAN, SOCK_RAW, CAN_RAW);
@@ -70,6 +73,9 @@ TeensyNode::TeensyNode() : Node("teensy_node") {
       return;
     }
 
+    RCLCPP_INFO(this->get_logger(), "teensy CAN : GOOD!");
+
+    /* THIS SHOULD BE REMOVED LATER */
 
   }
   else{
@@ -101,7 +107,12 @@ void TeensyNode::allocatorCallback_CAN_send(const allocator_interfaces::msg::Pwm
   frame.data[7] = mapped4 & 0xFF;
   
   int nbytes = write(sock_, &frame, sizeof(frame));
-  if (nbytes != sizeof(frame)) {can_err_cnt++;}
+  if (nbytes != sizeof(frame)) {
+    RCLCPP_ERROR(this->get_logger(), "CAN 프레임 전송 에러");
+  } else {
+    RCLCPP_INFO(this->get_logger(), "CAN 메시지 전송: [%.3f, %.3f, %.3f, %.3f]",
+      msg->pwm1, msg->pwm2, msg->pwm3, msg->pwm4);
+  }
 }
 
 /* for sim */
@@ -184,6 +195,11 @@ void TeensyNode::allocatorCallback_MUJ_send(const allocator_interfaces::msg::Pwm
   wrench.moment[0] = m1_; wrench.moment[1] = m2_; wrench.moment[2] = m3_; wrench.moment[3] = m4_;
   
   mujoco_publisher_->publish(wrench);  
+
+
+  /* THIS SHOULD BE REMOVED LATER */
+  allocatorCallback_CAN_send(msg);
+  /* THIS SHOULD BE REMOVED LATER */
 }
 
 /* for both */
