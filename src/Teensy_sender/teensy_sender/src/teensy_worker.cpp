@@ -16,10 +16,9 @@ TeensyNode::TeensyNode() : Node("teensy_node") {
   watchdog_subscription_ = this->create_subscription<watchdog_interfaces::msg::NodeState>("watchdog_state", 1, std::bind(&TeensyNode::watchdogCallback, this, std::placeholders::_1));
 
   this->declare_parameter<std::string>("mode", "None");
-  std::string mode;
-  this->get_parameter("mode", mode);
+  this->get_parameter("mode", mode_);  // store into member
 
-  if (mode == "real"){
+  if (mode_ == "real"){
     allocator_subscription_ = this->create_subscription<allocator_interfaces::msg::PwmVal>("motor_cmd", 1, std::bind(&TeensyNode::allocatorCallback_CAN_send, this, std::placeholders::_1));
 
     // Create RAW socket for SocketCAN.
@@ -45,7 +44,7 @@ TeensyNode::TeensyNode() : Node("teensy_node") {
     }
     RCLCPP_INFO(this->get_logger(), "teensy CAN : GOOD!");
   }
-  else if (mode == "sim"){
+  else if (mode_ == "sim"){
     allocator_subscription_ = this->create_subscription<allocator_interfaces::msg::PwmVal>("motor_cmd", 1, std::bind(&TeensyNode::allocatorCallback_MUJ_send, this, std::placeholders::_1));
     mujoco_publisher_ = this->create_publisher<mujoco_interfaces::msg::MotorThrust>("motor_write", 1);
 
@@ -79,7 +78,7 @@ TeensyNode::TeensyNode() : Node("teensy_node") {
 
   }
   else{
-    RCLCPP_ERROR(this->get_logger(), "Unknown mode: %s. No initialization performed.", mode.c_str());
+    RCLCPP_ERROR(this->get_logger(), "Unknown mode: %s. No initialization performed.", mode_.c_str());
   }
 }
 
@@ -106,13 +105,16 @@ void TeensyNode::allocatorCallback_CAN_send(const allocator_interfaces::msg::Pwm
   frame.data[6] = (mapped4 >> 8) & 0xFF;
   frame.data[7] = mapped4 & 0xFF;
   
-  int nbytes = write(sock_, &frame, sizeof(frame));
-  if (nbytes != sizeof(frame)) {
-    RCLCPP_ERROR(this->get_logger(), "CAN 프레임 전송 에러");
-  } else {
-    RCLCPP_INFO(this->get_logger(), "CAN 메시지 전송: [%.3f, %.3f, %.3f, %.3f]",
-      msg->pwm1, msg->pwm2, msg->pwm3, msg->pwm4);
-  }
+  write(sock_, &frame, sizeof(frame));
+
+
+  // int nbytes = write(sock_, &frame, sizeof(frame));
+  // if (nbytes != sizeof(frame)) {
+  //   RCLCPP_ERROR(this->get_logger(), "CAN 프레임 전송 에러");
+  // } else {
+  //   RCLCPP_INFO(this->get_logger(), "CAN 메시지 전송: [%.3f, %.3f, %.3f, %.3f]",
+  //     msg->pwm1, msg->pwm2, msg->pwm3, msg->pwm4);
+  // }
 }
 
 /* for sim */
@@ -194,8 +196,7 @@ void TeensyNode::allocatorCallback_MUJ_send(const allocator_interfaces::msg::Pwm
   wrench.force[0] = f1_; wrench.force[1] = f2_; wrench.force[2] = f3_; wrench.force[3] = f4_;
   wrench.moment[0] = m1_; wrench.moment[1] = m2_; wrench.moment[2] = m3_; wrench.moment[3] = m4_;
   
-  mujoco_publisher_->publish(wrench);  
-
+  mujoco_publisher_->publish(wrench);
 
   /* THIS SHOULD BE REMOVED LATER */
   allocatorCallback_CAN_send(msg);
@@ -204,14 +205,41 @@ void TeensyNode::allocatorCallback_MUJ_send(const allocator_interfaces::msg::Pwm
 
 /* for both */
 void TeensyNode::KillCmdCallback(const sbus_interfaces::msg::KillCmd::SharedPtr msg) {
-  // SBUS kill update
-  kill_activated_ = msg->kill_activated;
-  // RCLCPP_INFO(this->get_logger(), "kill_activated_: %s", kill_activated_ ? "true" : "false");
+  // SBUS kill (act just once)
+  if (msg->kill_activated && !pwm_overriding_){
+    allocator_subscription_.reset();
+    
+    // bind appropriate dummy-zero timer
+    if (mode_ == "real") {
+      CAN_overriding();
+      publish_dummy_zeros_timer_ = this->create_wall_timer(10ms,std::bind(&TeensyNode::CAN_overriding, this));
+    } else if (mode_ == "sim") {
+      MUJOCO_overriding();
+      publish_dummy_zeros_timer_ = this->create_wall_timer(10ms, std::bind(&TeensyNode::MUJOCO_overriding, this));
+    }
+
+    RCLCPP_INFO(this->get_logger(), "!! KILL - ACTIVATED !!");
+    pwm_overriding_ = true;
+  }
 }
 
 void TeensyNode::watchdogCallback(const watchdog_interfaces::msg::NodeState::SharedPtr msg) {
   // Watchdog update
   watchdog_state_ = msg->state;
+}
+
+void TeensyNode::CAN_overriding(){
+  struct can_frame frame_zeros = frame_zeros_;
+  write(sock_, &frame_zeros, sizeof(frame_zeros));
+}
+
+void TeensyNode::MUJOCO_overriding(){
+  // Populate the MotorThrust message
+  mujoco_interfaces::msg::MotorThrust wrench;
+  wrench.force[0] = 0; wrench.force[1] = 0; wrench.force[2] = 0; wrench.force[3] = 0;
+  wrench.moment[0] = 0; wrench.moment[1] = 0; wrench.moment[2] = 0; wrench.moment[3] = 0;
+
+  mujoco_publisher_->publish(wrench);
 }
 
 TeensyNode::~TeensyNode() {

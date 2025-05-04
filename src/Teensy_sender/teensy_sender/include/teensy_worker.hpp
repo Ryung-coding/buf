@@ -33,6 +33,9 @@ private:
   void KillCmdCallback(const sbus_interfaces::msg::KillCmd::SharedPtr msg);
   void watchdogCallback(const watchdog_interfaces::msg::NodeState::SharedPtr msg);
 
+  void CAN_overriding();
+  void MUJOCO_overriding();
+
   // ROS2 subscriber for pwm_val topic
   rclcpp::Subscription<allocator_interfaces::msg::PwmVal>::SharedPtr allocator_subscription_;
   rclcpp::Subscription<sbus_interfaces::msg::KillCmd>::SharedPtr killcmd_subscription_;
@@ -40,6 +43,12 @@ private:
 
   // ROS2 publisher for mujoco
   rclcpp::Publisher<mujoco_interfaces::msg::MotorThrust>::SharedPtr mujoco_publisher_;
+
+  // Timers
+  rclcpp::TimerBase::SharedPtr publish_dummy_zeros_timer_;
+
+  // mode parameter ("real" or "sim")
+  std::string mode_;
 
   int sock_ = 0;              // SocketCAN socket file descriptor.
   struct sockaddr_can addr_;  // CAN interface address structure.
@@ -86,10 +95,26 @@ private:
   double m3_ = 0.0; // [Nm]
   double m4_ = 0.0; // [Nm]
 
+  // Precomputed CAN frame for zero PWM (mapped to 16383 -> 0x3FFF)
+  // High byte = 63 (0x3F), Low byte = 255 (0xFF)
+  inline static constexpr struct can_frame frame_zeros_ = {
+    0x123,    // can_id
+    8,        // can_dlc (4 channels × 2 bytes)
+    0,        // __pad (must be zero)
+    0,        // __res0 (must be zero)
+    0,        // __res1 
+    {         // data payload: 0x3FFF → {0x3F, 0xFF} 반복
+      63, 255,  // channel1 high/low
+      63, 255,  // channel2
+      63, 255,  // channel3
+      63, 255   // channel4
+    }
+  };
+
   // Watchdog state
   uint16_t can_err_cnt = 0;
   uint8_t watchdog_state_ = 1; // default(normal) is 1.
-  bool kill_activated_ = false;
+  bool pwm_overriding_ = false;
 };
 
 #endif // TEENSY_WORKER_HPP

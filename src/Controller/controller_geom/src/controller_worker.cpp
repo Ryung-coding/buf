@@ -116,7 +116,7 @@ void ControllerNode::imuCallback(const imu_interfaces::msg::ImuMeasured::SharedP
   state_->R(2,2) = 1.0 - 2.0 * (xx + yy);
 
   // gyro
-  state_->W << msg->w[0], msg->w[1], -msg->w[2];
+  state_->W << msg->w[0], msg->w[1], msg->w[2];
   roll_[1] = msg->w[0]; pitch_[1] = msg->w[1]; yaw_[1] = msg->w[2];
 
   // ZYX Tait–Bryan angles

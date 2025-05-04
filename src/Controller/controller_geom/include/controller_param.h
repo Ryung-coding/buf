@@ -37,7 +37,7 @@ inline ControlParameters getControlParameters() {
   param.kX << 20.0, 20.0, 20.0;
   param.kV << 9.0, 9.0, 10.0;
   param.kR << 5.0, 5.0, 2.0;
-  param.kW << 4, 4, -4; // why this gain should be (-)??
+  param.kW << 4, 4, 4;
   return param;
 }
 

@@ -16,9 +16,9 @@ class SbusNode(Node):
     super().__init__('sbus_node')
 
     # Publisher for SBUS node
-    self.channel_publisher_ = self.create_publisher(SbusSignal, 'sbus_signal', 1)
-    self.killcmd_publisher_ = self.create_publisher(KillCmd, 'sbus_kill', 1)
-    self.heartbeat_publisher_ = self.create_publisher(NodeState, 'sbus_state', 1)
+    self.channel_publisher_ = self.create_publisher(SbusSignal, '/sbus_signal', 1)
+    self.killcmd_publisher_ = self.create_publisher(KillCmd, '/sbus_kill', 1)
+    self.heartbeat_publisher_ = self.create_publisher(NodeState, '/sbus_state', 1)
     
     # Create a new event loop for asyncio and run it on a separate thread
     self.loop = asyncio.new_event_loop()
@@ -53,13 +53,20 @@ class SbusNode(Node):
       # Log the received channels and failsafe status
       # self.get_logger().info(f"Received channels: {channels}, Failsafe status: {failsafe_status}")
 
-      # Create and populate the SbusSignal message
-      msg = SbusSignal()
-      msg.ch = channels
-      msg.sbus_signal = failsafe_status
+      # Create and populate the SbusSignal&KillCmd message
+      msg_channels = SbusSignal()
+      msg_channels.ch = channels
+      msg_channels.sbus_signal = failsafe_status
+
+      msg_kill = KillCmd()
+      if (channels[9]==352 and failsafe_status==0):
+        msg_kill._kill_activated = False
+      else:
+        msg_kill._kill_activated = True
 
       # Publish
-      self.channel_publisher_.publish(msg)
+      self.killcmd_publisher_.publish(msg_kill)
+      self.channel_publisher_.publish(msg_channels)
 
 def main(args=None):
   rclpy.init(args=args)
