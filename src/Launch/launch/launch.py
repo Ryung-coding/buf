@@ -116,7 +116,7 @@ def generate_launch_description():
         OnProcessStart(
             target_action=nodes[-1],
             on_start=[
-                LogInfo(msg="\n\n\n\n\n >> 'Let's ROLL.' <<\n")
+                LogInfo(msg="\n\n\n\n\n >>   'Let's roll.'  <<\n")
             ],
         )
     )
@@ -124,7 +124,7 @@ def generate_launch_description():
     shutdown_handler = RegisterEventHandler(
         OnShutdown(
             on_shutdown=[
-                LogInfo(msg="closing all nodes..\n\n\n\n\n")
+                LogInfo(msg="\n\n >> 'Close all nodes' <<\n\n\n\n")
             ]
         )
     )
