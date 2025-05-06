@@ -12,6 +12,8 @@ import threading
 import time
 from collections import deque
 
+import signal
+
 class MuJoCoSimulatorNode(Node):
     def __init__(self, executor):
         super().__init__('mujoco_node')
@@ -98,8 +100,7 @@ class MuJoCoSimulatorNode(Node):
                 with self.data_lock:
                     viewer.sync()  # Sync the viewer to the current simulation state
 
-        # Viewer has been closed, trigger shutdown
-        self.executor.shutdown()
+        if rclpy.ok(): rclpy.shutdown()
 
     def publish_mujoco_meas(self):
         # Extract state information
@@ -149,15 +150,16 @@ def main(args=None):
     executor = SingleThreadedExecutor()
     node = MuJoCoSimulatorNode(executor)
 
+    signal.signal(signal.SIGINT, signal.default_int_handler)
+
+    executor.add_node(node)
     try:
-        executor.add_node(node)
         executor.spin()
     except KeyboardInterrupt:
         pass
     finally:
-        if rclpy.ok():
-            node.destroy_node()
-            rclpy.shutdown()
+        node.destroy_node()
+        if rclpy.ok(): rclpy.shutdown()
 
 if __name__ == '__main__':
     main()
