@@ -1,8 +1,12 @@
+import os
+os.environ['RCUTILS_CONSOLE_OUTPUT_FORMAT'] = '{message}'
+
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, OpaqueFunction
+from launch.actions import DeclareLaunchArgument, OpaqueFunction, RegisterEventHandler, LogInfo
 from launch.substitutions import LaunchConfiguration, PythonExpression
 from launch_ros.actions import Node
 from launch.conditions import IfCondition
+from launch.event_handlers import OnProcessStart, OnShutdown
 
 def validate_mode(context, *args, **kwargs):
     # Retrieve the mode value from the launch configuration
@@ -107,8 +111,28 @@ def generate_launch_description():
         ),
     ]
 
+    # --- Event handler: print info log when last node starts ---
+    on_start_info = RegisterEventHandler(
+        OnProcessStart(
+            target_action=nodes[-1],
+            on_start=[
+                LogInfo(msg="\n\n\n\n\n >> 'Let's ROLL.' <<\n")
+            ],
+        )
+    )
+
+    shutdown_handler = RegisterEventHandler(
+        OnShutdown(
+            on_shutdown=[
+                LogInfo(msg="closing all nodes..\n\n\n\n\n")
+            ]
+        )
+    )
+
     return LaunchDescription([
         mode_arg,
         OpaqueFunction(function=validate_mode),
         *nodes,
+        on_start_info,
+        shutdown_handler,
     ])

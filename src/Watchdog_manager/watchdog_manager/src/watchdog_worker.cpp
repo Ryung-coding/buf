@@ -8,43 +8,43 @@ WatchDogNode::WatchDogNode() : Node("watchdog_node") {
 
     // SBUS subscription
     sbus_subscription_ = this->create_subscription<watchdog_interfaces::msg::NodeState>(
-        "sbus_state", 10,
+        "sbus_state", 1,
         std::bind(&WatchDogNode::sbusCallback, this, std::placeholders::_1)
     );
 
     // CONTROLLER subscription
     controller_subscription_ = this->create_subscription<watchdog_interfaces::msg::NodeState>(
-        "controller_state", 10,
+        "controller_state", 1,
         std::bind(&WatchDogNode::controllerCallback, this, std::placeholders::_1)
     );
 
     // ALLOCATOR subscription
     allocator_subscription_ = this->create_subscription<watchdog_interfaces::msg::NodeState>(
-        "allocator_state", 10,
+        "allocator_state", 1,
         std::bind(&WatchDogNode::allocatorCallback, this, std::placeholders::_1)
     );
 
     // DYNAMIXEL subscription
     dynamixel_subscription_ = this->create_subscription<watchdog_interfaces::msg::NodeState>(
-        "dynamixel_state", 10,
+        "dynamixel_state", 1,
         std::bind(&WatchDogNode::dynamixelCallback, this, std::placeholders::_1)
     );
 
     // IMU subscription
     imu_subscription_ = this->create_subscription<watchdog_interfaces::msg::NodeState>(
-        "imu_state", 10,
+        "imu_state", 1,
         std::bind(&WatchDogNode::imuCallback, this, std::placeholders::_1)
     );
 
     // OPTITRACK subscription
     optitrack_subscription_ = this->create_subscription<watchdog_interfaces::msg::NodeState>(
-        "optitrack_state", 10,
+        "optitrack_state", 1,
         std::bind(&WatchDogNode::optitrackCallback, this, std::placeholders::_1)
     );
 
     // publish
     watchdog_publisher_ = this->create_publisher<watchdog_interfaces::msg::NodeState>(
-        "watchdog_state", 10
+        "watchdog_state", 1
     );
 
     timer_ = this->create_wall_timer(
