@@ -13,6 +13,7 @@ from allocator_interfaces.msg import AllocatorDebugVal
 from mujoco_interfaces.msg import MujocoState
 from math import pi
 
+
 class GUI_NODE(Node):
     def __init__(self, gui):
         super().__init__('pid_debugger')
