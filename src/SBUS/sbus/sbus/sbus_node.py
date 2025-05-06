@@ -75,5 +75,9 @@ def main(args=None):
     rclpy.spin(node)  # Keep the node alive to process callbacks and publish messages
   except KeyboardInterrupt:
     pass
-  node.destroy_node()
-  rclpy.shutdown()
+  finally:
+    node.destroy_node()
+    if rclpy.ok(): rclpy.shutdown()
+
+    node.loop.call_soon_threadsafe(node.loop.stop)
+    node.thread.join()
