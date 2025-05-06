@@ -157,6 +157,9 @@ def main(args=None):
         executor.spin()
     except KeyboardInterrupt:
         pass
+    except RuntimeError as e:
+        if 'Unable to convert call argument to Python object' in str(e): pass
+        else: raise
     finally:
         node.destroy_node()
         if rclpy.ok(): rclpy.shutdown()
