@@ -160,7 +160,6 @@ void ControllerNode::controller_loop() {
   auto next_time = std::chrono::steady_clock::now() + period;
 
   while (rclcpp::ok() && thread_running_) {
-    rclcpp::spin_some(shared_from_this());
     controller_timer_callback();
     std::this_thread::sleep_until(next_time);
     next_time += period;
@@ -182,15 +181,7 @@ int main(int argc, char **argv) {
   rclcpp::init(argc, argv);
   auto node = std::make_shared<ControllerNode>();
 
-  // wait forever until signal (Ctrl+C)
-  rclcpp::on_shutdown([&]() {
-    RCLCPP_INFO(node->get_logger(), "Shutdown signal received");
-  });
-
-  while (rclcpp::ok()) {
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
-  }
-
+  rclcpp::spin(node);
   rclcpp::shutdown();
   return 0;
 }

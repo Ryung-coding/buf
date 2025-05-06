@@ -19,8 +19,6 @@
 #define Loop_us 500 // controller thread loop dt [us]
 
 constexpr double two_PI = 2.0 * M_PI;
-constexpr double minus_PI = -M_PI;
-inline constexpr double dt = Loop_us / 1000000.0; // [sec]
 
 class ControllerNode : public rclcpp::Node {
 public:
