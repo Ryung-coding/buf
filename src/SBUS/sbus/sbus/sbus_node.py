@@ -58,10 +58,15 @@ class SbusNode(Node):
       self.get_logger().error(f"!! SBUS port Failed : >> {port_name} << !!")
       return
     
-    # Only after SBUS is successfully connected, send initial handshake (42)
-    self._hb_state = 42
-    self._hb_enabled = True
-
+    # dip-just one sbus packet (for connection-check)
+    first_frame = await sbus.get_frame()
+    first_channels = first_frame.get_rx_channels()
+    fist_failsafe_status = first_frame.get_failsafe_status()
+    if first_channels[9] == 352 and fist_failsafe_status == 0:
+      # Only after SBUS is successfully connected, send initial handshake (42)
+      self._hb_state = 42
+      self._hb_enabled = True
+      
     while rclpy.ok():
       # Wait for the next SBUS frame from the queue
       frame = await sbus.get_frame()
