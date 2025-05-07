@@ -35,6 +35,10 @@ AllocatorWorker::AllocatorWorker() : Node("allocator_node") {
   dt_buffer_.resize(buffer_size_, nominal_dt);
   dt_sum_ = nominal_dt * buffer_size_;
   last_callback_time_ = this->now();
+
+  // initial handshake: immediately send 42 and enable subsequent heartbeat
+  hb_state_   = 42;
+  hb_enabled_ = true;
 }
 
 void AllocatorWorker::controllerCallback(const controller_interfaces::msg::ControllerOutput::SharedPtr msg) {
@@ -88,14 +92,15 @@ void AllocatorWorker::publishPwmVal() {
 }
 
 void AllocatorWorker::heartbeat_timer_callback() {
-  heartbeat_state_++;
+  // gate until handshake done
+  if (!hb_enabled_) {return;}
 
-  // Populate the NodeState message
   watchdog_interfaces::msg::NodeState state_msg;
-  state_msg.state = heartbeat_state_;
-
-  // Publish the sbus_state message
+  state_msg.state = hb_state_;
   heartbeat_publisher_->publish(state_msg);
+
+  // uint8 overflow wraps automatically
+  hb_state_ = static_cast<uint8_t>(hb_state_ + 1);
 }
 
 void AllocatorWorker::debugging_timer_callback() {

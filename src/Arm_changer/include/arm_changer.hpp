@@ -25,17 +25,19 @@ private:
   void watchdog_callback(const watchdog_interfaces::msg::NodeState::SharedPtr msg);
   void compute_ik(const double x, const double y, const double z, const Eigen::Vector3d &heading);
   void joint_callback();
+  void heartbeat_timer_callback();
 
-  // Publisher
+  // Publishers
   rclcpp::Publisher<dynamixel_interfaces::msg::JointVal>::SharedPtr joint_publisher_;
   rclcpp::Publisher<watchdog_interfaces::msg::NodeState>::SharedPtr heartbeat_publisher_;
 
-  // ROS2 subscriber for pwm_val topic
+  // Subscribers
   rclcpp::Subscription<sbus_interfaces::msg::KillCmd>::SharedPtr killcmd_subscription_;
   rclcpp::Subscription<sbus_interfaces::msg::SbusSignal>::SharedPtr sbus_subscription_;
 
-  // Timers for joint_cmd
+  // Timers
   rclcpp::TimerBase::SharedPtr joint_timer_;
+  rclcpp::TimerBase::SharedPtr heartbeat_timer_;
 
   // DH params
   const double a1_ = 134.;
@@ -61,6 +63,10 @@ private:
   double th5_ = 0.0;       // [rad]
 
   Eigen::VectorXd a1_q, a2_q, a3_q, a4_q;
+
+  // heartbeat state  
+  uint8_t  hb_state_;     // current heartbeat value
+  bool     hb_enabled_;   // gate flag
 
   // Watchdog state
   uint8_t watchdog_state_ = 1; // default(normal) is 1.

@@ -67,7 +67,9 @@ private:
   double y_[3] = {0.0, 0.0, 0.0}; // opti y [m, m/s, m/s^2]
   double z_[3] = {0.0, 0.0, 0.0}; // opti z [m, m/s, m/s^2]
 
-  uint8_t heartbeat_state_ = 0;
+  // heartbeat state  
+  uint8_t  hb_state_;     // current heartbeat value
+  bool     hb_enabled_;   // gate flag
 };
 
 #endif // CONTROLLER_WORKER_HPP

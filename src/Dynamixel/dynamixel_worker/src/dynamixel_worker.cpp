@@ -8,8 +8,7 @@ DynamixelNode::DynamixelNode(const std::string &device_name): Node("dynamixel_no
     portHandler_(nullptr),
     packetHandler_(nullptr),
     groupSyncWrite_(nullptr),
-    groupSyncRead_(nullptr),
-    heartbeat_state_(0)
+    groupSyncRead_(nullptr)
 {
   // Create ROS2 subscriber for joint values
   joint_val_subscriber_ = this->create_subscription<dynamixel_interfaces::msg::JointVal>("joint_cmd", 1, std::bind(&DynamixelNode::armchanger_callback, this, std::placeholders::_1));
@@ -21,8 +20,7 @@ DynamixelNode::DynamixelNode(const std::string &device_name): Node("dynamixel_no
   // Create timer for heartbeat
   heartbeat_timer_ = this->create_wall_timer(std::chrono::milliseconds(100), std::bind(&DynamixelNode::heartbeat_timer_callback, this));
 
-  // Mode = sim -> Pub/Sub with mujoco
-  // Mode = real -> Wirte/Read with dynamixel
+  // mode-specific init
   this->declare_parameter<std::string>("mode", "None");
   std::string mode;
   this->get_parameter("mode", mode);
@@ -66,7 +64,12 @@ DynamixelNode::DynamixelNode(const std::string &device_name): Node("dynamixel_no
   }
   else{
     RCLCPP_ERROR(this->get_logger(), "Unknown mode: %s. No initialization performed.", mode.c_str());
+    exit(1);
   }
+
+  // initial handshake: immediately send 42 and enable subsequent heartbeat
+  hb_state_   = 42;
+  hb_enabled_ = true;
 }
 
 /* for sim */
@@ -242,10 +245,15 @@ void DynamixelNode::armchanger_callback(const dynamixel_interfaces::msg::JointVa
 }
 
 void DynamixelNode::heartbeat_timer_callback() {
-  heartbeat_state_++;
+  // gate until handshake done
+  if (!hb_enabled_) {return;}
+
   watchdog_interfaces::msg::NodeState state_msg;
-  state_msg.state = heartbeat_state_;
+  state_msg.state = hb_state_;
   heartbeat_publisher_->publish(state_msg);
+
+  // uint8 overflow wraps automatically
+  hb_state_ = static_cast<uint8_t>(hb_state_ + 1);
 }
   
 DynamixelNode::~DynamixelNode() {

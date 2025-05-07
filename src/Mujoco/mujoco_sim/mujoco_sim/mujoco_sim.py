@@ -55,6 +55,8 @@ class MuJoCoSimulatorNode(Node):
         # Start Subscriber after some delay
         self._delayed_timer = self.create_timer(3.0, self._start_sub)
 
+        self.get_logger().info("\n\n")
+
     def _start_sub(self):
         self._delayed_timer.cancel()
         

@@ -41,6 +41,10 @@ private:
   rclcpp::TimerBase::SharedPtr heartbeat_timer_;
   rclcpp::TimerBase::SharedPtr debugging_timer_;
 
+  // heartbeat state  
+  uint8_t  hb_state_;     // current heartbeat value
+  bool     hb_enabled_;   // gate flag
+
   // Time tracking
   size_t buffer_size_ = 1000;           // Size of the moving average window
   std::vector<double> dt_buffer_;      // Circular buffer for dt values

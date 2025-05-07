@@ -2,8 +2,8 @@
 
 using namespace std::chrono_literals;
 
-double map_value(double input, double in_min, double in_max, double out_min, double out_max) {
-    return (input - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+inline double map_value(double input, double in_min, double in_max, double out_min, double out_max) {
+  return (input - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
 
 ArmChangerWorker::ArmChangerWorker(): Node("arm_changing_node") {
@@ -15,8 +15,9 @@ ArmChangerWorker::ArmChangerWorker(): Node("arm_changing_node") {
   joint_publisher_ = this->create_publisher<dynamixel_interfaces::msg::JointVal>("/joint_cmd", 1);
   heartbeat_publisher_ = this->create_publisher<watchdog_interfaces::msg::NodeState>("/armchanger_state", 1);
 
-  // joint_cmd timer
+  // ROS2 Timer
   joint_timer_ = this->create_wall_timer(std::chrono::milliseconds(10), std::bind(&ArmChangerWorker::joint_callback, this));
+  heartbeat_timer_ = this->create_wall_timer(std::chrono::milliseconds(100), std::bind(&ArmChangerWorker::heartbeat_timer_callback, this));
 
   a1_q.resize(5);
   a2_q.resize(5);
@@ -29,6 +30,25 @@ ArmChangerWorker::ArmChangerWorker(): Node("arm_changing_node") {
   z_min_ = 50.;
   z_max_ = 220.;
   y_fixed_ = 0.; // y-coord is fixed.
+
+  
+  
+  // 1) disable timer-driven heartbeat until handshake is done
+  hb_enabled_ = false;         // heartbeat_timer_callback() will early-return
+  hb_state_   = 0;             // dummy
+
+  // 2) immediately publish handshake value 42
+  {
+    watchdog_interfaces::msg::NodeState init_msg;
+    init_msg.state = 42;
+    heartbeat_publisher_->publish(init_msg);
+  }
+
+  // 3) setup next-state and enable the timer
+  hb_state_   = 43;            // next expected heartbeat
+  hb_enabled_ = true;          // now heartbeat_timer_callback() will run
+
+
 }
 
 void ArmChangerWorker::sbus_callback(const sbus_interfaces::msg::SbusSignal::SharedPtr msg) {
@@ -104,6 +124,18 @@ void ArmChangerWorker::joint_callback() {
 void ArmChangerWorker::watchdog_callback(const watchdog_interfaces::msg::NodeState::SharedPtr msg) {
   // Watchdog update
   watchdog_state_ = msg->state;
+}
+
+void ArmChangerWorker::heartbeat_timer_callback() {
+  // gate until handshake done
+  if (!hb_enabled_) {return;}
+
+  watchdog_interfaces::msg::NodeState state_msg;
+  state_msg.state = hb_state_;
+  heartbeat_publisher_->publish(state_msg);
+
+  // uint8 overflow wraps automatically
+  hb_state_ = static_cast<uint8_t>(hb_state_ + 1);
 }
   
 int main(int argc, char **argv) {

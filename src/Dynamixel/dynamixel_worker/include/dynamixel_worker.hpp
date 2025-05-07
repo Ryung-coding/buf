@@ -100,7 +100,10 @@ private:
   };
 
   uint16_t dnmxl_err_cnt_ = 0;
-  uint8_t heartbeat_state_;
+  
+  // heartbeat state  
+  uint8_t  hb_state_;     // current heartbeat value
+  bool     hb_enabled_;   // gate flag
 };
 
 #endif // DYNAMIXEL_WORKER_HPP

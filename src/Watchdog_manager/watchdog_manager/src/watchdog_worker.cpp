@@ -41,40 +41,42 @@ WatchDogNode::WatchDogNode(): Node("watchdog_node"),
 }
 
 void WatchDogNode::commonCallback(const std::string & node_name, const watchdog_interfaces::msg::NodeState::SharedPtr msg) {
-    auto now = this->now();
-  
-    // --- 1) initial handshake: expect exactly state==42 ---
-    if (!is_node_initiated_[node_name]) {
-      if (msg->state == 42) {
-        is_node_initiated_[node_name] = true;
-        last_state_[node_name] = msg->state;
-        last_time_[node_name]  = now;
-        RCLCPP_INFO(
-          this->get_logger(),
-          "[%s] handshake OK (received 42)", node_name.c_str()
-        );
-      }
-      // ignore any other messages until handshake completes
-      return;
+  if (failure_detected_){return;}
+
+  auto now = this->now();
+
+  // --- 1) initial handshake: expect exactly state==42 ---
+  if (!is_node_initiated_[node_name]) {
+    if (msg->state == 42) {
+      is_node_initiated_[node_name] = true;
+      last_state_[node_name] = msg->state;
+      last_time_[node_name]  = now;
     }
-  
-    // --- 2) after handshake: check sequence increment & inter-message timeout ---
-    uint8_t expected = static_cast<uint8_t>(last_state_[node_name] + 1);
-    if (msg->state != expected) {
-      RCLCPP_WARN(this->get_logger(), "[%s] sequence error: expected %u but got %u", node_name.c_str(), expected, msg->state);
+    else{
+      RCLCPP_ERROR(this->get_logger(), " >> SHUT DOWN << : [%s] started badly.", node_name.c_str());
+      handshake_checked_ = true; // pass handshake timeout check
       failure_detected_ = true;
     }
-  
-    double dt = (now - last_time_[node_name]).seconds();
-    if (dt > HEARTBEAT_TIMEOUT_SEC) {
-      RCLCPP_WARN(this->get_logger(), "[%s] callback heartbeat timeout: dt=%.3f > %.3f", node_name.c_str(), dt, HEARTBEAT_TIMEOUT_SEC);
-      failure_detected_ = true;
-    }
-  
-    // update for next check
-    last_state_[node_name] = msg->state;
-    last_time_[node_name]  = now;
+    return;
   }
+
+  // --- 2) after handshake: check sequence increment & inter-message timeout ---
+  uint8_t expected = static_cast<uint8_t>(last_state_[node_name] + 1);
+  if (msg->state != expected) {
+    RCLCPP_WARN(this->get_logger(), "[%s]: heartbeat sequence error(expected %u but got %u).", node_name.c_str(), expected, msg->state);
+    failure_detected_ = true;
+  }
+
+  double dt = (now - last_time_[node_name]).seconds();
+  if (dt > HEARTBEAT_TIMEOUT_SEC) {
+    RCLCPP_WARN(this->get_logger(), "[%s]: heartbeat timeout(dt=%.3f > %.3f)", node_name.c_str(), dt, HEARTBEAT_TIMEOUT_SEC);
+    failure_detected_ = true;
+  }
+
+  // update for next check
+  last_state_[node_name] = msg->state;
+  last_time_[node_name]  = now;
+}
 
 // Heartbeat Callback
 void WatchDogNode::sbusCallback(const watchdog_interfaces::msg::NodeState::SharedPtr msg)
@@ -96,23 +98,19 @@ void WatchDogNode::optitrackCallback(const watchdog_interfaces::msg::NodeState::
 { commonCallback("optitrack_node", msg); }
 
 void WatchDogNode::armCallback(const watchdog_interfaces::msg::NodeState::SharedPtr msg)
-{ commonCallback("optitrack_node", msg); }
+{ commonCallback("arm_changing_node", msg); }
 
 void WatchDogNode::publishKill()
 {
   auto now = this->now();
 
   // --- handshake timeout enforcement (1 s) ---
-  if (!handshake_checked_) {
+  if (!handshake_checked_ && !failure_detected_) {
     if ((now - start_time_).seconds() > HANDSHAKE_TIMEOUT_SEC) {
       // if any node never sent 42, immediately flag failure
       for (auto & it : is_node_initiated_) {
         if (!it.second) {
-          RCLCPP_ERROR(
-            this->get_logger(),
-            "[%s] handshake FAILED: no initial 42 received",
-            it.first.c_str()
-          );
+          RCLCPP_ERROR(this->get_logger(), "[%s]: not started.", it.first.c_str());
           failure_detected_ = true;
           break;
         }
@@ -121,26 +119,10 @@ void WatchDogNode::publishKill()
       handshake_checked_ = true;
     }
   }
-
-  // --- runtime heartbeat timeout (if node silent) ---
-  for (auto & it : last_time_) {
-    const auto & name = it.first;
-    if (is_node_initiated_[name]) {
-      double dt = (now - last_time_[name]).seconds();
-      if (dt > HEARTBEAT_TIMEOUT_SEC) {
-        RCLCPP_WARN(
-          this->get_logger(),
-          "[%s] runtime heartbeat timeout: dt=%.3f > %.3f",
-          name.c_str(), dt, HEARTBEAT_TIMEOUT_SEC
-        );
-        failure_detected_ = true;
-      }
-    }
-  }
-
-  // --- publish final watchdog_state: 255=kill, 1=ok ---
+  
+  // --- publish final watchdog_state: 255=kill, 13=ok ---
   watchdog_interfaces::msg::NodeState out;
-  out.state = failure_detected_ ? 255 : 1;
+  out.state = failure_detected_ ? 255 : 13;
   watchdog_publisher_->publish(out);
 }
 

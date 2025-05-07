@@ -48,8 +48,9 @@ private:
   // Duration representing 3ms delay (3,000,000ns)
   rclcpp::Duration delay_{0, 3000000};
 
-  // Heartbeat
-  uint8_t heartbeat_state_;
+  // heartbeat state  
+  uint8_t  hb_state_;     // current heartbeat value
+  bool     hb_enabled_;   // gate flag
 
   // Random number generator as member variables for reuse
   std::mt19937 gen_;

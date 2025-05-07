@@ -207,6 +207,7 @@ void TeensyNode::allocatorCallback_MUJ_send(const allocator_interfaces::msg::Pwm
 void TeensyNode::KillCmdCallback(const sbus_interfaces::msg::KillCmd::SharedPtr msg) {
   // SBUS kill (act just once)
   if (msg->kill_activated && !pwm_overriding_){
+    pwm_overriding_ = true;
     allocator_subscription_.reset();
     
     // bind appropriate dummy-zero timer
@@ -218,14 +219,29 @@ void TeensyNode::KillCmdCallback(const sbus_interfaces::msg::KillCmd::SharedPtr 
       publish_dummy_zeros_timer_ = this->create_wall_timer(10ms, std::bind(&TeensyNode::MUJOCO_overriding, this));
     }
 
-    RCLCPP_INFO(this->get_logger(), "\n >> KILL - ACTIVATED !!<<\n");
-    pwm_overriding_ = true;
+    RCLCPP_INFO(this->get_logger(), "\n >> [SBUS KILL] - ACTIVATED !!<<\n");
   }
 }
 
 void TeensyNode::watchdogCallback(const watchdog_interfaces::msg::NodeState::SharedPtr msg) {
   // Watchdog update
-  watchdog_state_ = msg->state;
+  bool is_ok = msg->state==13;
+
+  if (!is_ok && !pwm_overriding_){
+    pwm_overriding_ = true;
+    allocator_subscription_.reset();
+    
+    // bind appropriate dummy-zero timer
+    if (mode_ == "real") {
+      CAN_overriding();
+      publish_dummy_zeros_timer_ = this->create_wall_timer(10ms,std::bind(&TeensyNode::CAN_overriding, this));
+    } else if (mode_ == "sim") {
+      MUJOCO_overriding();
+      publish_dummy_zeros_timer_ = this->create_wall_timer(10ms, std::bind(&TeensyNode::MUJOCO_overriding, this));
+    }
+
+    RCLCPP_INFO(this->get_logger(), "\n >> [WATCHDOG KILL] - ACTIVATED !!<<\n");
+  }
 }
 
 void TeensyNode::CAN_overriding(){

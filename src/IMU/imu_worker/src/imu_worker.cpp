@@ -20,22 +20,21 @@ IMUnode::IMUnode()
   axis_dist_(0.0, 1.0),
   noise_dist_(0.0, noise_gyro_std_dev)
 {
+  // 1) publishers
   imu_publisher_ = this->create_publisher<imu_interfaces::msg::ImuMeasured>("imu_mea", 1);
-
-  // Create a timer to publish Node state messages at 10Hz
-  heartbeat_timer_ = this->create_wall_timer(std::chrono::milliseconds(100), std::bind(&IMUnode::heartbeat_timer_callback, this));
-
-  // Create a publisher for Heartbeat signal
   heartbeat_publisher_ = this->create_publisher<watchdog_interfaces::msg::NodeState>("imu_state", 1);
 
-  // Mode = sim -> mujoco Sub
-  // Mode = real -> Reading IMU
+  // 2) always create heartbeat timer (100ms), but _publish only when enabled
+  heartbeat_timer_ = this->create_wall_timer(std::chrono::milliseconds(100), std::bind(&IMUnode::heartbeat_timer_callback, this));
+
+  // 3) mode-specific init
   this->declare_parameter<std::string>("mode", "None");
   std::string mode;
   this->get_parameter("mode", mode);
 
   if (mode == "real"){
     RCLCPP_WARN(this->get_logger(), "IMU Node : I cannot do anything :(");
+
   }
   else if (mode == "sim"){
     // Subscription True Measuring value from MuJoCo
@@ -44,7 +43,12 @@ IMUnode::IMUnode()
   }
   else{
     RCLCPP_ERROR(this->get_logger(), "Unknown mode: %s. No initialization performed.", mode.c_str());
+    exit(1);
   }
+
+  // 4) initial handshake: immediately send 42 and enable subsequent heartbeat
+  hb_state_   = 42;
+  hb_enabled_ = true;
 }
 /* for real */
 
@@ -134,14 +138,15 @@ void IMUnode::PublishMuJoCoMeasurement() {
 
 /* for Both */
 void IMUnode::heartbeat_timer_callback() {
-  heartbeat_state_++;
+  // gate until handshake done
+  if (!hb_enabled_) {return;}
 
-  // Populate the NodeState message
   watchdog_interfaces::msg::NodeState state_msg;
-  state_msg.state = heartbeat_state_;
-
-  // Publish the sbus_state message
+  state_msg.state = hb_state_;
   heartbeat_publisher_->publish(state_msg);
+
+  // uint8 overflow wraps automatically
+  hb_state_ = static_cast<uint8_t>(hb_state_ + 1);
 }
 
 int main(int argc, char **argv) {

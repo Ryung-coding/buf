@@ -29,6 +29,10 @@ ControllerNode::ControllerNode()
 
   // main-tasking thread
   controller_thread_ = std::thread(&ControllerNode::controller_loop, this);
+
+  // initial handshake: immediately send 42 and enable subsequent heartbeat
+  hb_state_   = 42;
+  hb_enabled_ = true;
 }
 
 void ControllerNode::controller_timer_callback() {
@@ -125,10 +129,15 @@ void ControllerNode::imuCallback(const imu_interfaces::msg::ImuMeasured::SharedP
 }
 
 void ControllerNode::heartbeat_timer_callback() {
-  heartbeat_state_++;
+  // gate until handshake done
+  if (!hb_enabled_) {return;}
+
   watchdog_interfaces::msg::NodeState state_msg;
-  state_msg.state = heartbeat_state_;
+  state_msg.state = hb_state_;
   heartbeat_publisher_->publish(state_msg);
+
+  // uint8 overflow wraps automatically
+  hb_state_ = static_cast<uint8_t>(hb_state_ + 1);
 }
 
 void ControllerNode::debugging_timer_callback() {

@@ -39,6 +39,10 @@ private:
   rclcpp::Publisher<watchdog_interfaces::msg::NodeState>::SharedPtr heartbeat_publisher_;
   rclcpp::TimerBase::SharedPtr heartbeat_timer_;
 
+  // heartbeat state  
+  uint8_t  hb_state_;     // current heartbeat value
+  bool     hb_enabled_;   // gate flag
+
   // MuJoCo Subscriber
   rclcpp::Subscription<mujoco_interfaces::msg::MuJoCoMeas>::SharedPtr mujoco_subscription_;
   
