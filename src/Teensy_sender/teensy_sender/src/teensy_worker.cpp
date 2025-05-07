@@ -45,36 +45,39 @@ TeensyNode::TeensyNode() : Node("teensy_node") {
     RCLCPP_INFO(this->get_logger(), "teensy CAN : GOOD!");
   }
   else if (mode_ == "sim"){
+
+    /* THIS SHOULD BE REMOVED LATER */
+
+    // Create RAW socket for SocketCAN.
+    sock_ = socket(PF_CAN, SOCK_RAW, CAN_RAW);
+    if (sock_ < 0) {
+      RCLCPP_ERROR(this->get_logger(), "Socket creation failed");
+      return;
+    }
+    // Retrieve interface index for "can0".
+    struct ifreq ifr;
+    std::strcpy(ifr.ifr_name, "can0");
+    if (ioctl(sock_, SIOCGIFINDEX, &ifr) < 0) {
+      RCLCPP_ERROR(this->get_logger(), "Interface index retrieval failed");
+      return;
+    }
+    // Configure CAN address structure.
+    addr_.can_family = AF_CAN;
+    addr_.can_ifindex = ifr.ifr_ifindex;
+    // Bind the socket to the CAN interface.
+    if (bind(sock_, (struct sockaddr *)&addr_, sizeof(addr_)) < 0) {
+      RCLCPP_ERROR(this->get_logger(), "Socket binding failed");
+      return;
+    }
+
+    RCLCPP_INFO(this->get_logger(), "teensy CAN : GOOD!");
+
+    /* THIS SHOULD BE REMOVED LATER */
+
+
+
     allocator_subscription_ = this->create_subscription<allocator_interfaces::msg::PwmVal>("motor_cmd", 1, std::bind(&TeensyNode::allocatorCallback_MUJ_send, this, std::placeholders::_1));
     mujoco_publisher_ = this->create_publisher<mujoco_interfaces::msg::MotorThrust>("motor_write", 1);
-
-    /* THIS SHOULD BE REMOVED LATER */
-
-    // // Create RAW socket for SocketCAN.
-    // sock_ = socket(PF_CAN, SOCK_RAW, CAN_RAW);
-    // if (sock_ < 0) {
-    //   RCLCPP_ERROR(this->get_logger(), "Socket creation failed");
-    //   return;
-    // }
-    // // Retrieve interface index for "can0".
-    // struct ifreq ifr;
-    // std::strcpy(ifr.ifr_name, "can0");
-    // if (ioctl(sock_, SIOCGIFINDEX, &ifr) < 0) {
-    //   RCLCPP_ERROR(this->get_logger(), "Interface index retrieval failed");
-    //   return;
-    // }
-    // // Configure CAN address structure.
-    // addr_.can_family = AF_CAN;
-    // addr_.can_ifindex = ifr.ifr_ifindex;
-    // // Bind the socket to the CAN interface.
-    // if (bind(sock_, (struct sockaddr *)&addr_, sizeof(addr_)) < 0) {
-    //   RCLCPP_ERROR(this->get_logger(), "Socket binding failed");
-    //   return;
-    // }
-
-    // RCLCPP_INFO(this->get_logger(), "teensy CAN : GOOD!");
-
-    /* THIS SHOULD BE REMOVED LATER */
 
   }
   else{
@@ -108,13 +111,13 @@ void TeensyNode::allocatorCallback_CAN_send(const allocator_interfaces::msg::Pwm
   write(sock_, &frame, sizeof(frame));
 
 
-  // int nbytes = write(sock_, &frame, sizeof(frame));
-  // if (nbytes != sizeof(frame)) {
-  //   RCLCPP_ERROR(this->get_logger(), "CAN 프레임 전송 에러");
-  // } else {
-  //   RCLCPP_INFO(this->get_logger(), "CAN 메시지 전송: [%.3f, %.3f, %.3f, %.3f]",
-  //     msg->pwm1, msg->pwm2, msg->pwm3, msg->pwm4);
-  // }
+  int nbytes = write(sock_, &frame, sizeof(frame));
+  if (nbytes != sizeof(frame)) {
+    RCLCPP_ERROR(this->get_logger(), "CAN 프레임 전송 에러");
+  } else {
+    RCLCPP_INFO(this->get_logger(), "CAN 메시지 전송: [%.3f, %.3f, %.3f, %.3f]",
+      msg->pwm1, msg->pwm2, msg->pwm3, msg->pwm4);
+  }
 }
 
 /* for sim */
@@ -198,9 +201,9 @@ void TeensyNode::allocatorCallback_MUJ_send(const allocator_interfaces::msg::Pwm
   
   mujoco_publisher_->publish(wrench);
 
-  // /* THIS SHOULD BE REMOVED LATER */
-  // allocatorCallback_CAN_send(msg);
-  // /* THIS SHOULD BE REMOVED LATER */
+  /* THIS SHOULD BE REMOVED LATER */
+  allocatorCallback_CAN_send(msg);
+  /* THIS SHOULD BE REMOVED LATER */
 }
 
 /* for both */
