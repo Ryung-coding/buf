@@ -59,7 +59,6 @@ class SbusNode(Node):
       return
     
     # Only after SBUS is successfully connected, send initial handshake (42)
-    self.get_logger().info(" * SBUS Receiver connected * ")
     self._hb_state = 42
     self._hb_enabled = True
 

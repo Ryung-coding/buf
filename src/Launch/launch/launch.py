@@ -124,7 +124,7 @@ def generate_launch_description():
     shutdown_handler = RegisterEventHandler(
         OnShutdown(
             on_shutdown=[
-                LogInfo(msg="\n\n >> 'Close all nodes' <<\n\n\n\n")
+                LogInfo(msg="\n\n Closing all nodes..\n\n\n\n")
             ]
         )
     )

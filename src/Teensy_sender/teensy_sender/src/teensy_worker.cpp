@@ -50,29 +50,29 @@ TeensyNode::TeensyNode() : Node("teensy_node") {
 
     /* THIS SHOULD BE REMOVED LATER */
 
-    // Create RAW socket for SocketCAN.
-    sock_ = socket(PF_CAN, SOCK_RAW, CAN_RAW);
-    if (sock_ < 0) {
-      RCLCPP_ERROR(this->get_logger(), "Socket creation failed");
-      return;
-    }
-    // Retrieve interface index for "can0".
-    struct ifreq ifr;
-    std::strcpy(ifr.ifr_name, "can0");
-    if (ioctl(sock_, SIOCGIFINDEX, &ifr) < 0) {
-      RCLCPP_ERROR(this->get_logger(), "Interface index retrieval failed");
-      return;
-    }
-    // Configure CAN address structure.
-    addr_.can_family = AF_CAN;
-    addr_.can_ifindex = ifr.ifr_ifindex;
-    // Bind the socket to the CAN interface.
-    if (bind(sock_, (struct sockaddr *)&addr_, sizeof(addr_)) < 0) {
-      RCLCPP_ERROR(this->get_logger(), "Socket binding failed");
-      return;
-    }
+    // // Create RAW socket for SocketCAN.
+    // sock_ = socket(PF_CAN, SOCK_RAW, CAN_RAW);
+    // if (sock_ < 0) {
+    //   RCLCPP_ERROR(this->get_logger(), "Socket creation failed");
+    //   return;
+    // }
+    // // Retrieve interface index for "can0".
+    // struct ifreq ifr;
+    // std::strcpy(ifr.ifr_name, "can0");
+    // if (ioctl(sock_, SIOCGIFINDEX, &ifr) < 0) {
+    //   RCLCPP_ERROR(this->get_logger(), "Interface index retrieval failed");
+    //   return;
+    // }
+    // // Configure CAN address structure.
+    // addr_.can_family = AF_CAN;
+    // addr_.can_ifindex = ifr.ifr_ifindex;
+    // // Bind the socket to the CAN interface.
+    // if (bind(sock_, (struct sockaddr *)&addr_, sizeof(addr_)) < 0) {
+    //   RCLCPP_ERROR(this->get_logger(), "Socket binding failed");
+    //   return;
+    // }
 
-    RCLCPP_INFO(this->get_logger(), "teensy CAN : GOOD!");
+    // RCLCPP_INFO(this->get_logger(), "teensy CAN : GOOD!");
 
     /* THIS SHOULD BE REMOVED LATER */
 
@@ -198,9 +198,9 @@ void TeensyNode::allocatorCallback_MUJ_send(const allocator_interfaces::msg::Pwm
   
   mujoco_publisher_->publish(wrench);
 
-  /* THIS SHOULD BE REMOVED LATER */
-  allocatorCallback_CAN_send(msg);
-  /* THIS SHOULD BE REMOVED LATER */
+  // /* THIS SHOULD BE REMOVED LATER */
+  // allocatorCallback_CAN_send(msg);
+  // /* THIS SHOULD BE REMOVED LATER */
 }
 
 /* for both */
@@ -218,7 +218,7 @@ void TeensyNode::KillCmdCallback(const sbus_interfaces::msg::KillCmd::SharedPtr 
       publish_dummy_zeros_timer_ = this->create_wall_timer(10ms, std::bind(&TeensyNode::MUJOCO_overriding, this));
     }
 
-    RCLCPP_INFO(this->get_logger(), "!! KILL - ACTIVATED !!");
+    RCLCPP_INFO(this->get_logger(), "\n >> KILL - ACTIVATED !!<<\n");
     pwm_overriding_ = true;
   }
 }
