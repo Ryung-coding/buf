@@ -19,6 +19,12 @@ class SbusNode(Node):
     self.channel_publisher_ = self.create_publisher(SbusSignal, '/sbus_signal', 1)
     self.killcmd_publisher_ = self.create_publisher(KillCmd, '/sbus_kill', 1)
     self.heartbeat_publisher_ = self.create_publisher(NodeState, '/sbus_state', 1)
+
+    self._hb_state = 0                   # initial dummy value
+    self._hb_enabled = False             # heartbeat gate
+
+    # start timer but gate execution until port-connected
+    self._hb_timer = self.create_timer(0.1, self._publish_heartbeat)
     
     # Create a new event loop for asyncio and run it on a separate thread
     self.loop = asyncio.new_event_loop()
@@ -27,6 +33,15 @@ class SbusNode(Node):
 
     # Run the SBUS receiver in the asyncio event loop
     asyncio.run_coroutine_threadsafe(self.sbus_loop(), self.loop)
+
+  # heartbeat publish method
+  def _publish_heartbeat(self):
+    if not self._hb_enabled: return
+
+    msg = NodeState()
+    msg.state = self._hb_state
+    self.heartbeat_publisher_.publish(msg)
+    self._hb_state = (self._hb_state + 1) % 256
 
   async def sbus_loop(self):
     """
@@ -42,7 +57,11 @@ class SbusNode(Node):
     except Exception as e:
       self.get_logger().error(f"!! SBUS port Failed : >> {port_name} << !!")
       return
-    self.get_logger().info("SBUS Receiver connected.")
+    
+    # Only after SBUS is successfully connected, send initial handshake (42)
+    self.get_logger().info(" * SBUS Receiver connected * ")
+    self._hb_state = 42
+    self._hb_enabled = True
 
     while rclpy.ok():
       # Wait for the next SBUS frame from the queue
@@ -59,14 +78,14 @@ class SbusNode(Node):
       msg_channels.sbus_signal = failsafe_status
 
       msg_kill = KillCmd()
-      if (channels[9]==352 and failsafe_status==0):
-        msg_kill._kill_activated = False
-      else:
-        msg_kill._kill_activated = True
+      msg_kill._kill_activated = not (channels[9] == 352 and failsafe_status == 0)
 
       # Publish
       self.killcmd_publisher_.publish(msg_kill)
       self.channel_publisher_.publish(msg_channels)
+
+      # if kill is activated, cancel heartbeat timer so watchdog will detect failure
+      if msg_kill._kill_activated and self._hb_enabled: self._hb_enabled = False
 
 def main(args=None):
   rclpy.init(args=args)

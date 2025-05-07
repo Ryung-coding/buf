@@ -28,6 +28,13 @@ def generate_launch_description():
     mode = LaunchConfiguration('mode')
 
     nodes = [
+        # Watchdog Node
+        Node(
+            package='watchdog_manager',
+            executable='watchdog_worker',
+            name='watchdog_node',
+        ),
+        
         # MuJoCo Node (Run only when mode==sim)
         Node(
             package='mujoco_sim',
@@ -94,13 +101,6 @@ def generate_launch_description():
             executable='teensy_worker',
             name='teensy_node',
             parameters=[{'mode': mode}],
-        ),
-
-        # Watchdog Node
-        Node(
-            package='watchdog_manager',
-            executable='watchdog_worker',
-            name='watchdog_node',
         ),
 
         # GUI Node

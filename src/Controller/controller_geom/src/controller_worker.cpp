@@ -54,18 +54,17 @@ void ControllerNode::sbusCallback(const sbus_interfaces::msg::SbusSignal::Shared
   sbus_chnl_[7] = msg->ch[10]; // left-dial
   sbus_chnl_[8] = msg->ch[11]; // right-dial
   
-  // remap SBUS data to double
-  ref_[0] = static_cast<double>(sbus_chnl_[0] - 1024) / 336.;  // [-2, 2]
-  ref_[1] = static_cast<double>(sbus_chnl_[1] - 1024) / 336.;  // [-2, 2]
-  double ref_yaw = static_cast<double>(sbus_chnl_[2] - 1024) / 672.;  // [-1, 1]
-  ref_[2] = static_cast<double>(sbus_chnl_[3] -  352) / 672.; // [ 0, 2]
+  // remap SBUS data to double <pos x,y,z in [m]>
+  ref_[0] = static_cast<double>(sbus_chnl_[0] - 1024) / 336.;  // [-2, 2] in m
+  ref_[1] = static_cast<double>(sbus_chnl_[1] - 1024) / 336.;  // [-2, 2] in m
+  ref_[2] = static_cast<double>(sbus_chnl_[3] -  352) / 896.; // [ 0, 1.5] in m (?)
 
-  ref_[3] += ref_yaw * 0.01; // [rad], this clamps to (-PI, PI)
+  // remap SBUS data to double <yaw-heading in [rad]>
+  double ref_yaw = static_cast<double>(sbus_chnl_[2] - 1024) / 672.;  // [-1, 1]
+  ref_[3] += ref_yaw * 0.003;
   ref_[3] = fmod(ref_[3] + M_PI, two_PI);
   if (ref_[3] < 0) {ref_[3] += two_PI;}
   ref_[3] -= M_PI;
-
-  ref_[2] = ref_[2] * 1.5; // scale
   
   command_->xd << ref_[0], ref_[1], -ref_[2];
   command_->xd_dot.setZero();
