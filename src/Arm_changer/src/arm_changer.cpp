@@ -31,24 +31,9 @@ ArmChangerWorker::ArmChangerWorker(): Node("arm_changing_node") {
   z_max_ = 220.;
   y_fixed_ = 0.; // y-coord is fixed.
 
-  
-  
-  // 1) disable timer-driven heartbeat until handshake is done
-  hb_enabled_ = false;         // heartbeat_timer_callback() will early-return
-  hb_state_   = 0;             // dummy
-
-  // 2) immediately publish handshake value 42
-  {
-    watchdog_interfaces::msg::NodeState init_msg;
-    init_msg.state = 42;
-    heartbeat_publisher_->publish(init_msg);
-  }
-
-  // 3) setup next-state and enable the timer
-  hb_state_   = 43;            // next expected heartbeat
-  hb_enabled_ = true;          // now heartbeat_timer_callback() will run
-
-
+  // initial handshake: immediately send 42 and enable subsequent heartbeat
+  hb_state_   = 42;
+  hb_enabled_ = true;
 }
 
 void ArmChangerWorker::sbus_callback(const sbus_interfaces::msg::SbusSignal::SharedPtr msg) {
