@@ -28,7 +28,8 @@ public:
 
 private:
   // Callback to handle received PwmVal messages
-  void allocatorCallback_CAN_send(const allocator_interfaces::msg::PwmVal::SharedPtr msg);
+  void allocatorCallback_save_to_CAN_buff(const allocator_interfaces::msg::PwmVal::SharedPtr msg);
+  void CAN_transmit();
   void allocatorCallback_MUJ_send(const allocator_interfaces::msg::PwmVal::SharedPtr msg);
   void KillCmdCallback(const sbus_interfaces::msg::KillCmd::SharedPtr msg);
   void watchdogCallback(const watchdog_interfaces::msg::NodeState::SharedPtr msg);
@@ -46,6 +47,7 @@ private:
 
   // Timers
   rclcpp::TimerBase::SharedPtr publish_dummy_zeros_timer_;
+  rclcpp::TimerBase::SharedPtr can_transmission_timer_;
 
   // mode parameter ("real" or "sim")
   std::string mode_;
@@ -94,6 +96,10 @@ private:
   double m2_ = 0.0; // [Nm]
   double m3_ = 0.0; // [Nm]
   double m4_ = 0.0; // [Nm]
+
+  // Latest PWM values (stored by callback, sent by timer)
+  struct can_frame pending_frame_;
+  std::mutex frame_mutex_;
 
   // Precomputed CAN frame for zero PWM (mapped to 16383 -> 0x3FFF)
   // High byte = 63 (0x3F), Low byte = 255 (0xFF)

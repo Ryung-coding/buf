@@ -19,7 +19,7 @@ TeensyNode::TeensyNode() : Node("teensy_node") {
   this->get_parameter("mode", mode_);  // store into member
 
   if (mode_ == "real"){
-    allocator_subscription_ = this->create_subscription<allocator_interfaces::msg::PwmVal>("motor_cmd", 1, std::bind(&TeensyNode::allocatorCallback_CAN_send, this, std::placeholders::_1));
+    allocator_subscription_ = this->create_subscription<allocator_interfaces::msg::PwmVal>("motor_cmd", 1, std::bind(&TeensyNode::allocatorCallback_save_to_CAN_buff, this, std::placeholders::_1));
 
     // Create RAW socket for SocketCAN.
     sock_ = socket(PF_CAN, SOCK_RAW, CAN_RAW);
@@ -86,37 +86,36 @@ TeensyNode::TeensyNode() : Node("teensy_node") {
 }
 
 /* for real */
-void TeensyNode::allocatorCallback_CAN_send(const allocator_interfaces::msg::PwmVal::SharedPtr msg) {
-  // Create CAN frame structure and set CAN ID and DLC.
-  struct can_frame frame;
-  frame.can_id = 0x123; // Set CAN ID.
-  frame.can_dlc = 8;    // 4 channels of 16-bit data → total 8 bytes.
+void TeensyNode::allocatorCallback_save_to_CAN_buff(const allocator_interfaces::msg::PwmVal::SharedPtr msg) {
+  struct can_frame frame; // Create CAN frame structure and set CAN ID and DLC.
+  frame.can_id  = 0x123;  // Set CAN ID.
+  frame.can_dlc = 8;      // 4 channels of 16-bit data → total 8 bytes.
 
-  // Mapping: input 0 -> 16383, input 1 -> 32767.
+  // [0,1] → [16383, 32767] Mapping
   uint16_t mapped1 = static_cast<uint16_t>(msg->pwm1 * 16384.) + 16383;
   uint16_t mapped2 = static_cast<uint16_t>(msg->pwm2 * 16384.) + 16383;
   uint16_t mapped3 = static_cast<uint16_t>(msg->pwm3 * 16384.) + 16383;
   uint16_t mapped4 = static_cast<uint16_t>(msg->pwm4 * 16384.) + 16383;
 
-  // Split 16-bit values into 2 bytes each and pack them into the CAN frame.
-  frame.data[0] = (mapped1 >> 8) & 0xFF;
-  frame.data[1] = mapped1 & 0xFF;
-  frame.data[2] = (mapped2 >> 8) & 0xFF;
-  frame.data[3] = mapped2 & 0xFF;
-  frame.data[4] = (mapped3 >> 8) & 0xFF;
-  frame.data[5] = mapped3 & 0xFF;
-  frame.data[6] = (mapped4 >> 8) & 0xFF;
-  frame.data[7] = mapped4 & 0xFF;
-  
-  write(sock_, &frame, sizeof(frame));
+  uint16_t m1 = map_pwm(msg->pwm1);
+  uint16_t m2 = map_pwm(msg->pwm2);
+  uint16_t m3 = map_pwm(msg->pwm3);
+  uint16_t m4 = map_pwm(msg->pwm4);
 
+  frame.data[0] = (m1 >> 8) & 0xFF;  frame.data[1] = m1 & 0xFF;
+  frame.data[2] = (m2 >> 8) & 0xFF;  frame.data[3] = m2 & 0xFF;
+  frame.data[4] = (m3 >> 8) & 0xFF;  frame.data[5] = m3 & 0xFF;
+  frame.data[6] = (m4 >> 8) & 0xFF;  frame.data[7] = m4 & 0xFF;
 
-  int nbytes = write(sock_, &frame, sizeof(frame));
-  if (nbytes != sizeof(frame)) {
-    RCLCPP_ERROR(this->get_logger(), "CAN 프레임 전송 에러");
-  } else {
-    RCLCPP_INFO(this->get_logger(), "CAN 메시지 전송: [%.3f, %.3f, %.3f, %.3f]",
-      msg->pwm1, msg->pwm2, msg->pwm3, msg->pwm4);
+  std::lock_guard<std::mutex> lk(frame_mutex_);
+  pending_frame_ = frame;
+}
+
+void TeensyNode::CAN_transmit() {
+  std::lock_guard<std::mutex> lk(frame_mutex_);
+  ssize_t n = write(sock_, &pending_frame_, sizeof(pending_frame_));
+  if (n != sizeof(pending_frame_)) {
+    RCLCPP_ERROR(this->get_logger(), "CAN 전송 실패");
   }
 }
 
