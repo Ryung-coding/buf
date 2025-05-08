@@ -8,8 +8,6 @@
 #include <unistd.h>
 #include <algorithm>
 
-using namespace std::chrono_literals;
-
 TeensyNode::TeensyNode() : Node("teensy_node") {
   // Subscription
   killcmd_subscription_ = this->create_subscription<sbus_interfaces::msg::KillCmd>("sbus_kill", 1, std::bind(&TeensyNode::KillCmdCallback, this, std::placeholders::_1));
@@ -20,18 +18,19 @@ TeensyNode::TeensyNode() : Node("teensy_node") {
 
   if (mode_ == "real"){
     allocator_subscription_ = this->create_subscription<allocator_interfaces::msg::PwmVal>("motor_cmd", 1, std::bind(&TeensyNode::allocatorCallback_save_to_CAN_buff, this, std::placeholders::_1));
+    can_transmission_timer_ = this->create_wall_timer(std::chrono::microseconds(500), std::bind(&TeensyNode::CAN_transmit, this));
 
     // Create RAW socket for SocketCAN.
     sock_ = socket(PF_CAN, SOCK_RAW, CAN_RAW);
     if (sock_ < 0) {
-      RCLCPP_ERROR(this->get_logger(), "Socket creation failed");
+      RCLCPP_ERROR(this->get_logger(), ">>Socket creation failed<<");
       return;
     }
     // Retrieve interface index for "can0".
     struct ifreq ifr;
     std::strcpy(ifr.ifr_name, "can0");
     if (ioctl(sock_, SIOCGIFINDEX, &ifr) < 0) {
-      RCLCPP_ERROR(this->get_logger(), "Interface index retrieval failed");
+      RCLCPP_ERROR(this->get_logger(), ">>Interface index retrieval failed<<");
       return;
     }
     // Configure CAN address structure.
@@ -39,46 +38,15 @@ TeensyNode::TeensyNode() : Node("teensy_node") {
     addr_.can_ifindex = ifr.ifr_ifindex;
     // Bind the socket to the CAN interface.
     if (bind(sock_, (struct sockaddr *)&addr_, sizeof(addr_)) < 0) {
-      RCLCPP_ERROR(this->get_logger(), "Socket binding failed");
+      RCLCPP_ERROR(this->get_logger(), ">>Socket binding failed<<");
       return;
     }
-    RCLCPP_INFO(this->get_logger(), "teensy CAN : GOOD!");
+
+    RCLCPP_INFO(this->get_logger(), "[CAN CONNECTED.]");
   }
   else if (mode_ == "sim"){
-
-    /* THIS SHOULD BE REMOVED LATER */
-
-    // Create RAW socket for SocketCAN.
-    sock_ = socket(PF_CAN, SOCK_RAW, CAN_RAW);
-    if (sock_ < 0) {
-      RCLCPP_ERROR(this->get_logger(), "Socket creation failed");
-      return;
-    }
-    // Retrieve interface index for "can0".
-    struct ifreq ifr;
-    std::strcpy(ifr.ifr_name, "can0");
-    if (ioctl(sock_, SIOCGIFINDEX, &ifr) < 0) {
-      RCLCPP_ERROR(this->get_logger(), "Interface index retrieval failed");
-      return;
-    }
-    // Configure CAN address structure.
-    addr_.can_family = AF_CAN;
-    addr_.can_ifindex = ifr.ifr_ifindex;
-    // Bind the socket to the CAN interface.
-    if (bind(sock_, (struct sockaddr *)&addr_, sizeof(addr_)) < 0) {
-      RCLCPP_ERROR(this->get_logger(), "Socket binding failed");
-      return;
-    }
-
-    RCLCPP_INFO(this->get_logger(), "teensy CAN : GOOD!");
-
-    /* THIS SHOULD BE REMOVED LATER */
-
-
-
     allocator_subscription_ = this->create_subscription<allocator_interfaces::msg::PwmVal>("motor_cmd", 1, std::bind(&TeensyNode::allocatorCallback_MUJ_send, this, std::placeholders::_1));
     mujoco_publisher_ = this->create_publisher<mujoco_interfaces::msg::MotorThrust>("motor_write", 1);
-
   }
   else{
     RCLCPP_ERROR(this->get_logger(), "Unknown mode: %s. No initialization performed.", mode_.c_str());
@@ -92,15 +60,10 @@ void TeensyNode::allocatorCallback_save_to_CAN_buff(const allocator_interfaces::
   frame.can_dlc = 8;      // 4 channels of 16-bit data → total 8 bytes.
 
   // [0,1] → [16383, 32767] Mapping
-  uint16_t mapped1 = static_cast<uint16_t>(msg->pwm1 * 16384.) + 16383;
-  uint16_t mapped2 = static_cast<uint16_t>(msg->pwm2 * 16384.) + 16383;
-  uint16_t mapped3 = static_cast<uint16_t>(msg->pwm3 * 16384.) + 16383;
-  uint16_t mapped4 = static_cast<uint16_t>(msg->pwm4 * 16384.) + 16383;
-
-  uint16_t m1 = map_pwm(msg->pwm1);
-  uint16_t m2 = map_pwm(msg->pwm2);
-  uint16_t m3 = map_pwm(msg->pwm3);
-  uint16_t m4 = map_pwm(msg->pwm4);
+  uint16_t m1 = static_cast<uint16_t>(msg->pwm1 * 16384.) + 16383;
+  uint16_t m2 = static_cast<uint16_t>(msg->pwm2 * 16384.) + 16383;
+  uint16_t m3 = static_cast<uint16_t>(msg->pwm3 * 16384.) + 16383;
+  uint16_t m4 = static_cast<uint16_t>(msg->pwm4 * 16384.) + 16383;
 
   frame.data[0] = (m1 >> 8) & 0xFF;  frame.data[1] = m1 & 0xFF;
   frame.data[2] = (m2 >> 8) & 0xFF;  frame.data[3] = m2 & 0xFF;
@@ -115,7 +78,7 @@ void TeensyNode::CAN_transmit() {
   std::lock_guard<std::mutex> lk(frame_mutex_);
   ssize_t n = write(sock_, &pending_frame_, sizeof(pending_frame_));
   if (n != sizeof(pending_frame_)) {
-    RCLCPP_ERROR(this->get_logger(), "CAN 전송 실패");
+    RCLCPP_ERROR(this->get_logger(), ">> CAN transmit ERR <<\n\n [POWER SWITCH OFF RIGHT NOW]\n\n");
   }
 }
 
@@ -199,35 +162,31 @@ void TeensyNode::allocatorCallback_MUJ_send(const allocator_interfaces::msg::Pwm
   wrench.moment[0] = m1_; wrench.moment[1] = m2_; wrench.moment[2] = m3_; wrench.moment[3] = m4_;
   
   mujoco_publisher_->publish(wrench);
-
-  /* THIS SHOULD BE REMOVED LATER */
-  allocatorCallback_CAN_send(msg);
-  /* THIS SHOULD BE REMOVED LATER */
 }
 
 /* for both */
 void TeensyNode::KillCmdCallback(const sbus_interfaces::msg::KillCmd::SharedPtr msg) {
-  // SBUS kill (act just once)
-  if (msg->kill_activated && !pwm_overriding_){
+  if (msg->kill_activated && !pwm_overriding_) { // SBUS kill (act just once)
     pwm_overriding_ = true;
     allocator_subscription_.reset();
     
     // bind appropriate dummy-zero timer
     if (mode_ == "real") {
+      can_transmission_timer_->cancel();
       CAN_overriding();
-      publish_dummy_zeros_timer_ = this->create_wall_timer(10ms,std::bind(&TeensyNode::CAN_overriding, this));
-    } else if (mode_ == "sim") {
+      publish_dummy_zeros_timer_ = this->create_wall_timer(std::chrono::milliseconds(10),std::bind(&TeensyNode::CAN_overriding, this));
+    }
+    else if (mode_ == "sim") {
       MUJOCO_overriding();
-      publish_dummy_zeros_timer_ = this->create_wall_timer(10ms, std::bind(&TeensyNode::MUJOCO_overriding, this));
+      publish_dummy_zeros_timer_ = this->create_wall_timer(std::chrono::milliseconds(10), std::bind(&TeensyNode::MUJOCO_overriding, this));
     }
 
-    RCLCPP_INFO(this->get_logger(), "\n >> [SBUS KILL] - ACTIVATED !!<<\n");
+    RCLCPP_INFO(this->get_logger(), "\n >> KILL ACTIVATED BY SBUS. <<\n");
   }
 }
 
 void TeensyNode::watchdogCallback(const watchdog_interfaces::msg::NodeState::SharedPtr msg) {
-  // Watchdog update
-  bool is_ok = msg->state==13;
+  bool is_ok = msg->state==13; // Watchdog update (state must be 13.)
 
   if (!is_ok && !pwm_overriding_){
     pwm_overriding_ = true;
@@ -235,14 +194,15 @@ void TeensyNode::watchdogCallback(const watchdog_interfaces::msg::NodeState::Sha
     
     // bind appropriate dummy-zero timer
     if (mode_ == "real") {
+      can_transmission_timer_->cancel();
       CAN_overriding();
-      publish_dummy_zeros_timer_ = this->create_wall_timer(10ms,std::bind(&TeensyNode::CAN_overriding, this));
-    } else if (mode_ == "sim") {
-      MUJOCO_overriding();
-      publish_dummy_zeros_timer_ = this->create_wall_timer(10ms, std::bind(&TeensyNode::MUJOCO_overriding, this));
+      publish_dummy_zeros_timer_ = this->create_wall_timer(std::chrono::milliseconds(3),std::bind(&TeensyNode::CAN_overriding, this));
     }
-
-    RCLCPP_INFO(this->get_logger(), "\n >> [WATCHDOG KILL] - ACTIVATED !!<<\n");
+    else if (mode_ == "sim") {
+      MUJOCO_overriding();
+      publish_dummy_zeros_timer_ = this->create_wall_timer(std::chrono::milliseconds(3), std::bind(&TeensyNode::MUJOCO_overriding, this));
+    }
+    RCLCPP_INFO(this->get_logger(), "\n >> KILL ACTIVATED BY SBUS. WATCHDOG. <<\n");
   }
 }
 
@@ -261,8 +221,15 @@ void TeensyNode::MUJOCO_overriding(){
 }
 
 TeensyNode::~TeensyNode() {
-  if (sock_ >= 0) { // if mode==sim >>> sock = -1; (do nothing)
-    close(sock_);
+  if (mode_ == "real") {
+    if (can_transmission_timer_) {can_transmission_timer_->cancel();}
+
+    for (int i = 0; i < 5; ++i) {
+      CAN_overriding();
+      std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+
+    if (sock_ >= 0) {close(sock_);} // if mode==sim >>> sock = -1; (do nothing)
   }
 }
 

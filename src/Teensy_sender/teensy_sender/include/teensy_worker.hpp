@@ -9,11 +9,17 @@
 #include "mujoco_interfaces/msg/motor_thrust.hpp"
 #include "watchdog_interfaces/msg/node_state.hpp"
 
+// for can
 #include <sys/socket.h>
 #include <linux/can.h>
 #include <net/if.h>
 
+// for delayed data
 #include <deque>
+
+// for power off logic
+#include <thread>
+#include <chrono>
 
 struct DelayedData
 {
@@ -97,10 +103,6 @@ private:
   double m3_ = 0.0; // [Nm]
   double m4_ = 0.0; // [Nm]
 
-  // Latest PWM values (stored by callback, sent by timer)
-  struct can_frame pending_frame_;
-  std::mutex frame_mutex_;
-
   // Precomputed CAN frame for zero PWM (mapped to 16383 -> 0x3FFF)
   // High byte = 63 (0x3F), Low byte = 255 (0xFF)
   inline static constexpr struct can_frame frame_zeros_ = {
@@ -116,6 +118,10 @@ private:
       63, 255   // channel4
     }
   };
+
+  // Latest PWM values (stored by callback, sent by timer)
+  struct can_frame pending_frame_ = frame_zeros_;
+  std::mutex frame_mutex_;
 
   // Watchdog state
   uint16_t can_err_cnt = 0;

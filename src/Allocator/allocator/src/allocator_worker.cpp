@@ -26,7 +26,7 @@ AllocatorWorker::AllocatorWorker() : Node("allocator_node") {
   debug_val_publisher_ = this->create_publisher<allocator_interfaces::msg::AllocatorDebugVal>("allocator_info", 1);
 
   // Timers for periodic publishing
-  pwm_timer_ = this->create_wall_timer(std::chrono::microseconds(800), std::bind(&AllocatorWorker::publishPwmVal, this));
+  pwm_timer_ = this->create_wall_timer(std::chrono::microseconds(500), std::bind(&AllocatorWorker::publishPwmVal, this));
   heartbeat_timer_ = this->create_wall_timer(std::chrono::milliseconds(100), std::bind(&AllocatorWorker::heartbeat_timer_callback, this));
   debugging_timer_ = this->create_wall_timer(std::chrono::milliseconds(100), std::bind(&AllocatorWorker::debugging_timer_callback, this));
 
