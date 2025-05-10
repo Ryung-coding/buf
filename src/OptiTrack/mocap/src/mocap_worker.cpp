@@ -88,9 +88,9 @@ void OptiTrackNode::PublishMuJoCoMeasurement() {
   std::array<double, 3> noisy_vel;
   std::array<double, 3> noisy_acc;
   for (size_t i = 0; i < 3; ++i) {
-    noisy_pos[i] = delayed_data.pos[i] + pos_dist_(gen_);
-    noisy_vel[i] = delayed_data.vel[i] + vel_dist_(gen_);
-    noisy_acc[i] = delayed_data.acc[i] + acc_dist_(gen_);
+    noisy_pos[i] = delayed_data.pos[i] + pos_dist_(gen_)*0;
+    noisy_vel[i] = delayed_data.vel[i] + vel_dist_(gen_)*0;
+    noisy_acc[i] = delayed_data.acc[i] + acc_dist_(gen_)*0;
   }
 
   // Publish data

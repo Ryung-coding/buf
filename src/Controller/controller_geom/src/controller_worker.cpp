@@ -24,8 +24,8 @@ ControllerNode::ControllerNode()
   heartbeat_timer_ = this->create_wall_timer(std::chrono::milliseconds(100), std::bind(&ControllerNode::heartbeat_timer_callback, this));
   debugging_timer_ = this->create_wall_timer(std::chrono::milliseconds(100), std::bind(&ControllerNode::debugging_timer_callback, this));
 
-  command_->xd << 0.0, 0.0, -1.0;
-  command_->b1d << 1.0, 0.0, 0.0;
+  command_->xd << 1.0, -1.0, -1.0; //현재는 여기가 직통 위치 글로벌 기준 원점대칭
+  command_->b1d << 0.4472, -0.8944, 0;
 
   // main-tasking thread
   controller_thread_ = std::thread(&ControllerNode::controller_loop, this);
@@ -67,7 +67,7 @@ void ControllerNode::sbusCallback(const sbus_interfaces::msg::SbusSignal::Shared
 
   ref_[2] = ref_[2] * 1.5; // scale
   
-  command_->xd << ref_[0], ref_[1], -ref_[2];
+  command_->xd << -ref_[0], -ref_[1], -ref_[2]; //여기 나중에 고쳐야 함 
   command_->xd_dot.setZero();
   command_->xd_2dot.setZero();
   command_->xd_3dot.setZero();
@@ -79,9 +79,9 @@ void ControllerNode::sbusCallback(const sbus_interfaces::msg::SbusSignal::Shared
 }
 
 void ControllerNode::optitrackCallback(const mocap_interfaces::msg::MocapMeasured::SharedPtr msg) {
-  state_->x << msg->pos[0], msg->pos[1], msg->pos[2];
-  state_->v << msg->vel[0], msg->vel[1], msg->vel[2];
-  state_->a << msg->acc[0], msg->acc[1], msg->acc[2];
+  state_->x << -msg->pos[0], -msg->pos[1], -msg->pos[2];
+  state_->v << -msg->vel[0], -msg->vel[1], -msg->vel[2];
+  state_->a << -msg->acc[0], -msg->acc[1], -msg->acc[2];
   
   x_[0] = msg->pos[0]; y_[0] = msg->pos[1]; z_[0] = msg->pos[2];
   x_[1] = msg->vel[0]; y_[1] = msg->vel[1]; z_[1] = msg->vel[2];

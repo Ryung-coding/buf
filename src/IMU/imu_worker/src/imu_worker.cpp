@@ -91,10 +91,10 @@ void IMUnode::PublishMuJoCoMeasurement() {
   if (!found) { return; }
 
   // Generate small rotation noise as a quaternion using member distributions
-  double delta_angle = angle_dist_(gen_);
-  double ax = axis_dist_(gen_);
-  double ay = axis_dist_(gen_);
-  double az = axis_dist_(gen_);
+  double delta_angle = angle_dist_(gen_)*0;
+  double ax = axis_dist_(gen_)*0;
+  double ay = axis_dist_(gen_)*0;
+  double az = axis_dist_(gen_)*0;
   double norm = std::sqrt(ax * ax + ay * ay + az * az);
   if (norm < 1e-6) { norm = 1.0; }
   ax /= norm; ay /= norm; az /= norm;
@@ -119,9 +119,9 @@ void IMUnode::PublishMuJoCoMeasurement() {
 
   // Add white noise to angular velocity measurements using pre-initialized distribution
   double noisy_w[3] = {
-    delayed_data.w[0] + noise_dist_(gen_),
-    delayed_data.w[1] + noise_dist_(gen_),
-    delayed_data.w[2] + noise_dist_(gen_)
+    delayed_data.w[0] + noise_dist_(gen_)*0,
+    delayed_data.w[1] + noise_dist_(gen_)*0,
+    delayed_data.w[2] + noise_dist_(gen_)*0
   };
 
   // Construct and publish the IMU measurement message

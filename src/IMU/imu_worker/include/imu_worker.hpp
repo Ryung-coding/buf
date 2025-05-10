@@ -46,7 +46,7 @@ private:
   std::deque<DelayedData> data_buffer_;
 
   // Duration representing 3ms delay (3,000,000ns)
-  rclcpp::Duration delay_{0, 3000000};
+  rclcpp::Duration delay_{0, 0};
 
   // Heartbeat
   uint8_t heartbeat_state_;

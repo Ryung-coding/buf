@@ -179,6 +179,12 @@ void TeensyNode::allocatorCallback_MUJ_send(const allocator_interfaces::msg::Pwm
   f3_ = compute_thrust(rpm3_);
   f4_ = compute_thrust(rpm4_);
 
+  // f1_ = msg->pwm1;
+  // f2_ = msg->pwm2;
+  // f3_ = msg->pwm3;
+  // f4_ = msg->pwm4;
+
+
   // 3. RPM to Torque
   auto compute_torque = [&](double omega) -> double {
     return C1_tau_ * omega * omega + C2_tau_ * omega + C3_tau_;
@@ -188,6 +194,10 @@ void TeensyNode::allocatorCallback_MUJ_send(const allocator_interfaces::msg::Pwm
   m2_ = -compute_torque(rpm2_);
   m3_ = compute_torque(rpm3_);
   m4_ = -compute_torque(rpm4_);
+  // m1_ = 0.21496*f1_;
+  // m2_ = -0.21496*f2_;
+  // m3_ = 0.21496*f3_;
+  // m4_ = -0.21496*f4_;
 
   // RCLCPP_INFO(this->get_logger(), "[f1: %.2f, f2: %.2f, f3: %.2f, f4: %.2f]", f1_, f2_, f3_, f4_);
   

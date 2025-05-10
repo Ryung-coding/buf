@@ -128,9 +128,9 @@ class MuJoCoSimulatorNode(Node):
         msg = MuJoCoMeas(
             q=[q[0], q[1], q[2], q[3]],
             w=[w[0], w[1], w[2]],
-            pos=[-pos[0], -pos[1], -pos[2]],
-            vel=[-vel[0], -vel[1], -vel[2]],
-            acc=[-acc[0], -acc[1], -acc[2]],
+            pos=[pos[0], pos[1], pos[2]],
+            vel=[vel[0], vel[1], vel[2]],
+            acc=[acc[0], acc[1], acc[2]],
             a1_q = a1_q,
             a2_q = a2_q,
             a3_q = a3_q,
@@ -139,7 +139,8 @@ class MuJoCoSimulatorNode(Node):
         self.mujoco_meas_publisher.publish(msg)
 
     def publish_mujoco_state(self):
-        measured_hz = len(self._sim_times) / (self._sim_times[-1] - self._sim_times[0])
+        # measured_hz = len(self._sim_times) / (self._sim_times[-1] - self._sim_times[0])
+        measured_hz = 50.0
         msg = MujocoState()
         msg.hz = measured_hz
         self.mujoco_state_publisher.publish(msg)
